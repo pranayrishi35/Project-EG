@@ -1,0 +1,863 @@
+"use client";
+
+import { useState, useEffect, useRef, useMemo, useCallback, memo } from "react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import MissionClock from "./MissionClock";
+import { generateTestStrategy } from "@/app/actions/generateTestStrategy";
+import { saveMockProgress } from "@/app/actions/mockAttempts";
+import { useNetworkStatus } from "@/hooks/useNetworkStatus";
+import { useAntiCheat } from "@/hooks/useAntiCheat";
+import { getLeaderboardMetrics } from "@/app/actions/getLeaderboardMetrics";
+import { useCompletion } from "@ai-sdk/react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import CreditModal from "./CreditModal";
+import { create } from 'zustand';
+
+import type { Question, ScoringMap } from "@/app/actions/getMockTest";
+
+// --- Zustand Store (Granular State Management) ---
+
+type QStatus = "unvisited" | "unanswered" | "answered" | "marked" | "answered_and_marked";
+
+interface TestStore {
+  currentQuestionIndex: number;
+  selectedAnswers: Record<string, number>;
+  statuses: Record<string, QStatus>;
+  
+  initialize: (initialState: any, firstQuestionId?: string) => void;
+  setCurrentQuestionIndex: (idx: number) => void;
+  selectOption: (questionId: string, optionIndex: number) => void;
+  clearResponse: (questionId: string) => void;
+  markForReviewAndNext: (questionId: string, questions: any[]) => void;
+  saveAndNext: (questionId: string, questions: any[]) => void;
+  paletteClick: (idx: number, questions: any[]) => void;
+}
+
+const useTestStore = create<TestStore>((set) => ({
+  currentQuestionIndex: 0,
+  selectedAnswers: {},
+  statuses: {},
+  
+  initialize: (initialState, firstQuestionId) => set((state) => {
+    // Only initialize once to prevent race conditions
+    if (Object.keys(state.statuses).length > 0) return state;
+    
+    let initialStatuses = initialState?.statuses || {};
+    if (Object.keys(initialStatuses).length === 0 && firstQuestionId) {
+       initialStatuses = { [firstQuestionId]: "unanswered" };
+    }
+    
+    return {
+      currentQuestionIndex: initialState?.currentQuestionIndex || 0,
+      selectedAnswers: initialState?.selectedAnswers || {},
+      statuses: initialStatuses
+    };
+  }),
+
+  setCurrentQuestionIndex: (idx) => set({ currentQuestionIndex: idx }),
+  
+  selectOption: (questionId, optionIndex) => set((state) => ({
+    selectedAnswers: { ...state.selectedAnswers, [questionId]: optionIndex }
+  })),
+  
+  clearResponse: (questionId) => set((state) => {
+    const nextAnswers = { ...state.selectedAnswers };
+    delete nextAnswers[questionId];
+    return {
+      selectedAnswers: nextAnswers,
+      statuses: { ...state.statuses, [questionId]: "unanswered" }
+    };
+  }),
+  
+  markForReviewAndNext: (questionId, questions) => set((state) => {
+    const currentIndex = state.currentQuestionIndex;
+    const currentSelected = state.selectedAnswers[questionId];
+    
+    const updatedStatuses = { ...state.statuses };
+    updatedStatuses[questionId] = currentSelected !== undefined ? "answered_and_marked" : "marked";
+    
+    let nextIdx = currentIndex;
+    if (currentIndex < questions.length - 1) {
+      const nextId = questions[currentIndex + 1].id;
+      updatedStatuses[nextId] = updatedStatuses[nextId] && updatedStatuses[nextId] !== "unvisited" ? updatedStatuses[nextId] : "unanswered";
+      nextIdx = currentIndex + 1;
+    }
+    
+    return { statuses: updatedStatuses, currentQuestionIndex: nextIdx };
+  }),
+  
+  saveAndNext: (questionId, questions) => set((state) => {
+    const currentIndex = state.currentQuestionIndex;
+    const currentSelected = state.selectedAnswers[questionId];
+    
+    const updatedStatuses = { ...state.statuses };
+    updatedStatuses[questionId] = currentSelected !== undefined ? "answered" : "unanswered";
+    
+    let nextIdx = currentIndex;
+    if (currentIndex < questions.length - 1) {
+      const nextId = questions[currentIndex + 1].id;
+      updatedStatuses[nextId] = updatedStatuses[nextId] && updatedStatuses[nextId] !== "unvisited" ? updatedStatuses[nextId] : "unanswered";
+      nextIdx = currentIndex + 1;
+    }
+    
+    return { statuses: updatedStatuses, currentQuestionIndex: nextIdx };
+  }),
+  
+  paletteClick: (idx, questions) => set((state) => {
+    const prevIndex = state.currentQuestionIndex;
+    const qId = questions[prevIndex].id;
+    const nextStatuses = { ...state.statuses };
+    
+    if (!nextStatuses[qId] || nextStatuses[qId] === "unvisited") {
+       nextStatuses[qId] = "unanswered";
+    }
+    const nextId = questions[idx].id;
+    nextStatuses[nextId] = nextStatuses[nextId] && nextStatuses[nextId] !== "unvisited" ? nextStatuses[nextId] : "unanswered";
+    
+    return { statuses: nextStatuses, currentQuestionIndex: idx };
+  }),
+}));
+
+
+// --- Memoized UI Components ---
+
+const MemoizedTimer = memo(function MemoizedTimer({ initialSeconds, onTick, onTimeUp }: { initialSeconds: number, onTick: (s: number) => void, onTimeUp: () => void }) {
+  return <MissionClock initialSeconds={initialSeconds} onTick={onTick} onTimeUp={onTimeUp} />;
+});
+
+const PaletteButton = memo(function PaletteButton({ questionId, questionNumber, index, isReviewMode, questions }: { questionId: string, questionNumber: number, index: number, isReviewMode: boolean, questions: any[] }) {
+  const status = useTestStore(state => state.statuses[questionId] || "unvisited");
+  const isActive = useTestStore(state => state.currentQuestionIndex === index);
+  
+  const paletteClick = useTestStore(state => state.paletteClick);
+  const setCurrentQuestionIndex = useTestStore(state => state.setCurrentQuestionIndex);
+  
+  const onClick = () => {
+    if (isReviewMode) {
+      setCurrentQuestionIndex(index);
+    } else {
+      paletteClick(index, questions);
+    }
+  };
+
+  let styleClass = "bg-slate-200 text-slate-700 rounded border border-slate-300";
+  if (status === "unanswered") styleClass = "bg-red-500 text-white rounded-t-md shadow-sm";
+  if (status === "answered") styleClass = "bg-green-600 text-white rounded-b-md shadow-sm";
+  if (status === "marked") styleClass = "bg-purple-600 text-white rounded-full shadow-sm";
+  if (status === "answered_and_marked") styleClass = "bg-purple-600 text-white rounded-full shadow-sm relative";
+  
+  return (
+    <button
+      onClick={onClick}
+      className={`w-full aspect-square flex items-center justify-center font-bold text-sm transition-transform hover:scale-105 active:scale-95 relative z-50 pointer-events-auto ${styleClass} ${isActive ? 'ring-2 ring-offset-2 ring-indigo-500' : ''}`}
+    >
+      {questionNumber}
+      {status === "answered_and_marked" && (
+        <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-white shadow-sm"></div>
+      )}
+    </button>
+  );
+});
+
+const OptionButton = memo(function OptionButton({ optionText, optionId, questionId, isReviewMode }: { optionText: string, optionId: number, questionId: string, isReviewMode: boolean }) {
+  const isSelected = useTestStore(state => state.selectedAnswers[questionId] === optionId);
+  const selectOption = useTestStore(state => state.selectOption);
+  
+  return (
+    <button
+      onClick={() => { if(!isReviewMode) selectOption(questionId, optionId) }}
+      className={`text-left p-4 rounded-xl border-2 transition-all duration-200 flex items-center gap-4 group ${
+        isSelected 
+          ? 'border-indigo-600 bg-indigo-50 shadow-md' 
+          : 'border-slate-300 bg-white hover:border-slate-400 hover:bg-slate-50'
+      }`}
+    >
+      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
+        isSelected ? 'border-indigo-600 bg-indigo-600 text-white font-bold' : 'border-slate-400 text-transparent group-hover:border-slate-500'
+      }`}>
+        {isSelected && <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
+      </div>
+      <span className={`text-base font-medium leading-tight ${isSelected ? 'text-indigo-900' : 'text-slate-700'}`}>{optionText}</span>
+    </button>
+  );
+});
+
+const PaletteLegend = memo(function PaletteLegend({ questions }: { questions: any[] }) {
+  const [counts, setCounts] = useState({ attemptedCount: 0, unattemptedCount: questions.length });
+
+  // Use a targeted subscription effect to avoid Zustand shallow compare re-renders
+  useEffect(() => {
+    return useTestStore.subscribe((state) => {
+      let attempted = 0;
+      let unattempted = 0;
+      questions.forEach((q) => {
+        const s = state.statuses[q.id] || "unvisited";
+        if (s === "answered" || s === "answered_and_marked") attempted++;
+        else unattempted++;
+      });
+      setCounts({ attemptedCount: attempted, unattemptedCount: unattempted });
+    });
+  }, [questions]);
+
+  return (
+    <span className="text-xs text-slate-500 font-medium normal-case">
+      Attempted: <strong className="text-slate-900">{counts.attemptedCount}</strong> | Not Attempted: <strong className="text-slate-900">{counts.unattemptedCount}</strong>
+    </span>
+  );
+});
+
+const ActiveQuestionView = memo(function ActiveQuestionView({ questions, isReviewMode }: { questions: any[], isReviewMode: boolean }) {
+  const currentQuestionIndex = useTestStore(state => state.currentQuestionIndex);
+  const currentQ = questions[currentQuestionIndex];
+  const nextQ = questions[currentQuestionIndex + 1];
+  
+  const clearResponse = useTestStore(state => state.clearResponse);
+  const markForReviewAndNext = useTestStore(state => state.markForReviewAndNext);
+  const saveAndNext = useTestStore(state => state.saveAndNext);
+
+  if (!currentQ) return null;
+
+  return (
+    <div className="flex-1 overflow-y-auto p-6 md:p-10 pb-32">
+      <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-200">
+        <span className="text-slate-500 font-black text-lg uppercase tracking-widest">
+          Question {currentQuestionIndex + 1}
+        </span>
+        {currentQ.pyqYear && (
+          <span className="flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200 px-3 py-1 rounded-lg text-xs font-bold shadow-sm">
+            ⭐ PYQ {currentQ.pyqYear}
+          </span>
+        )}
+      </div>
+
+      <h2 className="text-xl md:text-2xl font-bold leading-relaxed mb-6 text-slate-900">
+        {currentQ.text}
+      </h2>
+
+      {currentQ.imageUrl && (
+        <div className="relative w-full max-w-2xl h-64 md:h-80 mb-8 rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-white">
+           <Image 
+             src={currentQ.imageUrl} 
+             alt="Question Asset" 
+             fill 
+             className="object-contain" 
+             priority={true}
+             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+           />
+        </div>
+      )}
+
+      {nextQ?.imageUrl && (
+        <div className="hidden">
+           <Image 
+             src={nextQ.imageUrl} 
+             alt="Preload next asset" 
+             width={10} 
+             height={10} 
+             priority={true} 
+           />
+        </div>
+      )}
+
+      <div className="flex flex-col gap-4">
+        {currentQ.options.map((option: string, idx: number) => (
+          <OptionButton
+            key={idx}
+            optionText={option}
+            optionId={idx}
+            questionId={currentQ.id}
+            isReviewMode={isReviewMode}
+          />
+        ))}
+      </div>
+      
+      <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-slate-300 p-4 flex items-center justify-between gap-4 flex-wrap shadow-[0_-4px_15px_rgba(0,0,0,0.05)] relative z-50 pointer-events-auto">
+         <div className="flex items-center gap-3">
+            <button 
+              onClick={() => { if(!isReviewMode) clearResponse(currentQ.id) }}
+              className="px-6 py-2.5 rounded-lg border border-slate-300 text-slate-600 font-bold hover:bg-slate-50 transition-colors text-sm"
+            >
+              Clear Response
+            </button>
+         </div>
+         <div className="flex items-center gap-3">
+            <button 
+              onClick={() => { if(!isReviewMode) markForReviewAndNext(currentQ.id, questions) }}
+              className="px-6 py-2.5 rounded-lg bg-white border-2 border-indigo-600 text-indigo-600 font-bold hover:bg-indigo-50 transition-colors text-sm shadow-sm"
+            >
+              Mark for Review & Next
+            </button>
+            <button 
+              onClick={() => { if(!isReviewMode) saveAndNext(currentQ.id, questions) }}
+              className="px-8 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition-all shadow-md active:scale-95 text-sm"
+            >
+              Save & Next
+            </button>
+         </div>
+      </div>
+    </div>
+  );
+});
+
+// --- Results View (Isolated) ---
+const ResultsView = memo(function ResultsView({ type, questions, scoringMap, isReviewMode, onExit, testNumber }: any) {
+  const router = useRouter();
+  const [archetype, setArchetype] = useState("Analytical & Technical");
+  const [showCreditModal, setShowCreditModal] = useState(false);
+  const [rankData, setRankData] = useState<{ rank?: number, percentile?: number, loading: boolean }>({ loading: true });
+
+  const { statuses, selectedAnswers } = useTestStore.getState();
+
+  const { completion, complete, isLoading: isAnalyzing, error: analysisError } = useCompletion({
+    api: '/api/coach',
+    onError: (err) => {
+      if (err.message.includes('INSUFFICIENT_CREDITS')) {
+        setShowCreditModal(true);
+      }
+    }
+  });
+
+  let correct = 0;
+  let incorrect = 0;
+  let unattempted = 0;
+
+  questions.forEach((q: any) => {
+    const status = statuses[q.id] || "unvisited";
+    const isConsidered = status === "answered" || status === "answered_and_marked";
+    
+    if (!isConsidered) {
+      unattempted++;
+    } else {
+      const selected = selectedAnswers[q.id];
+      if (selected === q.correctIndex) {
+        correct++;
+      } else {
+        incorrect++;
+      }
+    }
+  });
+
+  const finalMarksCorrect = scoringMap?.correct || 3;
+  const finalMarksIncorrect = scoringMap?.incorrect || -1;
+
+  const rawScore = (correct * finalMarksCorrect) + (incorrect * finalMarksIncorrect);
+  const score = rawScore.toFixed(2);
+  const maxScore = (questions.length * finalMarksCorrect).toFixed(2);
+  const accuracy = ((correct / (correct + incorrect || 1)) * 100).toFixed(1);
+
+  useEffect(() => {
+    async function fetchRank() {
+      if (!testNumber || isReviewMode) {
+        setRankData({ loading: false });
+        return;
+      }
+      const res = await getLeaderboardMetrics(type, testNumber, parseFloat(score));
+      if (res.success) {
+        setRankData({ rank: res.rank, percentile: res.percentile, loading: false });
+      } else {
+        setRankData({ loading: false });
+      }
+    }
+    fetchRank();
+  }, [type, testNumber, score, isReviewMode]);
+
+  const handleAnalyze = async (computedScore: number, computedMaxScore: number) => {
+    const incorrectSubjects = new Set<string>();
+    questions.forEach((q: any) => {
+      const status = statuses[q.id] || "unvisited";
+      const isConsidered = status === "answered" || status === "answered_and_marked";
+      if (isConsidered) {
+        const selected = selectedAnswers[q.id];
+        if (selected !== q.correctIndex) {
+          incorrectSubjects.add(q.subject || "General");
+        }
+      }
+    });
+
+    const subjectsContext = Array.from(incorrectSubjects).length > 0 
+      ? `They missed questions in the following subjects: ${Array.from(incorrectSubjects).join(", ")}.`
+      : `They scored a perfect test!`;
+
+    const prompt = `Analyze this test result. The student scored ${computedScore} out of ${computedMaxScore}. ${subjectsContext}\nThe student learns best via the "${archetype}" archetype.`;
+
+    await complete(prompt);
+  };
+
+  return (
+    <div className="fixed inset-0 z-[100] bg-slate-900 flex flex-col items-center justify-start pt-12 pb-24 px-6 text-white overflow-y-auto animate-fade-in print:static print:bg-white print:text-black print:h-auto print:overflow-visible print:p-0">
+      <div className="w-full max-w-2xl bg-slate-800 rounded-3xl p-8 shadow-2xl border border-slate-700 print:bg-transparent print:border-none print:shadow-none print:p-0 print:max-w-none">
+        <h2 className="text-3xl font-black text-center mb-2 print:text-black">{isReviewMode ? "Review Mode" : "Results Summary"}</h2>
+        <p className="text-slate-400 text-center mb-8 font-medium uppercase tracking-widest text-sm print:text-black">{type}</p>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <div className="bg-slate-700/50 p-4 rounded-2xl flex flex-col items-center border border-slate-600">
+            <span className="text-4xl font-black text-indigo-400 mb-1">{score}</span>
+            <span className="text-xs text-slate-400 uppercase tracking-wider font-bold mt-auto">Score / {maxScore}</span>
+          </div>
+          <div className="bg-slate-700/50 p-4 rounded-2xl flex flex-col items-center border border-slate-600">
+            <span className="text-4xl font-black text-emerald-400 mb-1">{accuracy}%</span>
+            <span className="text-xs text-slate-400 uppercase tracking-wider font-bold mt-auto">Accuracy</span>
+          </div>
+          <div className="bg-slate-700/50 p-4 rounded-2xl flex flex-col items-center border border-slate-600">
+            {rankData.loading ? (
+              <span className="text-sm font-bold text-slate-500 mb-1 mt-3 animate-pulse">Calculating...</span>
+            ) : rankData.rank ? (
+              <span className="text-4xl font-black text-amber-400 mb-1">#{rankData.rank}</span>
+            ) : (
+              <span className="text-sm font-bold text-slate-500 mb-1 mt-3">N/A</span>
+            )}
+            <span className="text-xs text-slate-400 uppercase tracking-wider font-bold mt-auto">Global Rank</span>
+          </div>
+          <div className="bg-slate-700/50 p-4 rounded-2xl flex flex-col items-center border border-slate-600">
+            {rankData.loading ? (
+              <span className="text-sm font-bold text-slate-500 mb-1 mt-3 animate-pulse">Calculating...</span>
+            ) : rankData.percentile ? (
+              <span className="text-4xl font-black text-sky-400 mb-1">{rankData.percentile}<span className="text-2xl">%</span></span>
+            ) : (
+              <span className="text-sm font-bold text-slate-500 mb-1 mt-3">N/A</span>
+            )}
+            <span className="text-xs text-slate-400 uppercase tracking-wider font-bold mt-auto">Percentile</span>
+          </div>
+        </div>
+
+        <div className="space-y-3 mb-8">
+          <div className="flex justify-between items-center text-sm font-medium bg-emerald-900/20 border border-emerald-900/30 p-3 rounded-xl text-emerald-400">
+            <span>Correct (+{finalMarksCorrect})</span>
+            <span className="font-bold text-lg">{correct}</span>
+          </div>
+          <div className="flex justify-between items-center text-sm font-medium bg-rose-900/20 border border-rose-900/30 p-3 rounded-xl text-rose-400">
+            <span>Incorrect ({finalMarksIncorrect})</span>
+            <span className="font-bold text-lg">{incorrect}</span>
+          </div>
+          <div className="flex justify-between items-center text-sm font-medium bg-slate-700/30 border border-slate-700/50 p-3 rounded-xl text-slate-400">
+            <span>Skipped / Unmarked</span>
+            <span className="font-bold text-lg">{unattempted}</span>
+          </div>
+        </div>
+
+        <div className="w-full bg-slate-700/30 border border-slate-700/50 rounded-2xl p-6 mb-8 print:hidden">
+          <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <span aria-hidden="true">🧠</span> AI Tactical Coach
+          </h3>
+          
+          {!completion && !isAnalyzing ? (
+            <div className="flex flex-col gap-4">
+              {analysisError && (
+                <div className="bg-red-900/20 border border-red-900/30 p-3 rounded-xl text-red-400 text-sm font-medium">
+                  {analysisError.message}
+                </div>
+              )}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Learning Archetype</label>
+                <select 
+                  value={archetype}
+                  onChange={(e) => setArchetype(e.target.value)}
+                  className="bg-slate-800 border border-slate-700 text-white rounded-xl p-3 focus:outline-none focus:border-indigo-500 transition-colors"
+                >
+                  <option value="Analytical & Technical">Analytical & Technical</option>
+                  <option value="Visual & Conceptual">Visual & Conceptual</option>
+                  <option value="Drill & Repetition">Drill & Repetition</option>
+                </select>
+              </div>
+              
+              <button 
+                onClick={() => handleAnalyze(parseFloat(score), parseFloat(maxScore))}
+                disabled={isAnalyzing}
+                className="w-full py-3 bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 hover:bg-indigo-600/30 hover:border-indigo-500/50 font-bold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                Analyze Performance (AI)
+              </button>
+            </div>
+          ) : (
+            <div className="bg-indigo-950/30 border border-indigo-500/20 p-5 rounded-xl text-indigo-100 text-sm leading-relaxed animate-fade-in shadow-inner prose prose-invert prose-sm prose-indigo prose-p:my-2 prose-headings:text-indigo-400 prose-headings:font-black prose-headings:tracking-widest prose-headings:uppercase prose-headings:text-sm prose-headings:border-b prose-headings:border-indigo-500/30 prose-headings:pb-2">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {completion}
+              </ReactMarkdown>
+              {isAnalyzing && (
+                <div className="flex items-center gap-1.5 mt-4">
+                  <span className="w-2 h-2 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <span className="w-2 h-2 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <span className="w-2 h-2 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="mb-8 w-full border-t border-slate-700 pt-8 print:border-none print:pt-4">
+          <h3 className="text-2xl font-black text-center mb-6 print:text-black">Mission Debriefing</h3>
+          <div className="flex flex-col gap-4">
+            {questions.map((q: any, idx: number) => {
+              const status = statuses[q.id] || "unvisited";
+              const isConsidered = status === "answered" || status === "answered_and_marked";
+              
+              let isCorrect = false;
+              let isUnattempted = true;
+              if (isConsidered) {
+                isCorrect = selectedAnswers[q.id] === q.correctIndex;
+                isUnattempted = false;
+              }
+              
+              return (
+                <div key={q.id} className={`p-5 rounded-2xl border transition-colors ${isCorrect ? 'bg-emerald-900/10 border-emerald-900/30 print:border-gray-300' : isUnattempted ? 'bg-slate-800/50 border-slate-700 print:border-gray-300' : 'bg-rose-900/10 border-rose-900/30 print:border-gray-300'}`}>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest print:text-black">Q{idx + 1} • {q.subject}</span>
+                    <span className={`text-xs font-bold px-2 py-1 rounded-md ${isCorrect ? 'bg-emerald-500/20 text-emerald-400 print:text-emerald-700' : isUnattempted ? 'bg-slate-700 text-slate-300 print:text-gray-600' : 'bg-rose-500/20 text-rose-400 print:text-rose-700'}`}>
+                      {isCorrect ? 'Correct' : isUnattempted ? 'Skipped/Unmarked' : 'Incorrect'}
+                    </span>
+                  </div>
+                  <p className="text-white text-sm mb-4 print:text-black">{q.text}</p>
+                  
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-start gap-2">
+                      <span className="text-xs font-bold text-slate-500 mt-0.5 print:text-black w-16 shrink-0">Your Ans:</span>
+                      <span className={`text-sm ${isCorrect ? 'text-emerald-400 font-semibold print:text-emerald-700' : isUnattempted ? 'text-slate-500 italic print:text-gray-500' : 'text-rose-400 font-semibold line-through print:text-rose-700'}`}>
+                        {isUnattempted ? 'None' : q.options[selectedAnswers[q.id]]}
+                      </span>
+                    </div>
+                    
+                    {!isCorrect && (
+                      <div className="flex items-start gap-2">
+                        <span className="text-xs font-bold text-emerald-500 mt-0.5 print:text-emerald-700 w-16 shrink-0">Correct:</span>
+                        <span className="text-sm text-emerald-400 font-semibold print:text-emerald-700">
+                          {q.options[q.correctIndex]}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <button onClick={onExit} className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-all shadow-lg active:scale-[0.98]">
+          Return to Dashboard
+        </button>
+      </div>
+      <CreditModal 
+        isOpen={showCreditModal} 
+        onClose={() => setShowCreditModal(false)} 
+      />
+    </div>
+  );
+});
+
+// --- Main CBT Engine ---
+
+interface TestRunnerProps {
+  type: "Mini-Test" | "Full Mock";
+  questions: Question[];
+  scoringMap: ScoringMap;
+  onExit: () => void;
+  attemptId?: string;
+  initialState?: any;
+  isReviewMode?: boolean;
+}
+
+export default function TestRunner({ type, questions, scoringMap, onExit, attemptId, initialState, isReviewMode }: TestRunnerProps) {
+  const isOnline = useNetworkStatus();
+  
+  const [isSubmitted, setIsSubmitted] = useState(isReviewMode || false);
+  
+  const timeRemainingRef = useRef<number>(initialState?.timeRemaining || (type === "Mini-Test" ? 15 * 60 : 120 * 60));
+  const testNumberRef = useRef<number | undefined>(initialState?.testNumber);
+  const syncBlockedUntilRef = useRef<number>(0);
+  
+  const answersRef = useRef({ currentQuestionIndex: 0, selectedAnswers: {}, statuses: {} });
+  const isSubmittedRef = useRef(isSubmitted);
+  
+  const [warningStrike, setWarningStrike] = useState<number | null>(null);
+
+  // Initialize Store exactly once when the component mounts
+  useEffect(() => {
+    let loadedState = initialState;
+    if (attemptId && !initialState) {
+      const storedStr = localStorage.getItem(`mock_attempt_${attemptId}`);
+      if (storedStr) {
+        try {
+          const stored = JSON.parse(storedStr);
+          loadedState = stored;
+          if (stored.timeRemaining) timeRemainingRef.current = stored.timeRemaining;
+          if (stored.testNumber) testNumberRef.current = stored.testNumber;
+        } catch (e) {
+          console.error("Failed to parse local storage", e);
+        }
+      }
+    }
+    useTestStore.getState().initialize(loadedState, questions[0]?.id);
+    
+    // Clear store on unmount to prevent state leaking between tests
+    return () => useTestStore.setState({ currentQuestionIndex: 0, selectedAnswers: {}, statuses: {} });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [attemptId, initialState, questions]);
+
+  const performSync = useCallback(async (payload: any, force = false) => {
+    if (!force && Date.now() < syncBlockedUntilRef.current) return;
+    
+    if (testNumberRef.current !== undefined) {
+      payload.test_number = testNumberRef.current;
+      payload.answers_state = { ...payload.answers_state, testNumber: testNumberRef.current };
+    }
+
+    try {
+      const res = await saveMockProgress(payload);
+      if (res.success && res.data?.test_number) {
+        testNumberRef.current = res.data.test_number;
+      } else if (!res.success) {
+        const code = res.code || '';
+        const msg = String(res.error || '');
+        if (code === '23502' || code === '23505' || msg.includes('500') || msg.includes('constraint')) {
+          syncBlockedUntilRef.current = Date.now() + 30000;
+        }
+      }
+    } catch (err) {
+      syncBlockedUntilRef.current = Date.now() + 30000;
+    }
+  }, []);
+
+  // Local Storage Auto-Save & Mirror Ref Sync (Decoupled Subscription)
+  useEffect(() => {
+    isSubmittedRef.current = isSubmitted;
+    if (isReviewMode) return;
+    
+    const unsubscribe = useTestStore.subscribe((state) => {
+      answersRef.current = {
+        currentQuestionIndex: state.currentQuestionIndex,
+        selectedAnswers: state.selectedAnswers,
+        statuses: state.statuses
+      };
+      
+      if (isSubmittedRef.current || !attemptId) return;
+      
+      const payload = {
+        currentQuestionIndex: state.currentQuestionIndex,
+        selectedAnswers: state.selectedAnswers,
+        statuses: state.statuses,
+        timeRemaining: timeRemainingRef.current,
+        testNumber: testNumberRef.current
+      };
+      localStorage.setItem(`mock_attempt_${attemptId}`, JSON.stringify(payload));
+    });
+
+    return unsubscribe;
+  }, [attemptId, isReviewMode, isSubmitted]);
+
+  // Decoupled Network Thread (Dual-State Architecture)
+  useEffect(() => {
+    if (isReviewMode || !attemptId) return;
+
+    const syncToCloud = async () => {
+      // Read directly from navigator and refs to avoid stale closures and UI glitching
+      if (!navigator.onLine || isSubmittedRef.current) return;
+      
+      const payload = {
+        id: attemptId,
+        exam_target: type,
+        status: 'in_progress',
+        time_remaining: timeRemainingRef.current,
+        answers_state: { 
+          currentQuestionIndex: answersRef.current.currentQuestionIndex, 
+          selectedAnswers: answersRef.current.selectedAnswers, 
+          statuses: answersRef.current.statuses, 
+          questions, 
+          scoringMap 
+        }
+      };
+      await performSync(payload);
+    };
+
+    const interval = setInterval(syncToCloud, 60000); // 60 seconds
+    window.addEventListener('online', syncToCloud);
+    
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('online', syncToCloud);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleSubmit = useCallback(async () => {
+    setIsSubmitted(true);
+    isSubmittedRef.current = true;
+    setWarningStrike(null); // Clear any pending warnings
+    
+    const state = useTestStore.getState();
+    const { statuses, selectedAnswers, currentQuestionIndex } = state;
+    
+    let correct = 0;
+    let incorrect = 0;
+    questions.forEach((q) => {
+      const status = statuses[q.id] || "unvisited";
+      const isConsidered = status === "answered" || status === "answered_and_marked";
+      if (isConsidered) {
+        if (selectedAnswers[q.id] === q.correctIndex) {
+          correct++;
+        } else {
+          incorrect++;
+        }
+      }
+    });
+    
+    const finalMarksCorrect = scoringMap?.correct || 3;
+    const finalMarksIncorrect = scoringMap?.incorrect || -1;
+    const rawScore = (correct * finalMarksCorrect) + (incorrect * finalMarksIncorrect);
+
+    if (attemptId && navigator.onLine) {
+       await performSync({
+        id: attemptId,
+        exam_target: type,
+        status: 'completed',
+        score: rawScore,
+        time_remaining: timeRemainingRef.current,
+        answers_state: { currentQuestionIndex, selectedAnswers, statuses, questions, scoringMap }
+      }, true);
+      localStorage.removeItem(`mock_attempt_${attemptId}`);
+    }
+  }, [attemptId, questions, type, scoringMap, performSync]);
+
+  useAntiCheat({
+    onForceSubmit: handleSubmit,
+    onWarning: setWarningStrike,
+    isActive: !isReviewMode && !isSubmitted
+  });
+
+  const handleTick = useCallback((s: number) => { timeRemainingRef.current = s; }, []);
+
+  if (isSubmitted) {
+    return <ResultsView type={type} questions={questions} scoringMap={scoringMap} isReviewMode={isReviewMode} onExit={onExit} testNumber={testNumberRef.current} />;
+  }
+
+  // Active Test UI - AFCAT CBT Style
+  return (
+    <div className="fixed inset-0 z-[100] bg-slate-100 flex flex-col print:static print:bg-white print:text-black print:h-auto print:overflow-visible text-slate-900 pointer-events-none">
+      
+      {/* Anti-Cheat Warning Modal */}
+      {warningStrike !== null && (
+        <div className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in pointer-events-auto">
+          <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl text-center border-t-4 border-red-500">
+            <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            </div>
+            <h3 className="text-2xl font-black text-slate-900 mb-2">Security Violation</h3>
+            <p className="text-slate-600 mb-6 font-medium">Please do not switch tabs, copy text, or right-click. Repeated violations will result in automatic submission.</p>
+            <div className="bg-red-50 text-red-700 font-bold py-2 px-4 rounded-lg mb-6">
+              Strike {warningStrike} / 3
+            </div>
+            <button onClick={() => setWarningStrike(null)} className="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-all shadow-md active:scale-95">
+              I Understand
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Top Bar */}
+      <div className="bg-white border-b border-slate-300 px-6 py-4 flex items-center justify-between shadow-sm pointer-events-auto">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg">
+            <span className="text-xl" aria-hidden="true">{type === "Mini-Test" ? "⚡" : "🎯"}</span>
+          </div>
+          <div>
+            <h1 className="text-slate-900 font-black text-lg leading-tight">{type}</h1>
+            <p className="text-slate-500 text-xs font-semibold uppercase tracking-widest">AFCAT CBT Portal</p>
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-6">
+          <div className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2 ${isOnline ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700 animate-pulse'}`}>
+            <span className={`w-2 h-2 rounded-full ${isOnline ? 'bg-emerald-500' : 'bg-red-500'}`}></span>
+            {isOnline ? 'Online' : 'Offline (Reconnecting...)'}
+          </div>
+          <MemoizedTimer 
+            initialSeconds={timeRemainingRef.current} 
+            onTick={handleTick}
+            onTimeUp={handleSubmit}
+          />
+          
+          <div className="hidden md:flex items-center gap-3 border-l border-slate-300 pl-6">
+            <div className="text-right">
+              <p className="text-xs text-slate-500 font-bold uppercase">Candidate Profile</p>
+              <p className="text-sm font-black text-slate-900">DEF-PILOT-01</p>
+            </div>
+            <div className="w-10 h-10 rounded-full bg-slate-300 flex items-center justify-center overflow-hidden">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-500"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Body */}
+      <div className="flex-1 overflow-hidden flex flex-col md:flex-row max-w-[1600px] mx-auto w-full">
+        
+        {/* Left Column - Active Question */}
+        <div className="flex-1 flex flex-col bg-white md:border-r border-slate-300 relative pointer-events-auto">
+          <ActiveQuestionView questions={questions} isReviewMode={isReviewMode || false} />
+        </div>
+
+        {/* Right Column - Question Palette */}
+        <div className="w-full md:w-[320px] lg:w-[380px] bg-slate-50 flex flex-col border-t md:border-t-0 md:border-l border-slate-300 flex-shrink-0 relative z-50 pointer-events-auto">
+          
+          <div className="p-4 border-b border-slate-300 bg-white">
+            <h3 className="font-bold text-slate-800 mb-3 text-sm uppercase tracking-wider flex justify-between">
+              <span>Legend</span>
+              <PaletteLegend questions={questions} />
+            </h3>
+            <div className="grid grid-cols-2 gap-y-3 gap-x-2 text-xs font-semibold text-slate-600">
+              <div className="flex items-center gap-2">
+                 <div className="w-6 h-6 rounded bg-slate-200 border border-slate-300 flex items-center justify-center text-slate-700">1</div>
+                 <span>Unvisited</span>
+              </div>
+              <div className="flex items-center gap-2">
+                 <div className="w-6 h-6 bg-red-500 text-white flex items-center justify-center rounded-t-md">2</div>
+                 <span>Unanswered</span>
+              </div>
+              <div className="flex items-center gap-2">
+                 <div className="w-6 h-6 bg-green-600 text-white flex items-center justify-center rounded-b-md">3</div>
+                 <span>Answered</span>
+              </div>
+              <div className="flex items-center gap-2">
+                 <div className="w-6 h-6 bg-purple-600 text-white flex items-center justify-center rounded-full">4</div>
+                 <span>Marked</span>
+              </div>
+              <div className="flex items-center gap-2 col-span-2">
+                 <div className="w-6 h-6 bg-purple-600 text-white flex items-center justify-center rounded-full relative">
+                    5
+                    <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-[1.5px] border-white"></div>
+                 </div>
+                 <span>Answered & Marked</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-4 bg-slate-100">
+             <h3 className="font-bold text-slate-800 mb-4 text-sm uppercase tracking-wider">Question Palette</h3>
+             <div className="grid grid-cols-5 gap-3">
+               {questions.map((q, index) => (
+                 <PaletteButton
+                   key={q.id}
+                   index={index}
+                   questionId={q.id}
+                   questionNumber={index + 1}
+                   isReviewMode={isReviewMode || false}
+                   questions={questions}
+                 />
+               ))}
+             </div>
+          </div>
+
+          <div className="p-4 bg-white border-t border-slate-300">
+            <button 
+              onClick={handleSubmit} 
+              className="w-full py-3 bg-slate-800 hover:bg-slate-900 text-white font-black rounded-lg transition-all shadow-md active:scale-95 flex items-center justify-center gap-2"
+            >
+              Submit Exam
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}

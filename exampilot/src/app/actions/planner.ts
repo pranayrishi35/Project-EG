@@ -2,6 +2,7 @@
 
 import { GoogleGenerativeAI, Part } from "@google/generative-ai";
 import { createClient } from "@/utils/supabase/server";
+import { checkAndDeductCredits } from "@/lib/creditManager";
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -23,7 +24,7 @@ export interface GeneratedPlan {
 
 export type GeneratePlanResult =
   | { success: true; planId: string }
-  | { success: false; error: string };
+  | { success: false; error: string; message?: string };
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -127,8 +128,9 @@ export async function generateStudyPlan(
   const examDate = (formData.get("examDate") as string | null)?.trim();
   const syllabusFile = formData.get("syllabusFile") as File | null;
 
-  if (!examName || examName.length < 2) {
-    return { success: false, error: "Please enter a valid exam name." };
+  const validExams = ["AFCAT", "NDA", "CDS"];
+  if (!examName || !validExams.includes(examName)) {
+    return { success: false, error: "Please select a valid Indian Defense exam (AFCAT, NDA, or CDS)." };
   }
   if (!examDate) {
     return { success: false, error: "Please select a valid exam date." };
@@ -148,6 +150,13 @@ export async function generateStudyPlan(
     };
   }
 
+  // ── 2.5 Enforce Credits ────────────────────────────────────────────────────
+  const creditCheck = await checkAndDeductCredits(user.id, user.email, 1);
+  console.log("Credit check returned:", creditCheck);
+  if (!creditCheck.success) {
+    return { success: false, error: creditCheck.error || "INSUFFICIENT_CREDITS" };
+  }
+
   // ── 3. Prepare Gemini client ────────────────────────────────────────────────
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
@@ -159,7 +168,7 @@ export async function generateStudyPlan(
 
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({
-    model: "gemini-2.5-flash",
+    model: "gemini-3.1-flash-lite",
     generationConfig: {
       // Force strict JSON output — no markdown wrapping
       responseMimeType: "application/json",
@@ -214,11 +223,10 @@ export async function generateStudyPlan(
     }
   } catch (geminiError: unknown) {
     console.error("[generateStudyPlan] Gemini error:", geminiError);
-    const message =
-      geminiError instanceof Error ? geminiError.message : "Unknown error";
     return {
       success: false,
-      error: `AI generation failed: ${message}. Please try again.`,
+      error: 'AI_SERVICE_UNAVAILABLE',
+      message: 'The AI service is currently busy. Please try again in a few moments.'
     };
   }
 

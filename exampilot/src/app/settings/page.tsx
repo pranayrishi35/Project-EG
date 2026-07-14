@@ -1,6 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import SignOutButton from "@/components/SignOutButton";
 import type { Metadata } from "next";
 
@@ -112,9 +113,12 @@ export default async function SettingsPage() {
         {/* Avatar */}
         {avatarUrl ? (
           /* eslint-disable-next-line @next/next/no-img-element */
-          <img
+          <Image
             src={avatarUrl}
             alt={fullName ?? email}
+            width={80}
+            height={80}
+            priority={true}
             className="relative w-20 h-20 rounded-full object-cover border-4 border-white/30 shadow-xl"
           />
         ) : (
@@ -161,7 +165,6 @@ export default async function SettingsPage() {
       {/* ── App info ──────────────────────────────────────────────────── */}
       <Section title="App">
         <InfoRow label="Version" value="1.0.0" />
-        <InfoRow label="AI Model" value="Gemini 1.5 Flash" />
         <div className="flex items-center justify-between px-4 py-3.5">
           <span className="text-sm text-gray-500">Study Plans</span>
           <Link

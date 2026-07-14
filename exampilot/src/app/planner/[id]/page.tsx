@@ -1,6 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
+import dynamic from "next/dynamic";
 import { notFound, redirect } from "next/navigation";
-import PlanViewer from "@/components/PlanViewer";
+const PlanViewer = dynamic(() => import("@/components/PlanViewer"), { ssr: false });
 import type { ExtendedPlan } from "@/app/actions/toggleTopic";
 import type { Metadata } from "next";
 

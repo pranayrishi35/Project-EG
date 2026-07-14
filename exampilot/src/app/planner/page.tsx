@@ -49,31 +49,35 @@ function EmptyState() {
         style={{ background: "linear-gradient(135deg, #EEF2FF 0%, #F5F3FF 100%)" }}
         aria-hidden="true"
       >
-        {/* Compass SVG */}
+        {/* Calendar SVG */}
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="44"
           height="44"
           viewBox="0 0 24 24"
           fill="none"
-          stroke="url(#compassGrad)"
+          stroke="url(#calendarGrad)"
           strokeWidth="1.5"
           strokeLinecap="round"
           strokeLinejoin="round"
           aria-hidden="true"
         >
           <defs>
-            <linearGradient id="compassGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <linearGradient id="calendarGrad" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#4F46E5" />
               <stop offset="100%" stopColor="#7C3AED" />
             </linearGradient>
           </defs>
-          <circle cx="12" cy="12" r="10" />
-          <polygon
-            points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"
-            fill="url(#compassGrad)"
-            stroke="none"
-          />
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+          <line x1="16" y1="2" x2="16" y2="6" />
+          <line x1="8" y1="2" x2="8" y2="6" />
+          <line x1="3" y1="10" x2="21" y2="10" />
+          <path d="M8 14h.01" />
+          <path d="M12 14h.01" />
+          <path d="M16 14h.01" />
+          <path d="M8 18h.01" />
+          <path d="M12 18h.01" />
+          <path d="M16 18h.01" />
         </svg>
       </div>
 
@@ -92,13 +96,13 @@ function EmptyState() {
       <Link
         href="/"
         id="launch-first-pilot-btn"
-        className="inline-flex items-center gap-2.5 rounded-2xl px-7 py-4 text-sm font-bold text-white transition-all duration-200 hover:opacity-90 hover:-translate-y-0.5 active:scale-[0.98] shadow-lg"
+        className="inline-flex items-center gap-2.5 rounded-2xl px-7 py-4 text-sm font-bold text-white transition-all duration-200 hover:opacity-90 hover:-translate-y-0.5 active:scale-[0.98] shadow-lg animate-pulse hover:animate-none"
         style={{
           background: "linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)",
           boxShadow: "0 4px 24px rgba(79, 70, 229, 0.35)",
         }}
       >
-        {/* Rocket icon */}
+        {/* Plus icon */}
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="18"
@@ -106,17 +110,15 @@ function EmptyState() {
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
-          strokeWidth="2"
+          strokeWidth="2.5"
           strokeLinecap="round"
           strokeLinejoin="round"
           aria-hidden="true"
         >
-          <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
-          <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
-          <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
-          <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
         </svg>
-        Launch Your First Pilot
+        Create Your First Mission
       </Link>
 
       {/* Trust signal */}
@@ -145,14 +147,13 @@ function PlanCard({ plan }: { plan: PlanSummary }) {
   return (
     // Outer wrapper: relative so the delete button can be absolutely positioned
     <div className="relative group">
-      {/* Main card link */}
       <Link
         href={`/planner/${plan.id}`}
         className="block bg-white rounded-2xl border border-gray-100 shadow-sm p-5 transition-all duration-200 hover:shadow-md hover:border-indigo-100 active:scale-[0.99]"
       >
         {/* Header */}
-        <div className="flex items-start justify-between gap-3 mb-3">
-          <div className="flex-1 min-w-0 pr-8">{/* pr-8 reserves space for delete btn */}
+        <div className="flex items-start justify-between mb-4 pr-12">
+          <div className="flex-1 min-w-0">
             <h2 className="text-base font-bold text-gray-900 truncate">
               {plan.exam_name}
             </h2>
@@ -197,7 +198,7 @@ function PlanCard({ plan }: { plan: PlanSummary }) {
       </Link>
 
       {/* Delete button — absolutely positioned top-right, outside the Link */}
-      <div className="absolute top-3 right-3">
+      <div className="absolute top-2 right-2 z-10">
         <DeletePlanButton planId={plan.id} planName={plan.exam_name} />
       </div>
     </div>
@@ -225,7 +226,7 @@ export default async function PlannerPage() {
   const hasPlanss = !error && plans && plans.length > 0;
 
   return (
-    <div className="flex flex-col gap-4 p-4 pt-6 pb-24">
+    <div className="flex flex-col gap-6 p-4 pt-6 pb-24 max-w-5xl mx-auto">
 
       {/* Header row */}
       <div className="flex items-center justify-between">
@@ -238,12 +239,19 @@ export default async function PlannerPage() {
         <Link
           href="/"
           id="new-plan-btn"
-          className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold text-white transition-all duration-150 hover:opacity-90 active:scale-95"
-          style={{ background: "linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)" }}
-          aria-label="Create a new study plan"
+          className="flex items-center gap-2 rounded-2xl px-5 py-3 min-h-[48px] text-sm font-bold text-white transition-all duration-200 hover:opacity-90 hover:-translate-y-0.5 active:scale-95 shadow-md hover:shadow-lg"
+          style={{ 
+            background: "linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)",
+            boxShadow: "0 4px 14px rgba(79, 70, 229, 0.25)"
+          }}
+          aria-label="Create a new mission plan"
         >
-          <span aria-hidden="true">＋</span>
-          New
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          <span className="hidden sm:inline">Create New Mission</span>
+          <span className="sm:hidden">New Mission</span>
         </Link>
       </div>
 

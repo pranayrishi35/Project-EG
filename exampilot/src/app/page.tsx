@@ -1,8 +1,14 @@
 import { getStreak } from "@/app/actions/getStreak";
-import CreatePlanForm from "@/components/CreatePlanForm";
+import dynamic from "next/dynamic";
 import type { Metadata } from "next";
 import { createClient } from "@/utils/supabase/server";
 import Link from "next/link";
+import { Suspense } from "react";
+
+const CreatePlanForm = dynamic(() => import("@/components/CreatePlanForm"), {
+  ssr: false,
+  loading: () => <div className="h-[300px] w-full bg-gray-50 rounded-2xl animate-pulse" />
+});
 
 export const metadata: Metadata = {
   title: "ExamPilot — AI Study Planner",
@@ -10,15 +16,44 @@ export const metadata: Metadata = {
     "Upload your syllabus and get a personalised day-by-day study schedule powered by Gemini AI.",
 };
 
-export default async function HomePage() {
-  const streak = await getStreak();
-  const supabase = createClient();
-  
-  const { data: authData } = await supabase.auth.getUser();
-  const user = authData?.user;
-  const firstName = user?.user_metadata?.full_name?.split(" ")[0] || "Pilot";
+// --- Isolated Data Loaders ---
 
-  // Fetch recent plans
+async function StreakLoader() {
+  const streak = await getStreak();
+  
+  if (streak === 0) return null;
+  
+  return (
+    <div
+      className="flex items-center gap-2 bg-indigo-50 border border-indigo-100 rounded-xl px-3 py-2 shadow-sm animate-fade-in"
+      aria-label={`${streak} day study streak`}
+    >
+      <span className="text-xl leading-none" aria-hidden="true">🔥</span>
+      <div className="flex items-baseline gap-1">
+        <span
+          className="text-xl font-black leading-none tabular-nums"
+          style={{
+            background: "linear-gradient(135deg, #F59E0B 0%, #EA580C 100%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+          }}
+        >
+          {streak}
+        </span>
+        <span className="text-xs font-bold text-orange-600 uppercase tracking-wider">
+          Day Streak
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function StreakSkeleton() {
+  return <div className="w-[120px] h-[44px] bg-gray-100 rounded-xl animate-pulse" />;
+}
+
+async function RecentPlansLoader() {
+  const supabase = createClient();
   const { data: recentPlans } = await supabase
     .from("study_plans")
     .select("id, exam_name, exam_date, generated_plan")
@@ -27,10 +62,78 @@ export default async function HomePage() {
 
   const plans = recentPlans || [];
 
+  if (plans.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-10 text-center flex-1 bg-gray-50/50 rounded-2xl border border-dashed border-gray-200 animate-fade-in">
+        <span className="text-4xl mb-4 opacity-50" aria-hidden="true">🛫</span>
+        <p className="text-base font-bold text-gray-700">No active plans</p>
+        <p className="text-sm text-gray-500 mt-1 max-w-sm">Generate your first study plan below to get your personalized daily mission targets.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
+      {plans.map((plan) => {
+        const weeks = plan.generated_plan?.weeks || [];
+        const totalTopics = weeks.reduce((acc: number, w: { days: { topics: unknown[] }[] }) => acc + w.days.reduce((a: number, d: { topics: unknown[] }) => a + d.topics.length, 0), 0);
+        const completed = plan.generated_plan?.completed_topics?.length || 0;
+        const progress = totalTopics > 0 ? Math.round((completed / totalTopics) * 100) : 0;
+
+        return (
+          <Link
+            key={plan.id}
+            href={`/planner/${plan.id}`}
+            className="group flex flex-col gap-3 p-5 rounded-2xl border border-gray-100 hover:border-indigo-300 hover:bg-indigo-50/30 transition-all active:scale-[0.98] shadow-sm hover:shadow-md"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-base font-black text-gray-900 truncate group-hover:text-indigo-600 transition-colors">
+                  {plan.exam_name}
+                </p>
+                <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mt-1">
+                  {new Date(plan.exam_date).toLocaleDateString("en-IN", { day: 'numeric', month: 'short', year: 'numeric' })}
+                </p>
+              </div>
+              <span className="flex-shrink-0 text-sm font-black text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-xl border border-indigo-100">
+                {progress}%
+              </span>
+            </div>
+            <div className="w-full bg-gray-100 rounded-full h-2 mt-2 overflow-hidden">
+              <div
+                className="bg-indigo-500 h-2 rounded-full transition-all duration-500"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          </Link>
+        );
+      })}
+    </div>
+  );
+}
+
+function PlanCardSkeleton() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="h-[108px] bg-gray-50 rounded-2xl border border-gray-100 animate-pulse" />
+      <div className="h-[108px] bg-gray-50 rounded-2xl border border-gray-100 animate-pulse" />
+    </div>
+  );
+}
+
+// --- Main Page Component ---
+
+export default async function HomePage() {
+  // We still await user auth here to get the firstName, but this is fast.
+  const supabase = createClient();
+  const { data: authData } = await supabase.auth.getUser();
+  const user = authData?.user;
+  const firstName = user?.user_metadata?.full_name?.split(" ")[0] || "Pilot";
+
   return (
     <div className="flex flex-col gap-6 p-4 pt-6 pb-24 max-w-5xl mx-auto">
       {/* ── Top Header ── */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between min-h-[60px]">
         <div>
           <h1 className="text-2xl font-black text-gray-900 tracking-tight">
             Welcome Back, {firstName}
@@ -39,134 +142,77 @@ export default async function HomePage() {
             Ready to crush your next exam?
           </p>
         </div>
-        {streak > 0 && (
-          <div
-            className="flex items-center gap-2 bg-indigo-50 border border-indigo-100 rounded-xl px-3 py-2 shadow-sm"
-            aria-label={`${streak} day study streak`}
-          >
-            <span className="text-xl leading-none" aria-hidden="true">🔥</span>
-            <div className="flex items-baseline gap-1">
-              <span
-                className="text-xl font-black leading-none tabular-nums"
-                style={{
-                  background: "linear-gradient(135deg, #F59E0B 0%, #EA580C 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                }}
-              >
-                {streak}
-              </span>
-              <span className="text-xs font-bold text-orange-600 uppercase tracking-wider">
-                Day Streak
-              </span>
-            </div>
-          </div>
-        )}
+        <Suspense fallback={<StreakSkeleton />}>
+          <StreakLoader />
+        </Suspense>
       </div>
 
-      {/* ── Bento Grid ── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Left Column: Core Engine (Create Form) */}
-        <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5 md:p-6 flex flex-col h-full">
-          <div className="mb-5">
-            <h2 className="text-lg font-black text-gray-800">Create Study Plan</h2>
-            <p className="text-xs text-gray-400 font-medium mt-0.5">Powered by Gemini AI</p>
+      {/* ── Hub Navigation Cards ── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <Link
+          href="/planner"
+          className="group flex flex-col items-center text-center gap-2 p-5 rounded-3xl bg-indigo-50 border border-indigo-100 hover:border-indigo-300 hover:shadow-md transition-all active:scale-[0.98] min-h-[120px]"
+        >
+          <span className="w-12 h-12 rounded-xl bg-white flex items-center justify-center text-2xl shadow-sm group-hover:scale-110 transition-transform">📚</span>
+          <span className="text-sm font-black text-indigo-900 tracking-tight">Planner</span>
+        </Link>
+        <Link
+          href="/practice"
+          className="group flex flex-col items-center text-center gap-2 p-5 rounded-3xl bg-emerald-50 border border-emerald-100 hover:border-emerald-300 hover:shadow-md transition-all active:scale-[0.98] min-h-[120px]"
+        >
+          <span className="w-12 h-12 rounded-xl bg-white flex items-center justify-center text-2xl shadow-sm group-hover:scale-110 transition-transform">🎯</span>
+          <span className="text-sm font-black text-emerald-900 tracking-tight">Practice</span>
+        </Link>
+        <Link
+          href="/news"
+          className="group flex flex-col items-center text-center gap-2 p-5 rounded-3xl bg-sky-50 border border-sky-100 hover:border-sky-300 hover:shadow-md transition-all active:scale-[0.98] min-h-[120px]"
+        >
+          <span className="w-12 h-12 rounded-xl bg-white flex items-center justify-center text-2xl shadow-sm group-hover:scale-110 transition-transform">📰</span>
+          <span className="text-sm font-black text-sky-900 tracking-tight">News</span>
+        </Link>
+        <Link
+          href="/booklets"
+          className="group flex flex-col items-center text-center gap-2 p-5 rounded-3xl bg-amber-50 border border-amber-100 hover:border-amber-300 hover:shadow-md transition-all active:scale-[0.98] min-h-[120px]"
+        >
+          <span className="w-12 h-12 rounded-xl bg-white flex items-center justify-center text-2xl shadow-sm group-hover:scale-110 transition-transform">📖</span>
+          <span className="text-sm font-black text-amber-900 tracking-tight">Booklets</span>
+        </Link>
+      </div>
+
+      {/* ── Main Content Area ── */}
+      <div className="flex flex-col gap-8 mt-2">
+        
+        {/* Top Section: Recent Active Pilots */}
+        <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 md:p-8 flex flex-col min-h-[220px]">
+          <h2 className="text-sm font-black uppercase tracking-widest text-indigo-500 mb-6">
+            Recent Active Pilots
+          </h2>
+          <Suspense fallback={<PlanCardSkeleton />}>
+            <RecentPlansLoader />
+          </Suspense>
+        </div>
+
+        {/* Bottom Section: Core Engine (Create Form) */}
+        <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 md:p-8 flex flex-col">
+          <div className="mb-6 border-b border-gray-100 pb-4">
+            <h2 className="text-xl font-black text-gray-900 tracking-tight">Generate Study Plan</h2>
+            <p className="text-sm text-gray-500 font-medium mt-1">Powered by Gemini AI — tailored to your exact syllabus.</p>
           </div>
           <div className="flex-1">
-            <CreatePlanForm streak={streak} compact />
+            {/* The streak prop is still needed by CreatePlanForm, wait! */}
+            <Suspense fallback={<div className="h-[300px] w-full bg-gray-50 rounded-2xl animate-pulse" />}>
+              <CreatePlanFormWrapper />
+            </Suspense>
           </div>
         </div>
 
-        {/* Right Column: Quick Actions & Recent */}
-        <div className="flex flex-col gap-6">
-          {/* Quick Actions (2x2 Grid) */}
-          <div className="grid grid-cols-2 gap-3">
-            <Link
-              href="/planner"
-              className="group flex flex-col gap-2 p-4 rounded-2xl bg-indigo-50 border border-indigo-100 hover:border-indigo-300 hover:bg-indigo-100/50 transition-all active:scale-[0.98]"
-            >
-              <span className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-xl shadow-sm group-hover:scale-110 transition-transform">📚</span>
-              <span className="text-sm font-bold text-indigo-900">My Planner</span>
-            </Link>
-            
-            <Link
-              href={plans.length > 0 ? `/planner/${plans[0].id}?tab=mocks` : "/planner"}
-              className="group flex flex-col gap-2 p-4 rounded-2xl bg-emerald-50 border border-emerald-100 hover:border-emerald-300 hover:bg-emerald-100/50 transition-all active:scale-[0.98]"
-            >
-              <span className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-xl shadow-sm group-hover:scale-110 transition-transform">🎯</span>
-              <span className="text-sm font-bold text-emerald-900 leading-tight">Mock Test Analytics</span>
-            </Link>
-
-            <div
-              className="relative overflow-hidden flex flex-col gap-2 p-4 rounded-2xl bg-gray-50 border border-gray-200 opacity-80"
-            >
-              <span className="absolute top-3 right-3 text-[9px] font-black uppercase tracking-wider bg-rose-100 text-rose-600 px-1.5 py-0.5 rounded-md">Coming Soon</span>
-              <span className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-xl shadow-sm grayscale opacity-50">⚡</span>
-              <span className="text-sm font-bold text-gray-700">Daily Flashcards</span>
-            </div>
-
-            <Link
-              href="/settings"
-              className="group flex flex-col gap-2 p-4 rounded-2xl bg-slate-50 border border-slate-200 hover:border-slate-300 hover:bg-slate-100 transition-all active:scale-[0.98]"
-            >
-              <span className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-xl shadow-sm group-hover:scale-110 transition-transform">⚙️</span>
-              <span className="text-sm font-bold text-slate-700">Settings</span>
-            </Link>
-          </div>
-
-          {/* Recent Active Pilots */}
-          <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5 md:p-6 flex-1">
-            <h2 className="text-sm font-black uppercase tracking-widest text-indigo-500 mb-4">
-              Recent Active Pilots
-            </h2>
-            
-            {plans.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-6 text-center">
-                <span className="text-3xl mb-2 opacity-50" aria-hidden="true">🛫</span>
-                <p className="text-sm font-bold text-gray-500">No active plans</p>
-                <p className="text-xs text-gray-400 mt-1">Generate a plan to see it here.</p>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-3">
-                {plans.map((plan) => {
-                  const weeks = plan.generated_plan?.weeks || [];
-                  const totalTopics = weeks.reduce((acc: number, w: { days: { topics: unknown[] }[] }) => acc + w.days.reduce((a: number, d: { topics: unknown[] }) => a + d.topics.length, 0), 0);
-                  const completed = plan.generated_plan?.completed_topics?.length || 0;
-                  const progress = totalTopics > 0 ? Math.round((completed / totalTopics) * 100) : 0;
-
-                  return (
-                    <Link
-                      key={plan.id}
-                      href={`/planner/${plan.id}`}
-                      className="group flex flex-col gap-2 p-3 rounded-2xl border border-gray-100 hover:border-indigo-300 hover:bg-indigo-50/30 transition-all active:scale-[0.98]"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className="text-sm font-bold text-gray-900 truncate group-hover:text-indigo-600 transition-colors">
-                            {plan.exam_name}
-                          </p>
-                          <p className="text-xs text-gray-500 font-medium truncate mt-0.5">
-                            {new Date(plan.exam_date).toLocaleDateString("en-IN", { day: 'numeric', month: 'short', year: 'numeric' })}
-                          </p>
-                        </div>
-                        <span className="flex-shrink-0 text-xs font-black text-indigo-600 bg-indigo-50 px-2 py-1 rounded-lg">
-                          {progress}%
-                        </span>
-                      </div>
-                      <div className="w-full bg-gray-100 rounded-full h-1.5 mt-1">
-                        <div
-                          className="bg-indigo-500 h-1.5 rounded-full transition-all"
-                          style={{ width: `${progress}%` }}
-                        />
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </div>
       </div>
     </div>
   );
+}
+
+// Helper to fetch streak and render form so we don't block the page for it either
+async function CreatePlanFormWrapper() {
+  const streak = await getStreak();
+  return <CreatePlanForm streak={streak} compact />;
 }

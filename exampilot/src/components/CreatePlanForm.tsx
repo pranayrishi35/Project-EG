@@ -10,6 +10,7 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import { generateStudyPlan } from "@/app/actions/planner";
+import CreditModal from "./CreditModal";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface UploadedFile {
@@ -113,6 +114,7 @@ export default function CreatePlanForm({ streak, compact = false }: { streak: nu
   const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null);
   const [dragError, setDragError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [showCreditModal, setShowCreditModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -137,7 +139,23 @@ export default function CreatePlanForm({ streak, compact = false }: { streak: nu
 
     startTransition(async () => {
       const result = await generateStudyPlan(formData);
-      if (!result.success) { setSubmitError(result.error); return; }
+      console.log("Server Action Raw Payload:", result);
+      if (!result.success) { 
+        if (result && typeof result.error === 'string' && result.error.includes('INSUFFICIENT_CREDITS')) {
+          console.log("Intercepted Insufficient Credits! Triggering Modal.");
+          setSubmitError(""); // Clear the red banner
+          setShowCreditModal(true); // Show the premium modal
+          return;
+        } else if (result.error === 'AI_SERVICE_UNAVAILABLE' && 'message' in result) {
+          setSubmitError(result.message as string);
+        } else {
+          setSubmitError(result.error); 
+        }
+        return; 
+      }
+      
+      // Refresh the router to update the server-rendered Header credit badge
+      router.refresh();
       router.push(`/planner/${result.planId}`);
     });
   }
@@ -169,10 +187,18 @@ export default function CreatePlanForm({ streak, compact = false }: { streak: nu
         {/* Exam Name */}
         <div id="exam-name-section" className="flex flex-col gap-1.5">
           <label htmlFor="exam-name" className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
-            <span className="text-base" aria-hidden="true">🎯</span> Exam Name
+            <span className="text-base" aria-hidden="true">🎯</span> Target Exam
           </label>
           <div className="relative">
-            <input id="exam-name" name="examName" type="text" placeholder="e.g. JEE Mains, NEET, Semester 4…" autoComplete="off" required disabled={isPending} className="ep-input peer disabled:opacity-60 disabled:cursor-not-allowed" aria-required="true" />
+            <select id="exam-name" name="examName" required disabled={isPending} defaultValue="" className="ep-input peer disabled:opacity-60 disabled:cursor-not-allowed appearance-none bg-white" aria-required="true">
+              <option value="" disabled>Select your Target Exam</option>
+              <option value="AFCAT">AFCAT</option>
+              <option value="NDA">NDA</option>
+              <option value="CDS">CDS</option>
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+            </div>
             <div className="pointer-events-none absolute inset-0 rounded-xl ring-0 peer-focus:ring-2 ring-indigo-400 transition-all duration-200" aria-hidden="true" />
           </div>
         </div>
@@ -266,6 +292,11 @@ export default function CreatePlanForm({ streak, compact = false }: { streak: nu
         {isPending && <p className="text-center text-xs text-indigo-400 -mt-2 animate-fade-in">Analysing syllabus and building your schedule — this takes ~15 seconds…</p>}
 
       </form>
+      
+      <CreditModal 
+        isOpen={showCreditModal} 
+        onClose={() => setShowCreditModal(false)} 
+      />
     </div>
   );
 }

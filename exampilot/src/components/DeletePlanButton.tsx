@@ -41,7 +41,7 @@ export default function DeletePlanButton({ planId, planName }: DeletePlanButtonP
       aria-label={`Delete ${planName}`}
       title="Delete plan"
       className={[
-        "flex-shrink-0 w-8 h-8 rounded-xl flex items-center justify-center",
+        "flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center",
         "text-gray-300 hover:text-red-500 hover:bg-red-50",
         "transition-all duration-150 active:scale-90",
         "disabled:opacity-40 disabled:cursor-not-allowed",

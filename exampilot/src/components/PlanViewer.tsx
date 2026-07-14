@@ -7,6 +7,12 @@ import type { PlanWeek, PlanDay } from "@/app/actions/planner";
 import type { MockTestResult } from "@/app/actions/logMockTest";
 import FocusTimer from "@/components/FocusTimer";
 import MockTestAnalyzer from "@/components/MockTestAnalyzer";
+import MissionClock from "@/components/MissionClock";
+import CheatSheetView from "@/components/CheatSheetView";
+import TestRunner from "@/components/TestRunner";
+import { getMockTest } from "@/app/actions/getMockTest";
+import { getMiniTest } from "@/app/actions/getMiniTest";
+import type { Question, ScoringMap } from "@/app/actions/getMockTest";
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -184,7 +190,45 @@ export default function PlanViewer({
   const [justChecked, setJustChecked] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [isPressureMode, setIsPressureMode] = useState(false);
+  const [isCheatSheetOpen, setIsCheatSheetOpen] = useState(false);
+  const [activeTest, setActiveTest] = useState<"Mini-Test" | "Full Mock" | null>(null);
+  const [activeAttemptId, setActiveAttemptId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"schedule" | "mocks">("schedule");
+  
+  // Test Engine State
+  const [testQuestions, setTestQuestions] = useState<Question[] | null>(null);
+  const [testScoringMap, setTestScoringMap] = useState<ScoringMap | null>(null);
+  const [testLoading, setTestLoading] = useState<"Mini-Test" | "Full Mock" | null>(null);
+  const [testError, setTestError] = useState<string | null>(null);
+  const [pendingNDATest, setPendingNDATest] = useState<"Mini-Test" | "Full Mock" | null>(null);
+
+  const handleLaunchTest = async (type: "Mini-Test" | "Full Mock", targetExamOverride?: string) => {
+    const examBase = examName;
+    
+    if (examBase === "NDA" && !targetExamOverride) {
+      setPendingNDATest(type);
+      return;
+    }
+
+    const finalTarget = targetExamOverride || examBase;
+    setTestLoading(type);
+    setTestError(null);
+
+    const action = type === "Mini-Test" ? getMiniTest : getMockTest;
+    const result = await action(finalTarget);
+
+    setTestLoading(null);
+
+    if (result.success) {
+      setTestQuestions(result.questions);
+      setTestScoringMap(result.scoringMap);
+      setActiveAttemptId(crypto.randomUUID());
+      setActiveTest(type);
+      setPendingNDATest(null);
+    } else {
+      setTestError(result.error);
+    }
+  };
 
   // Exit pressure mode if the component unmounts (e.g. navigation)
   useEffect(() => () => setIsPressureMode(false), []);
@@ -284,6 +328,54 @@ export default function PlanViewer({
         </div>
       </div>
 
+      <MissionClock examDate={examDate} />
+
+      {testError && (
+        <div className="print:hidden bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-2xl mb-3 text-sm font-medium animate-fade-in">
+          ⚠️ {testError}
+        </div>
+      )}
+
+      {pendingNDATest && (
+        <div className="print:hidden bg-slate-800 text-white p-5 rounded-3xl mb-4 border border-slate-700 shadow-xl relative overflow-hidden animate-fade-in">
+          <div className="relative z-10">
+            <h3 className="font-bold text-lg mb-1">Select NDA Paper</h3>
+            <p className="text-slate-400 text-xs mb-4">The NDA exam has two separate papers with distinct scoring algorithms.</p>
+            <div className="grid grid-cols-2 gap-3">
+              <button onClick={() => handleLaunchTest(pendingNDATest, "NDA_MATH")} className="bg-indigo-600 hover:bg-indigo-500 py-3 rounded-xl font-bold text-sm transition-all active:scale-95 shadow-md">
+                Mathematics (Paper I)
+              </button>
+              <button onClick={() => handleLaunchTest(pendingNDATest, "NDA_GAT")} className="bg-slate-700 hover:bg-slate-600 py-3 rounded-xl font-bold text-sm transition-all active:scale-95 shadow-md border border-slate-600">
+                GAT (Paper II)
+              </button>
+            </div>
+            <button onClick={() => setPendingNDATest(null)} className="mt-4 w-full text-xs font-semibold text-slate-400 hover:text-slate-200 transition-colors uppercase tracking-widest py-2">
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Test Engine Quick Actions ── */}
+      <div className="print:hidden grid grid-cols-2 gap-3">
+        <button
+          onClick={() => handleLaunchTest("Mini-Test")}
+          disabled={testLoading !== null}
+          className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-2xl font-bold shadow-[0_4px_14px_rgba(79,70,229,0.3)] transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+        >
+          <span className="text-lg leading-none" aria-hidden="true">⚡</span>
+          {testLoading === "Mini-Test" ? "Loading..." : "Daily Mini-Test"}
+        </button>
+        <button
+          onClick={() => handleLaunchTest("Full Mock")}
+          disabled={testLoading !== null}
+          className="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-white py-3 rounded-2xl font-bold shadow-lg transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+        >
+          <span className="text-lg leading-none" aria-hidden="true">🎯</span>
+          {testLoading === "Full Mock" ? "Loading..." : "Full Mock"}
+        </button>
+      </div>
+
       {/* Stats strip */}
       <div className="print:hidden grid grid-cols-3 gap-3">
         {[
@@ -350,8 +442,8 @@ export default function PlanViewer({
             <button
               id="print-schedule-btn"
               type="button"
-              onClick={() => window.print()}
-              aria-label="Export study schedule as PDF or print cheat sheet"
+              onClick={() => setIsCheatSheetOpen(true)}
+              aria-label="Generate AI Cheat Sheet"
               className="flex items-center justify-center gap-2 rounded-xl py-2.5 px-4 text-xs font-bold bg-white border border-gray-200 text-gray-700 hover:border-indigo-300 hover:text-indigo-700 shadow-sm transition-all duration-200 active:scale-[0.97]"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -426,6 +518,14 @@ export default function PlanViewer({
               </svg>
               Exit Focus
             </button>
+          )}
+
+          {isCheatSheetOpen && (
+            <CheatSheetView planId={planId} onClose={() => setIsCheatSheetOpen(false)} />
+          )}
+
+          {activeTest && testQuestions && testScoringMap && activeAttemptId && (
+            <TestRunner type={activeTest} questions={testQuestions} scoringMap={testScoringMap} attemptId={activeAttemptId} onExit={() => setActiveTest(null)} />
           )}
         </>
       )}

@@ -3,74 +3,98 @@
 import { createClient } from "@/utils/supabase/server";
 
 /**
- * Calculates the user's current study streak in days.
+ * Calculates and persistently updates the user's current study streak in days.
  *
- * Definition: the number of consecutive calendar days (going backwards
- * from today, with a 1-day grace period) on which the user created at
- * least one study plan. This is computable from existing data with no
- * schema changes.
- *
- * Grace period: if the user hasn't created a plan today yet, we start
- * the count from yesterday so the streak doesn't reset at midnight.
+ * This function checks the `profiles` table for `last_active_date` and `current_streak`.
+ * It compares the dates using IST (UTC+5:30) to avoid midnight boundary issues.
+ * - If last active was yesterday, streak increments.
+ * - If last active was today, streak remains the same.
+ * - If last active was > 1 day ago, streak resets to 1.
+ * The updated values are then saved back to the database.
  */
 export async function getStreak(): Promise<number> {
   try {
     const supabase = createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) return 0;
 
-    // Fetch all plan creation dates for this user
-    const { data, error } = await supabase
-      .from("study_plans")
-      .select("created_at")
-      .order("created_at", { ascending: false })
-      .limit(365);
+    // Fetch the user's profile to get the current streak state
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("last_active_date, current_streak")
+      .eq("id", user.id)
+      .single();
 
-    if (error || !data || data.length === 0) return 0;
-
-    // Build a Set of unique YYYY-MM-DD strings (UTC date of each plan)
-    const activeDates = new Set<string>(
-      data.map((r) => new Date(r.created_at).toISOString().split("T")[0])
-    );
-
-    // Normalise today to midnight UTC
-    const today = new Date();
-    today.setUTCHours(0, 0, 0, 0);
-    const todayStr = today.toISOString().split("T")[0];
-
-    const yesterday = new Date(today);
-    yesterday.setUTCDate(yesterday.getUTCDate() - 1);
-    const yesterdayStr = yesterday.toISOString().split("T")[0];
-
-    // If neither today nor yesterday has activity, streak is 0
-    if (!activeDates.has(todayStr) && !activeDates.has(yesterdayStr)) {
-      return 0;
+    if (profileError && profileError.code !== 'PGRST116') {
+      console.error("Error fetching profile for streak:", profileError);
+      return 0; // Return 0 gracefully on severe DB errors
     }
 
-    // Start counting from the most recent active day (today if active,
-    // else yesterday — the grace-period day)
-    const startDate = activeDates.has(todayStr) ? today : yesterday;
+    // Helper to get IST YYYY-MM-DD
+    const getISTDateString = (date: Date) => {
+      // IST is UTC + 5:30 (330 minutes)
+      const istDate = new Date(date.getTime() + 330 * 60 * 1000);
+      return istDate.toISOString().split("T")[0];
+    };
 
-    let streak = 0;
-    for (let i = 0; i < 365; i++) {
-      const d = new Date(startDate);
-      d.setUTCDate(d.getUTCDate() - i);
-      const key = d.toISOString().split("T")[0];
+    const now = new Date();
+    const todayIST = getISTDateString(now);
+    
+    // Default values if user has no streak data yet
+    let currentStreak = profile?.current_streak || 0;
+    const lastActiveDateStr = profile?.last_active_date 
+      ? getISTDateString(new Date(profile.last_active_date)) 
+      : null;
 
-      if (activeDates.has(key)) {
-        streak++;
-      } else {
-        break; // Chain broken
+    let newStreak = currentStreak;
+    let needsUpdate = false;
+
+    if (!lastActiveDateStr) {
+      // First time activity
+      newStreak = 1;
+      needsUpdate = true;
+    } else if (lastActiveDateStr === todayIST) {
+      // Already active today, do nothing
+      needsUpdate = false;
+    } else {
+      // Calculate difference in days between todayIST and lastActiveDateStr
+      // Since both are YYYY-MM-DD in IST, we can parse them as UTC midnights to get clean day diffs
+      const tDate = new Date(`${todayIST}T00:00:00Z`);
+      const lDate = new Date(`${lastActiveDateStr}T00:00:00Z`);
+      const diffTime = Math.abs(tDate.getTime() - lDate.getTime());
+      const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+      if (diffDays === 1) {
+        // Yesterday! Increment streak
+        newStreak = currentStreak + 1;
+        needsUpdate = true;
+      } else if (diffDays > 1) {
+        // Streak broken
+        newStreak = 1;
+        needsUpdate = true;
       }
     }
 
-    return streak;
-  } catch {
-    // Never crash the page if streak calculation fails
-    return 0;
+    // Persist the new streak back to the DB if it changed
+    if (needsUpdate) {
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({
+          current_streak: newStreak,
+          last_active_date: now.toISOString(), // Store actual UTC timestamp in DB
+        })
+        .eq("id", user.id);
+
+      if (updateError) {
+        console.error("Failed to update streak:", updateError);
+        // Fallback to returning computed streak even if DB save fails
+      }
+    }
+
+    return newStreak;
+  } catch (error) {
+    console.error("Streak calculation crashed:", error);
+    return 0; // Never crash the page
   }
 }
