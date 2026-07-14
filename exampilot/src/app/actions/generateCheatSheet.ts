@@ -2,6 +2,7 @@
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { createClient } from "@/utils/supabase/server";
+import { checkAndDeductCredits } from "@/lib/creditManager";
 
 export interface CheatSheetSection {
   subject: string;
@@ -58,6 +59,11 @@ export async function generateCheatSheet(planId: string): Promise<GenerateCheatS
     },
     systemInstruction: `Act as an expert tutor for Indian Defense Exams (${plan.exam_name}). Do NOT just spit out the syllabus. Generate high-yield, subject-wise revision notes and top 5 formulas/facts. Return STRICTLY a JSON object matching this schema: { "cheatSheet": [ { "subject": "...", "points": ["..."] } ] }`,
   });
+
+  const creditCheck = await checkAndDeductCredits(authData.user.id, authData.user.email, 5);
+  if (!creditCheck.success) {
+    return { success: false, error: "INSUFFICIENT_CREDITS" };
+  }
 
   try {
     const prompt = `Act as an expert tutor for Indian Defense Exams (${plan.exam_name}). Based on this syllabus, do NOT just output the syllabus list. Generate high-yield, subject-wise revision notes and top 5 formulas/facts for last-minute revision. 

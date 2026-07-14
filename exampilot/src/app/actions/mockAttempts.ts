@@ -2,6 +2,13 @@
 
 import { createClient } from "@/utils/supabase/server";
 
+const EXAM_CONFIGS = {
+  "AFCAT": { limit: 100, correct: 3, incorrect: -1 },
+  "NDA_MATH": { limit: 120, correct: 2.5, incorrect: -0.83 },
+  "NDA_GAT": { limit: 150, correct: 4, incorrect: -1.33 },
+  "CDS": { limit: 120, correct: 0.83, incorrect: -0.27 },
+};
+
 export async function saveMockProgress(payload: any) {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -35,14 +42,55 @@ export async function saveMockProgress(payload: any) {
       currentTestNumber = (count || 0) + 1;
     }
   }
-  
+  let finalScore = score;
+
+  // Phase 2: Server-Side Score Recalculation (Security Audit Fix)
+  if (status === 'completed' && answers_state?.questions) {
+    const config = EXAM_CONFIGS[exam_target as keyof typeof EXAM_CONFIGS] || EXAM_CONFIGS["AFCAT"];
+    const mpc = config.correct;
+    const pip = config.incorrect;
+
+    const qIds = answers_state.questions.map((q: any) => q.id);
+    
+    // Fetch truth from database
+    const { data: truthData } = await supabase
+      .from('question_bank')
+      .select('id, correct_index')
+      .in('id', qIds);
+
+    if (truthData) {
+      const truthMap = new Map(truthData.map((t: any) => [t.id, t.correct_index]));
+      
+      let correctCount = 0;
+      let incorrectCount = 0;
+
+      answers_state.questions.forEach((q: any) => {
+        const qStatus = answers_state.statuses[q.id] || "unvisited";
+        const isConsidered = qStatus === "answered" || qStatus === "answered_and_marked";
+        
+        if (isConsidered) {
+          const selected = answers_state.selectedAnswers[q.id];
+          const realCorrectIndex = truthMap.get(q.id);
+          
+          if (realCorrectIndex !== undefined && selected === realCorrectIndex) {
+            correctCount++;
+          } else {
+            incorrectCount++;
+          }
+        }
+      });
+      
+      finalScore = (correctCount * mpc) + (incorrectCount * pip);
+    }
+  }
+
   const { data, error } = await supabase.from('mock_attempts').upsert({
     id,
     user_id: user.id,
     exam_target,
     test_number: currentTestNumber,
     status,
-    score,
+    score: finalScore,
     time_remaining,
     answers_state,
     updated_at: new Date().toISOString()

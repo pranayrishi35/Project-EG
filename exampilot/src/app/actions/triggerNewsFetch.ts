@@ -2,13 +2,14 @@
 
 import { headers } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
+import { checkIsAdmin } from "@/lib/adminAuth";
 
 export async function triggerNewsFetch() {
   const supabase = createClient();
   
   // Strict admin check (only logged-in admins can trigger this via UI)
   const { data: authData, error: authError } = await supabase.auth.getUser();
-  if (authError || !authData?.user) {
+  if (authError || !authData?.user || !(await checkIsAdmin(authData.user.email))) {
     return { success: false, error: "Unauthorized access." };
   }
 

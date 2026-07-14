@@ -3,6 +3,7 @@
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { createClient } from "@/utils/supabase/server";
+import { checkIsAdmin } from "@/lib/adminAuth";
 
 function robustJsonParse(rawText: string, batchIndex: number = 0, requestedCount: number = 0) {
   let clean = rawText.replace(/```json/gi, "").replace(/```/g, "").trim();
@@ -127,7 +128,7 @@ export async function adminSeedQuestions(examTarget: string, isPyq: boolean = fa
   const supabase = createClient();
   
   const { data: authData, error: authError } = await supabase.auth.getUser();
-  if (authError || !authData?.user) {
+  if (authError || !authData?.user || !(await checkIsAdmin(authData.user.email))) {
     return { success: false, error: "Unauthorized access to seeding script." };
   }
 
@@ -180,7 +181,7 @@ export async function generateFullMockTest(examTarget: string) {
   const supabase = createClient();
   
   const { data: authData, error: authError } = await supabase.auth.getUser();
-  if (authError || !authData?.user) {
+  if (authError || !authData?.user || !(await checkIsAdmin(authData.user.email))) {
     return { success: false, error: "Unauthorized access to seeding script." };
   }
 

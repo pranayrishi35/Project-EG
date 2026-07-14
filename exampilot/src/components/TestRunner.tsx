@@ -302,7 +302,7 @@ const ActiveQuestionView = memo(function ActiveQuestionView({ questions, isRevie
 });
 
 // --- Results View (Isolated) ---
-const ResultsView = memo(function ResultsView({ type, questions, scoringMap, isReviewMode, onExit, testNumber }: any) {
+const ResultsView = memo(function ResultsView({ type, questions, scoringMap, isReviewMode, onExit, testNumber, attemptId }: any) {
   const router = useRouter();
   const [archetype, setArchetype] = useState("Analytical & Technical");
   const [showCreditModal, setShowCreditModal] = useState(false);
@@ -349,11 +349,11 @@ const ResultsView = memo(function ResultsView({ type, questions, scoringMap, isR
 
   useEffect(() => {
     async function fetchRank() {
-      if (!testNumber || isReviewMode) {
+      if (!testNumber || isReviewMode || !attemptId) {
         setRankData({ loading: false });
         return;
       }
-      const res = await getLeaderboardMetrics(type, testNumber, parseFloat(score));
+      const res = await getLeaderboardMetrics(attemptId);
       if (res.success) {
         setRankData({ rank: res.rank, percentile: res.percentile, loading: false });
       } else {
@@ -361,7 +361,7 @@ const ResultsView = memo(function ResultsView({ type, questions, scoringMap, isR
       }
     }
     fetchRank();
-  }, [type, testNumber, score, isReviewMode]);
+  }, [attemptId, testNumber, isReviewMode]);
 
   const handleAnalyze = async (computedScore: number, computedMaxScore: number) => {
     const incorrectSubjects = new Set<string>();
@@ -727,7 +727,7 @@ export default function TestRunner({ type, questions, scoringMap, onExit, attemp
   const handleTick = useCallback((s: number) => { timeRemainingRef.current = s; }, []);
 
   if (isSubmitted) {
-    return <ResultsView type={type} questions={questions} scoringMap={scoringMap} isReviewMode={isReviewMode} onExit={onExit} testNumber={testNumberRef.current} />;
+    return <ResultsView type={type} questions={questions} scoringMap={scoringMap} isReviewMode={isReviewMode} onExit={onExit} testNumber={testNumberRef.current} attemptId={attemptId} />;
   }
 
   // Active Test UI - AFCAT CBT Style

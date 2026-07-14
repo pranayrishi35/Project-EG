@@ -2,6 +2,7 @@
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { createClient } from "@/utils/supabase/server";
+import { checkAndDeductCredits } from "@/lib/creditManager";
 
 export type AskAssistantResult =
   | { success: true; reply: string }
@@ -44,6 +45,11 @@ If the user asks about ANYTHING unrelated to the above topics (e.g., politics, c
 
 FORMATTING RULES: You must optimize for extreme readability on a small mobile screen. 1) NEVER write a wall of text. Break your response into micro-paragraphs of 1 to 2 sentences max. 2) Aggressively use bullet points for lists or steps. 3) Use emojis to make the tone friendly and interactive. 4) Be concise, punchy, and highly encouraging.`,
   });
+
+  const creditCheck = await checkAndDeductCredits(authData.user.id, authData.user.email, 1);
+  if (!creditCheck.success) {
+    return { success: false, error: "INSUFFICIENT_CREDITS" };
+  }
 
   try {
     const result = await model.generateContent(prompt);

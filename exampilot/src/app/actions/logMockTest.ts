@@ -62,7 +62,34 @@ export async function logMockTest(
     ? plan.mock_tests
     : [];
 
-  const updated = [...existing, result];
+  // Phase 3: Server-Side Mathematical Verification for manual inputs
+  let verifiedCorrect = result.correct;
+  let verifiedIncorrect = result.incorrect;
+  
+  if (verifiedCorrect < 0) verifiedCorrect = 0;
+  if (verifiedIncorrect < 0) verifiedIncorrect = 0;
+  
+  // Cap the total attempted by making sure correct + incorrect is logically consistent 
+  // (the UI validates this, but we enforce it server side)
+  if (verifiedCorrect + verifiedIncorrect > result.attempted) {
+      verifiedCorrect = result.attempted;
+      verifiedIncorrect = 0;
+  }
+  
+  const mpc = result.marksPerCorrect || 3;
+  const pip = result.penaltyPerIncorrect || -1;
+  const verifiedTotalScore = (verifiedCorrect * mpc) + (verifiedIncorrect * pip);
+  const verifiedAccuracy = result.attempted > 0 ? (verifiedCorrect / result.attempted) * 100 : 0;
+  
+  const verifiedResult: MockTestResult = {
+      ...result,
+      correct: verifiedCorrect,
+      incorrect: verifiedIncorrect,
+      totalScore: Number(verifiedTotalScore.toFixed(2)),
+      accuracy: Number(verifiedAccuracy.toFixed(1))
+  };
+
+  const updated = [...existing, verifiedResult];
   const updatedPlan = { ...plan, mock_tests: updated };
 
   // ── Persist ──────────────────────────────────────────────────────────────────

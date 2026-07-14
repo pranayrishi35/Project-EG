@@ -2,6 +2,7 @@
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { createClient } from "@/utils/supabase/server";
+import { checkAndDeductCredits } from "@/lib/creditManager";
 
 export interface Flashcard {
   question: string;
@@ -63,6 +64,11 @@ export async function generateFlashcards(): Promise<GenerateFlashcardsResult> {
       maxOutputTokens: 2048, // Increased from 1024 to prevent cutoffs
     },
   });
+
+  const creditCheck = await checkAndDeductCredits(authData.user.id, authData.user.email, 3);
+  if (!creditCheck.success) {
+    return { success: false, error: "INSUFFICIENT_CREDITS" };
+  }
 
   try {
     // 2. Strict prompt forcing single-line strings
