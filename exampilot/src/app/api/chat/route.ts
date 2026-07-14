@@ -1,5 +1,5 @@
 import { google } from '@ai-sdk/google';
-import { streamText, Message } from 'ai';
+import { streamText, UIMessage } from 'ai';
 import { createClient } from '@/utils/supabase/server';
 
 export const maxDuration = 30; // max duration for Vercel Hobby
@@ -29,7 +29,7 @@ export async function POST(req: Request) {
     const result = await streamText({
       model: google('gemini-3.1-flash-lite'),
       system: systemInstruction,
-      messages: messages as Message[],
+      messages: messages as UIMessage[],
       temperature: 0.5,
       maxTokens: 1024,
     });

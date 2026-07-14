@@ -9,15 +9,21 @@ export default function FloatingAssistant() {
   const [isOpen, setIsOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
-    api: '/api/chat',
-    initialMessages: [
+  const [input, setInput] = useState('');
+  const { messages, status, sendMessage } = useChat({
+    messages: [
       { id: "init", role: "assistant", content: "Hi! I'm your ExamPilot AI Tutor. How can I help you study today?" }
-    ],
+    ] as any[],
     onError: (error) => {
       console.error("AI Tutor Error:", error);
     }
   });
+
+  const isLoading = status === 'submitted' || status === 'streaming';
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInput(e.target.value);
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -28,7 +34,8 @@ export default function FloatingAssistant() {
   const onFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!input?.trim() || isLoading) return;
-    handleSubmit(e);
+    sendMessage({ role: 'user', content: input });
+    setInput('');
   };
 
   return (
@@ -56,8 +63,8 @@ export default function FloatingAssistant() {
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4 bg-slate-50">
-          {messages.map((msg) => (
+        <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 scroll-smooth bg-slate-50/50">
+          {(messages as any[]).map((msg, index) => (
             <div key={msg.id} className={`flex max-w-[85%] ${msg.role === "user" ? "self-end" : "self-start"}`}>
               <div className={`p-3 rounded-2xl text-sm leading-relaxed overflow-hidden shadow-sm ${
                 msg.role === "user" 
