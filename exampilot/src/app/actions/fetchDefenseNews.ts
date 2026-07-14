@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
-import { triggerNewsFetch } from "@/app/actions/triggerNewsFetch";
+import { headers } from "next/headers";
 
 export type NewsItem = {
   id: string;
@@ -88,8 +88,15 @@ export async function fetchDefenseNews(page = 0, limit = 20): Promise<{ data: Ne
     const twelveHoursMs = 12 * 60 * 60 * 1000;
     if (Date.now() - latestFetch > twelveHoursMs) {
       console.log("News cache is older than 12 hours. Triggering auto-refresh.");
-      // We don't await this so it doesn't block the UI render
-      triggerNewsFetch().catch(err => console.error("Auto-refresh failed:", err));
+      const secret = process.env.CRON_SECRET;
+      if (secret) {
+        const host = headers().get("host");
+        const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
+        const url = `${protocol}://${host}/api/cron/fetch-news?secret=${secret}`;
+        fetch(url, { method: 'GET', cache: 'no-store' }).catch(err => 
+          console.error("Auto-refresh fetch failed:", err)
+        );
+      }
     }
 
     // Map to the expected UI type
