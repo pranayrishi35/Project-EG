@@ -1,12 +1,14 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
+import { getAdminClient } from "@/lib/adminClient";
 
 const EXAM_CONFIGS = {
   "AFCAT": { limit: 100, correct: 3, incorrect: -1 },
   "NDA_MATH": { limit: 120, correct: 2.5, incorrect: -0.83 },
   "NDA_GAT": { limit: 150, correct: 4, incorrect: -1.33 },
   "CDS": { limit: 120, correct: 0.83, incorrect: -0.27 },
+  "Mini-Test": { limit: 15, correct: 1, incorrect: -0.33 },
 };
 
 export async function saveMockProgress(payload: any) {
@@ -52,8 +54,9 @@ export async function saveMockProgress(payload: any) {
 
     const qIds = answers_state.questions.map((q: any) => q.id);
     
-    // Fetch truth from database
-    const { data: truthData } = await supabase
+    // Fetch truth from database using service role (bypassing column restrictions)
+    const adminSupabase = getAdminClient();
+    const { data: truthData } = await adminSupabase
       .from('question_bank')
       .select('id, correct_index')
       .in('id', qIds);
@@ -78,6 +81,9 @@ export async function saveMockProgress(payload: any) {
             incorrectCount++;
           }
         }
+        
+        // Inject correctIndex back into the question payload for Review Mode
+        q.correctIndex = truthMap.get(q.id);
       });
       
       finalScore = (correctCount * mpc) + (incorrectCount * pip);

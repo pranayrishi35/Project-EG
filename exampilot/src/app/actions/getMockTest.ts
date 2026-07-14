@@ -6,7 +6,7 @@ export interface Question {
   id: string;
   text: string;
   options: string[];
-  correctIndex: number;
+  correctIndex?: number;
   subject: string;
   isPyq: boolean;
   pyqYear?: number;
@@ -44,7 +44,7 @@ export async function getMockTest(examTarget: string, mini: boolean = false): Pr
     // 1. Fetch PYQs
     const { data: pyqData, error: pyqError } = await supabase
       .from("question_bank")
-      .select("id, question, options, correct_index, subject, is_pyq, pyq_year")
+      .select("id, question, options, subject, is_pyq, pyq_year")
       .eq("exam_target", examTarget)
       .eq("source_pool", "mock")
       .eq("is_pyq", true)
@@ -59,7 +59,7 @@ export async function getMockTest(examTarget: string, mini: boolean = false): Pr
     const standardLimit = totalQuestions - fetchedPyqs.length;
     const { data: standardData, error: stdError } = await supabase
       .from("question_bank")
-      .select("id, question, options, correct_index, subject, is_pyq, pyq_year")
+      .select("id, question, options, subject, is_pyq, pyq_year")
       .eq("exam_target", examTarget)
       .eq("source_pool", "mock")
       .eq("is_pyq", false)
@@ -91,7 +91,6 @@ export async function getMockTest(examTarget: string, mini: boolean = false): Pr
       id: q.id,
       text: q.question,
       options: q.options,
-      correctIndex: q.correct_index,
       subject: q.subject || "General",
       isPyq: q.is_pyq,
       pyqYear: q.pyq_year

@@ -129,3 +129,10 @@ USING (true);
 -- it via the `get_instant_rank` RPC function, which has been audited. Do not expose 
 -- the materialized view directly via PostgREST.
 -- ==============================================================================
+
+-- ==============================================================================
+-- DEFENSE IN DEPTH: COLUMN LEVEL SECURITY
+-- ==============================================================================
+-- Hide the correct answer from standard API queries to prevent answer extraction
+REVOKE SELECT (correct_index) ON question_bank FROM authenticated;
+REVOKE SELECT (correct_index) ON question_bank FROM anon;

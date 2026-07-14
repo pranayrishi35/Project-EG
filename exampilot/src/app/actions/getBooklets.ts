@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
+import { getAdminClient } from "@/lib/adminClient";
 
 export type BookletMetadata = Record<string, Record<string, number>>;
 
@@ -47,7 +48,8 @@ export async function getBookletDirectory(): Promise<BookletMetadata> {
  * Fetches the heavy content payload for a specific exam target.
  */
 export async function getBookletContent(examTarget: string, subject?: string, page = 0, limit = 20): Promise<{ data: BookletQuestion[], hasMore: boolean }> {
-  const supabase = createClient();
+  // Use admin client because correct_index is revoked for standard clients, but booklets explicitly require it.
+  const supabase = getAdminClient();
   const from = page * limit;
   const to = from + limit - 1;
 

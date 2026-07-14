@@ -10,7 +10,7 @@ export async function getCurrentAffairsTest(): Promise<GetTestResult> {
   try {
     const { data, error } = await supabase
       .from("question_bank")
-      .select("*")
+      .select("id, question, options, subject, is_pyq, pyq_year")
       .eq("subject", "Current Affairs")
       .order("created_at", { ascending: false })
       .limit(limit);
@@ -36,7 +36,6 @@ export async function getCurrentAffairsTest(): Promise<GetTestResult> {
       id: q.id,
       text: q.question,
       options: q.options,
-      correctIndex: q.correct_index,
       subject: q.subject || "Current Affairs",
       isPyq: q.is_pyq,
       pyqYear: q.pyq_year
