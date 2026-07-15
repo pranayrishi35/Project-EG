@@ -51,7 +51,7 @@ async function generateQuestionsInBatches(model: any, examTarget: string, isPyq:
     try {
       const result = await model.generateContent(prompt);
       const raw = result.response.text();
-      let parsed = robustJsonParse(raw, []);
+      let parsed: any = robustJsonParse(raw, []);
       if (!Array.isArray(parsed) && parsed && Array.isArray(parsed.questions)) {
         parsed = parsed.questions;
       }

@@ -7,6 +7,7 @@ import Sidebar from "@/components/Sidebar";
 import FloatingAssistant from "@/components/FloatingAssistant";
 import { LegalFooter } from "@/components/LegalFooter";
 import { createClient } from "@/utils/supabase/server";
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://exampilot.in'),
@@ -95,6 +96,9 @@ export default async function RootLayout({
         
         {/* Floating AI Tutor */}
         <FloatingAssistant />
+        
+        {/* Vercel Speed Insights */}
+        <SpeedInsights />
       </body>
     </html>
   );
