@@ -1,4 +1,8 @@
-import { google } from '@ai-sdk/google';
+import { createGoogleGenerativeAI } from '@ai-sdk/google';
+
+const google = createGoogleGenerativeAI({
+  apiKey: process.env.GEMINI_API_KEY,
+});
 import { streamText } from 'ai';
 import { createClient } from '@/utils/supabase/server';
 import { sanitizePrompt } from '@/lib/sanitizer';
