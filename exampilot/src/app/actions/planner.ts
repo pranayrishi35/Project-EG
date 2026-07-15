@@ -5,6 +5,7 @@ import { createClient } from "@/utils/supabase/server";
 import { checkAndDeductCredits } from "@/lib/creditManager";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { sanitizePrompt } from "@/lib/sanitizer";
+import { robustJsonParse } from "@/lib/robustJsonParse";
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -117,6 +118,8 @@ Respond with ONLY a valid JSON object following this exact structure — no mark
     }
   ]
 }
+
+CRITICAL: You must return valid JSON only. You must properly escape all internal double quotes using a backslash (\\"). Do not use markdown wrappers.
 `.trim();
 }
 
@@ -234,13 +237,8 @@ export async function generateStudyPlan(
     const rawText = result.response.text();
 
     // responseMimeType: "application/json" means the model returns pure JSON,
-    // but we defensively strip any accidental markdown fences.
-    const cleaned = rawText
-      .replace(/^```(?:json)?\s*/i, "")
-      .replace(/\s*```\s*$/i, "")
-      .trim();
-
-    generatedPlan = JSON.parse(cleaned) as GeneratedPlan;
+    // but we defensively use the triple-layer robustJsonParse just in case.
+    generatedPlan = robustJsonParse(rawText, { weeks: [] }) as GeneratedPlan;
 
     // Basic structural validation
     if (!Array.isArray(generatedPlan?.weeks)) {

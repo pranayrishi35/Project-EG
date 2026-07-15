@@ -80,13 +80,15 @@ export async function generateFlashcards(): Promise<GenerateFlashcardsResult> {
     2. Each object must have exactly two keys: "question" and "answer".
     3. NEVER use unescaped double quotes inside your text.
     4. NEVER use raw newlines (Line breaks) inside your text. Keep answers to a single paragraph.
-    5. Do NOT wrap the response in markdown blocks.`;
+    5. Do NOT wrap the response in markdown blocks.
+    
+    CRITICAL: You must return valid JSON only. You must properly escape all internal double quotes using a backslash (\\"). Do not use markdown wrappers.`;
 
     const result = await model.generateContent(prompt);
     let rawText = result.response.text();
 
     // 3. Failsafe cleaning for rogue markdown and trailing commas
-    const flashcards = robustJsonParse(rawText);
+    let flashcards = robustJsonParse(rawText, []);
 
     if (!Array.isArray(flashcards) || flashcards.length === 0) {
       throw new Error("AI returned invalid data format.");

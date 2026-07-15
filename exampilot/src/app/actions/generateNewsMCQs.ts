@@ -3,6 +3,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { createClient } from "@/utils/supabase/server";
 import { checkIsAdmin } from "@/lib/adminAuth";
+import { robustJsonParse } from "@/lib/robustJsonParse";
 
 export async function generateNewsMCQs() {
   const supabase = createClient();
@@ -68,14 +69,15 @@ CRITICAL INSTRUCTIONS:
     "correct_index": 1
   }
 ]
-3. NEVER wrap your JSON in markdown blocks or backticks.`;
+3. NEVER wrap your JSON in markdown blocks or backticks.
+
+CRITICAL: You must return valid JSON only. You must properly escape all internal double quotes using a backslash (\\"). Do not use markdown wrappers.`;
 
     try {
       const result = await model.generateContent(prompt);
       const rawText = result.response.text();
-      let clean = rawText.replace(/```json/gi, "").replace(/```/g, "").trim();
       
-      const parsed = JSON.parse(clean);
+      const parsed = robustJsonParse(rawText, []);
       if (Array.isArray(parsed)) {
         allQuestions.push(...parsed);
       }

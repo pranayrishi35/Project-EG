@@ -57,32 +57,30 @@ export async function generateTestStrategy(
     ? `They missed questions in the following subjects: ${safeSubjects.join(", ")}.`
     : `They scored a perfect test!`;
 
-  const prompt = `You are an elite defense exam tactical coach. Analyze this test result. The student scored ${score} out of ${maxScore}. ${subjectsContext}
+const prompt = `You are an elite defense exam tactical coach. Analyze this test result. The student scored ${score} out of ${maxScore}. ${subjectsContext}
   
-The student learns best via the "${safeArchetype}" archetype. You must output a JSON object with exactly two keys: "weaknesses" (a short string summarizing their critical weaknesses) and "actionPlan" (an array of 3 actionable string steps for tomorrow). Keep the tone focused, tactical, and encouraging. Return ONLY the JSON object.`;
+The student learns best via the "${safeArchetype}" archetype. You must output a JSON object with exactly two keys: "weaknesses" (a short string summarizing their critical weaknesses) and "actionPlan" (an array of 3 actionable string steps for tomorrow). Keep the tone focused, tactical, and encouraging. Return ONLY the JSON object.
+
+CRITICAL: You must return valid JSON only. You must properly escape all internal double quotes using a backslash (\\"). Do not use markdown wrappers.`;
 
   try {
     const result = await model.generateContent(prompt);
     const text = result.response.text();
     
-    let strategyData;
-    try {
-      strategyData = robustJsonParse(text);
-      
-      // Basic validation
-      if (!strategyData.weaknesses || !Array.isArray(strategyData.actionPlan)) {
-        throw new Error("Invalid JSON structure returned by AI");
-      }
-    } catch (parseError) {
-      console.error("AI JSON parsing failed, using fallback. Error:", parseError, "Raw output:", text);
-      strategyData = {
-        weaknesses: "Analysis offline. Proceed with standard debriefing protocols.",
-        actionPlan: [
-          "Review the standard answer key below for all incorrect responses.",
-          "Identify the core concepts or formulas you struggled with the most.",
-          "Practice 10 similar questions from the question bank to reinforce those concepts."
-        ]
-      };
+    const fallback = {
+      weaknesses: "Analysis offline. Proceed with standard debriefing protocols.",
+      actionPlan: [
+        "Review the standard answer key below for all incorrect responses.",
+        "Identify the core concepts or formulas you struggled with the most.",
+        "Practice 10 similar questions from the question bank to reinforce those concepts."
+      ]
+    };
+    
+    let strategyData = robustJsonParse(text, fallback);
+    
+    // Basic validation fallback
+    if (!strategyData.weaknesses || !Array.isArray(strategyData.actionPlan)) {
+      strategyData = fallback;
     }
     
     return { success: true, strategy: strategyData };

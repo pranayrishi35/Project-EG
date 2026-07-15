@@ -44,12 +44,14 @@ async function generateQuestionsInBatches(model: any, examTarget: string, isPyq:
       }
     ]
     3. The correct_index must be an integer from 0 to 3 corresponding to the correct option in the options array.
-    4. NEVER wrap your JSON in markdown blocks or backticks.`;
+    4. NEVER wrap your JSON in markdown blocks or backticks.
+    
+    CRITICAL: You must return valid JSON only. You must properly escape all internal double quotes using a backslash (\\"). Do not use markdown wrappers.`;
 
     try {
       const result = await model.generateContent(prompt);
       const raw = result.response.text();
-      let parsed = robustJsonParse(raw, batchIndex, countForBatch);
+      let parsed = robustJsonParse(raw, []);
       if (!Array.isArray(parsed) && parsed && Array.isArray(parsed.questions)) {
         parsed = parsed.questions;
       }

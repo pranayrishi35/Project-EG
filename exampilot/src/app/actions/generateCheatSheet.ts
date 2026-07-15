@@ -74,13 +74,15 @@ export async function generateCheatSheet(planId: string): Promise<GenerateCheatS
     2. Do NOT wrap the JSON in markdown code blocks or backticks.
     3. Do NOT use unescaped quotes inside your text.
     4. Match this exact schema:
-    { "cheatSheet": [ { "subject": "Subject Name", "points": ["Fact 1", "Fact 2"] } ] }`;
+    { "cheatSheet": [ { "subject": "Subject Name", "points": ["Fact 1", "Fact 2"] } ] }
+    
+    CRITICAL: You must return valid JSON only. You must properly escape all internal double quotes using a backslash (\\"). Do not use markdown wrappers.`;
 
     const result = await model.generateContent(prompt);
     let rawText = result.response.text();
 
     // Aggressively strip out markdown code blocks just in case Gemini hallucinates them
-    const parsedData = robustJsonParse(rawText);
+    const parsedData = robustJsonParse(rawText, { cheatSheet: [] });
 
     // Flexibly grab the array whether Gemini returned it directly or wrapped it in the object
     const cheatSheet = Array.isArray(parsedData)
