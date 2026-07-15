@@ -7,6 +7,7 @@ import Sidebar from "@/components/Sidebar";
 import FloatingAssistant from "@/components/FloatingAssistant";
 import { LegalFooter } from "@/components/LegalFooter";
 import { createClient } from "@/utils/supabase/server";
+import { Analytics } from '@vercel/analytics/next';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://exampilot.in'),
@@ -95,6 +96,9 @@ export default async function RootLayout({
         
         {/* Floating AI Tutor */}
         <FloatingAssistant />
+        
+        {/* Vercel Web Analytics */}
+        <Analytics />
       </body>
     </html>
   );
