@@ -1,11 +1,11 @@
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
+import { streamText } from 'ai';
+import { createClient } from '@/utils/supabase/server';
+import { sanitizePrompt } from '@/lib/sanitizer';
 
 const google = createGoogleGenerativeAI({
   apiKey: process.env.GEMINI_API_KEY,
 });
-import { streamText } from 'ai';
-import { createClient } from '@/utils/supabase/server';
-import { sanitizePrompt } from '@/lib/sanitizer';
 
 export const maxDuration = 30; // max duration for Vercel Hobby
 
