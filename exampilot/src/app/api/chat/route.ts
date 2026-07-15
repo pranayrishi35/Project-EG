@@ -43,7 +43,7 @@ export async function POST(req: Request) {
       temperature: 0.5,
     });
 
-    return result.toTextStreamResponse();
+    return result.toUIMessageStreamResponse();
   } catch (error) {
     console.error('[API Chat] Error:', error);
     return new Response('Error generating response', { status: 500 });
