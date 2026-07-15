@@ -128,7 +128,7 @@ const MemoizedTimer = memo(function MemoizedTimer({ initialSeconds, onTick, onTi
   return <MissionClock initialSeconds={initialSeconds} onTick={onTick} onTimeUp={onTimeUp} />;
 });
 
-const PaletteButton = memo(function PaletteButton({ questionId, questionNumber, index, isReviewMode, questions }: { questionId: string, questionNumber: number, index: number, isReviewMode: boolean, questions: any[] }) {
+const PaletteButton = memo(function PaletteButton({ questionId, questionNumber, index, isReviewMode, questions, onClickAction }: { questionId: string, questionNumber: number, index: number, isReviewMode: boolean, questions: any[], onClickAction?: () => void }) {
   const status = useTestStore(state => state.statuses[questionId] || "unvisited");
   const isActive = useTestStore(state => state.currentQuestionIndex === index);
   
@@ -141,6 +141,7 @@ const PaletteButton = memo(function PaletteButton({ questionId, questionNumber, 
     } else {
       paletteClick(index, questions);
     }
+    if (onClickAction) onClickAction();
   };
 
   let styleClass = "bg-slate-200 text-slate-700 rounded border border-slate-300";
@@ -169,7 +170,7 @@ const OptionButton = memo(function OptionButton({ optionText, optionId, question
   return (
     <button
       onClick={() => { if(!isReviewMode) selectOption(questionId, optionId) }}
-      className={`text-left p-4 rounded-xl border-2 transition-all duration-200 flex items-center gap-4 group ${
+      className={`text-left p-4 rounded-xl border-2 transition-all duration-200 flex items-center gap-4 group min-h-[44px] active:scale-[0.98] active:bg-slate-100 ${
         isSelected 
           ? 'border-indigo-600 bg-indigo-50 shadow-md' 
           : 'border-slate-300 bg-white hover:border-slate-400 hover:bg-slate-50'
@@ -209,6 +210,33 @@ const PaletteLegend = memo(function PaletteLegend({ questions }: { questions: an
   );
 });
 
+const MobilePaletteToggle = memo(function MobilePaletteToggle({ questions, onClick }: { questions: any[], onClick: () => void }) {
+  const [counts, setCounts] = useState({ unanswered: 0, marked: 0 });
+  useEffect(() => {
+    return useTestStore.subscribe((state) => {
+      let unans = 0;
+      let mkd = 0;
+      questions.forEach((q) => {
+        const s = state.statuses[q.id] || "unvisited";
+        if (s === "unanswered" || s === "unvisited") unans++;
+        if (s === "marked" || s === "answered_and_marked") mkd++;
+      });
+      setCounts({ unanswered: unans, marked: mkd });
+    });
+  }, [questions]);
+  
+  return (
+    <button onClick={onClick} className="md:hidden relative p-2.5 rounded-xl bg-indigo-50 border border-indigo-100 hover:bg-indigo-100 text-indigo-700 transition-colors flex items-center justify-center">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+      {(counts.unanswered > 0 || counts.marked > 0) && (
+        <span className="absolute -top-1.5 -right-1.5 bg-rose-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white shadow-sm">
+          {counts.unanswered + counts.marked}
+        </span>
+      )}
+    </button>
+  );
+});
+
 const ActiveQuestionView = memo(function ActiveQuestionView({ questions, isReviewMode }: { questions: any[], isReviewMode: boolean }) {
   const currentQuestionIndex = useTestStore(state => state.currentQuestionIndex);
   const currentQ = questions[currentQuestionIndex];
@@ -217,88 +245,152 @@ const ActiveQuestionView = memo(function ActiveQuestionView({ questions, isRevie
   const clearResponse = useTestStore(state => state.clearResponse);
   const markForReviewAndNext = useTestStore(state => state.markForReviewAndNext);
   const saveAndNext = useTestStore(state => state.saveAndNext);
+  const setCurrentQuestionIndex = useTestStore(state => state.setCurrentQuestionIndex);
+  
+  // Swipe Handling
+  const touchStartRef = useRef<{ x: number; y: number; time: number; target: EventTarget | null } | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartRef.current = {
+      x: e.touches[0].clientX,
+      y: e.touches[0].clientY,
+      time: Date.now(),
+      target: e.target,
+    };
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!touchStartRef.current) return;
+    const { x: startX, y: startY, time: startTime, target } = touchStartRef.current;
+    
+    // Ignore if touch started on an element that might scroll horizontally (like an image wrapper or code block inside markdown, or a wide table)
+    let el = target as HTMLElement | null;
+    let isScrollable = false;
+    while (el && el !== e.currentTarget) {
+      if (el.scrollWidth > el.clientWidth) {
+        isScrollable = true;
+        break;
+      }
+      el = el.parentElement;
+    }
+    
+    if (isScrollable) {
+      touchStartRef.current = null;
+      return;
+    }
+
+    const endX = e.changedTouches[0].clientX;
+    const endY = e.changedTouches[0].clientY;
+    
+    const dx = endX - startX;
+    const dy = endY - startY;
+    const dt = Date.now() - startTime;
+    
+    if (dt > 800) { // Too slow to be a swipe
+       touchStartRef.current = null;
+       return; 
+    }
+
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) {
+      if (dx < 0 && currentQuestionIndex < questions.length - 1) {
+        // Swipe left -> Next Question (just navigate, don't save status)
+        setCurrentQuestionIndex(currentQuestionIndex + 1);
+      } else if (dx > 0 && currentQuestionIndex > 0) {
+        // Swipe right -> Prev Question
+        setCurrentQuestionIndex(currentQuestionIndex - 1);
+      }
+    }
+    touchStartRef.current = null;
+  };
 
   if (!currentQ) return null;
 
   return (
-    <div className="flex-1 overflow-y-auto p-6 md:p-10 pb-32">
-      <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-200">
-        <span className="text-slate-500 font-black text-lg uppercase tracking-widest">
-          Question {currentQuestionIndex + 1}
-        </span>
-        {currentQ.pyqYear && (
-          <span className="flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200 px-3 py-1 rounded-lg text-xs font-bold shadow-sm">
-            ⭐ PYQ {currentQ.pyqYear}
+    <>
+      <div 
+        className="flex-1 overflow-y-auto p-6 md:p-10"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
+        <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-200">
+          <span className="text-slate-500 font-black text-lg uppercase tracking-widest">
+            Question {currentQuestionIndex + 1}
           </span>
+          {currentQ.pyqYear && (
+            <span className="flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200 px-3 py-1 rounded-lg text-xs font-bold shadow-sm">
+              ⭐ PYQ {currentQ.pyqYear}
+            </span>
+          )}
+        </div>
+
+        <h2 className="text-xl md:text-2xl font-bold leading-relaxed mb-6 text-slate-900">
+          {currentQ.text}
+        </h2>
+
+        {currentQ.imageUrl && (
+          <div className="relative w-full max-w-2xl h-64 md:h-80 mb-8 rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-white">
+             <Image 
+               src={currentQ.imageUrl} 
+               alt="Question Asset" 
+               fill 
+               className="object-contain" 
+               priority={true}
+               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+             />
+          </div>
         )}
-      </div>
 
-      <h2 className="text-xl md:text-2xl font-bold leading-relaxed mb-6 text-slate-900">
-        {currentQ.text}
-      </h2>
+        {nextQ?.imageUrl && (
+          <div className="hidden">
+             <Image 
+               src={nextQ.imageUrl} 
+               alt="Preload next asset" 
+               width={10} 
+               height={10} 
+               priority={true} 
+             />
+          </div>
+        )}
 
-      {currentQ.imageUrl && (
-        <div className="relative w-full max-w-2xl h-64 md:h-80 mb-8 rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-white">
-           <Image 
-             src={currentQ.imageUrl} 
-             alt="Question Asset" 
-             fill 
-             className="object-contain" 
-             priority={true}
-             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-           />
+        <div className="flex flex-col gap-4">
+          {currentQ.options.map((option: string, idx: number) => (
+            <OptionButton
+              key={idx}
+              optionText={option}
+              optionId={idx}
+              questionId={currentQ.id}
+              isReviewMode={isReviewMode}
+            />
+          ))}
         </div>
-      )}
-
-      {nextQ?.imageUrl && (
-        <div className="hidden">
-           <Image 
-             src={nextQ.imageUrl} 
-             alt="Preload next asset" 
-             width={10} 
-             height={10} 
-             priority={true} 
-           />
-        </div>
-      )}
-
-      <div className="flex flex-col gap-4">
-        {currentQ.options.map((option: string, idx: number) => (
-          <OptionButton
-            key={idx}
-            optionText={option}
-            optionId={idx}
-            questionId={currentQ.id}
-            isReviewMode={isReviewMode}
-          />
-        ))}
       </div>
       
-      <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-slate-300 p-4 flex items-center justify-between gap-4 flex-wrap shadow-[0_-4px_15px_rgba(0,0,0,0.05)] relative z-50 pointer-events-auto">
-         <div className="flex items-center gap-3">
+      {/* Action Bar outside the scrollable container */}
+      <div className="bg-white border-t border-slate-300 p-4 safe-bottom flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-[0_-4px_15px_rgba(0,0,0,0.05)] relative z-50 pointer-events-auto">
+         <div className="flex justify-start">
             <button 
               onClick={() => { if(!isReviewMode) clearResponse(currentQ.id) }}
-              className="px-6 py-2.5 rounded-lg border border-slate-300 text-slate-600 font-bold hover:bg-slate-50 transition-colors text-sm"
+              className="px-6 py-3 rounded-lg border border-slate-300 text-slate-600 font-bold hover:bg-slate-50 transition-colors text-sm min-h-[44px]"
             >
               Clear Response
             </button>
          </div>
-         <div className="flex items-center gap-3">
+         <div className="flex items-center justify-end gap-3 flex-1">
             <button 
               onClick={() => { if(!isReviewMode) markForReviewAndNext(currentQ.id, questions) }}
-              className="px-6 py-2.5 rounded-lg bg-white border-2 border-indigo-600 text-indigo-600 font-bold hover:bg-indigo-50 transition-colors text-sm shadow-sm"
+              className="px-4 md:px-6 py-3 rounded-lg bg-white border-2 border-indigo-600 text-indigo-600 font-bold hover:bg-indigo-50 transition-colors text-sm shadow-sm min-h-[44px]"
             >
-              Mark for Review & Next
+              Mark for Review
             </button>
             <button 
               onClick={() => { if(!isReviewMode) saveAndNext(currentQ.id, questions) }}
-              className="px-8 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition-all shadow-md active:scale-95 text-sm"
+              className="px-6 md:px-8 py-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition-all shadow-md active:scale-95 text-sm min-h-[44px]"
             >
               Save & Next
             </button>
          </div>
       </div>
-    </div>
+    </>
   );
 });
 
@@ -455,7 +547,7 @@ const ResultsView = memo(function ResultsView({ type, questions, scoringMap, isR
                 <select 
                   value={archetype}
                   onChange={(e) => setArchetype(e.target.value)}
-                  className="bg-slate-800 border border-slate-700 text-white rounded-xl p-3 focus:outline-none focus:border-indigo-500 transition-colors"
+                  className="bg-slate-800 border border-slate-700 text-white text-base rounded-xl p-3 focus:outline-none focus:border-indigo-500 transition-colors"
                 >
                   <option value="Analytical & Technical">Analytical & Technical</option>
                   <option value="Visual & Conceptual">Visual & Conceptual</option>
@@ -571,6 +663,33 @@ export default function TestRunner({ type, questions, scoringMap, onExit, attemp
   const isSubmittedRef = useRef(isSubmitted);
   
   const [warningStrike, setWarningStrike] = useState<number | null>(null);
+  const [showExitWarning, setShowExitWarning] = useState(false);
+  const [isPaletteOpen, setIsPaletteOpen] = useState(false);
+
+  // Navigation Guard Effect
+  useEffect(() => {
+    if (isReviewMode || isSubmitted) return;
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = ''; 
+    };
+
+    const handlePopState = (e: PopStateEvent) => {
+      // Prevent immediate navigation
+      window.history.pushState(null, '', window.location.href);
+      setShowExitWarning(true);
+    };
+
+    window.history.pushState(null, '', window.location.href);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [isReviewMode, isSubmitted]);
 
   // Initialize Store exactly once when the component mounts
   useEffect(() => {
@@ -754,6 +873,24 @@ export default function TestRunner({ type, questions, scoringMap, onExit, attemp
         </div>
       )}
 
+      {/* Exit Warning Modal */}
+      {showExitWarning && (
+        <div className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in pointer-events-auto">
+          <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl text-center border-t-4 border-amber-500">
+            <h3 className="text-2xl font-black text-slate-900 mb-2">Leave Test?</h3>
+            <p className="text-slate-600 mb-6 font-medium">Your progress is automatically saved. You can resume later from the dashboard.</p>
+            <div className="flex flex-col gap-3">
+              <button onClick={() => setShowExitWarning(false)} className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl transition-all shadow-md active:scale-95">
+                Stay in Test
+              </button>
+              <button onClick={() => { setShowExitWarning(false); onExit(); }} className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-all active:scale-95">
+                Leave to Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Top Bar */}
       <div className="bg-white border-b border-slate-300 px-6 py-4 flex items-center justify-between shadow-sm pointer-events-auto">
         <div className="flex items-center gap-3">
@@ -766,10 +903,11 @@ export default function TestRunner({ type, questions, scoringMap, onExit, attemp
           </div>
         </div>
         
-        <div className="flex items-center gap-6">
-          <div className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2 ${isOnline ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700 animate-pulse'}`}>
+        <div className="flex items-center gap-3 md:gap-6">
+          <MobilePaletteToggle questions={questions} onClick={() => setIsPaletteOpen(true)} />
+          <div className={`hidden md:flex px-3 py-1 rounded-full text-xs font-bold items-center gap-2 ${isOnline ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700 animate-pulse'}`}>
             <span className={`w-2 h-2 rounded-full ${isOnline ? 'bg-emerald-500' : 'bg-red-500'}`}></span>
-            {isOnline ? 'Online' : 'Offline (Reconnecting...)'}
+            {isOnline ? 'Online' : 'Offline'}
           </div>
           <MemoizedTimer 
             initialSeconds={timeRemainingRef.current} 
@@ -798,7 +936,15 @@ export default function TestRunner({ type, questions, scoringMap, onExit, attemp
         </div>
 
         {/* Right Column - Question Palette */}
-        <div className="w-full md:w-[320px] lg:w-[380px] bg-slate-50 flex flex-col border-t md:border-t-0 md:border-l border-slate-300 flex-shrink-0 relative z-50 pointer-events-auto">
+        <div className={`fixed inset-0 z-[150] bg-black/50 backdrop-blur-sm transition-opacity duration-300 md:hidden ${isPaletteOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`} onClick={() => setIsPaletteOpen(false)}></div>
+        
+        <div className={`fixed md:relative right-0 top-0 bottom-0 z-[160] w-full max-w-[320px] md:max-w-none md:w-[320px] lg:w-[380px] bg-slate-50 flex flex-col border-l border-slate-300 flex-shrink-0 pointer-events-auto transform transition-transform duration-300 md:transform-none ${isPaletteOpen ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}`}>
+          {/* Close button for mobile */}
+          <div className="md:hidden absolute top-4 right-4 z-[170]">
+            <button onClick={() => setIsPaletteOpen(false)} className="p-2 bg-slate-200 hover:bg-slate-300 rounded-full text-slate-800 transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+          </div>
           
           <div className="p-4 border-b border-slate-300 bg-white">
             <h3 className="font-bold text-slate-800 mb-3 text-sm uppercase tracking-wider flex justify-between">
@@ -843,12 +989,13 @@ export default function TestRunner({ type, questions, scoringMap, onExit, attemp
                    questionNumber={index + 1}
                    isReviewMode={isReviewMode || false}
                    questions={questions}
+                   onClickAction={() => setIsPaletteOpen(false)}
                  />
                ))}
              </div>
           </div>
 
-          <div className="p-4 bg-white border-t border-slate-300">
+          <div className="p-4 bg-white border-t border-slate-300 safe-bottom">
             <button 
               onClick={handleSubmit} 
               className="w-full py-3 bg-slate-800 hover:bg-slate-900 text-white font-black rounded-lg transition-all shadow-md active:scale-95 flex items-center justify-center gap-2"

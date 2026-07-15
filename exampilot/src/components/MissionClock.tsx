@@ -22,20 +22,27 @@ export default function MissionClock({ examDate, initialSeconds, onTick, onTimeU
     setIsMounted(true);
     
     if (isTestMode) {
-      if (testSecondsLeft <= 0) return;
+      if (initialSeconds === undefined || initialSeconds <= 0) return;
+      
+      // Compute the absolute end time when the component mounts
+      const targetEndTime = Date.now() + initialSeconds * 1000;
+      
       const timer = setInterval(() => {
-        setTestSecondsLeft(prev => {
-          const next = prev - 1;
-          if (next <= 0) {
-            clearInterval(timer);
-            if (onTick) onTick(0);
-            if (onTimeUp) onTimeUp();
-            return 0;
-          }
-          if (onTick) onTick(next);
-          return next;
-        });
+        const now = Date.now();
+        const remaining = Math.max(0, Math.floor((targetEndTime - now) / 1000));
+        
+        setTestSecondsLeft(remaining);
+        
+        if (onTick) {
+           onTick(remaining);
+        }
+        
+        if (remaining <= 0) {
+          clearInterval(timer);
+          if (onTimeUp) onTimeUp();
+        }
       }, 1000);
+      
       return () => clearInterval(timer);
     } else if (examDate) {
       const targetDate = new Date(examDate).getTime();
