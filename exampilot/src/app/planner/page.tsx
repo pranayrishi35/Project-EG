@@ -2,6 +2,7 @@ import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import type { ExtendedPlan } from "@/app/actions/toggleTopic";
 import DeletePlanButton from "@/components/DeletePlanButton";
 
@@ -211,19 +212,13 @@ export default async function PlannerPage() {
   const supabase = createClient();
 
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
+  const user = session?.user;
 
   if (!user) {
     redirect("/login?next=/planner");
   }
-
-  const { data: plans, error } = await supabase
-    .from("study_plans")
-    .select("id, exam_name, exam_date, created_at, generated_plan")
-    .order("created_at", { ascending: false });
-
-  const hasPlanss = !error && plans && plans.length > 0;
 
   return (
     <div className="flex flex-col gap-6 p-4 pt-6 pb-24 max-w-5xl mx-auto">
@@ -256,15 +251,31 @@ export default async function PlannerPage() {
       </div>
 
       {/* Content */}
-      {hasPlanss ? (
-        <div className="flex flex-col gap-3">
-          {(plans as PlanSummary[]).map((plan) => (
-            <PlanCard key={plan.id} plan={plan} />
-          ))}
-        </div>
-      ) : (
-        <EmptyState />
-      )}
+      <Suspense fallback={<div className="animate-pulse flex flex-col gap-3"><div className="h-32 bg-gray-100 rounded-2xl w-full"/><div className="h-32 bg-gray-100 rounded-2xl w-full"/></div>}>
+        <PlansLoader />
+      </Suspense>
+    </div>
+  );
+}
+
+async function PlansLoader() {
+  const supabase = createClient();
+  const { data: plans, error } = await supabase
+    .from("study_plans")
+    .select("id, exam_name, exam_date, created_at, generated_plan")
+    .order("created_at", { ascending: false });
+
+  const hasPlans = !error && plans && plans.length > 0;
+
+  if (!hasPlans) {
+    return <EmptyState />;
+  }
+
+  return (
+    <div className="flex flex-col gap-3">
+      {(plans as PlanSummary[]).map((plan) => (
+        <PlanCard key={plan.id} plan={plan} />
+      ))}
     </div>
   );
 }

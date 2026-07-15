@@ -81,6 +81,10 @@ function UrlError() {
 
 // ─── Main Login Form ──────────────────────────────────────────────────────────
 function LoginForm() {
+  // Consent state
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [agreedToAge, setAgreedToAge] = useState(false);
+
   // Google OAuth state
   const [isGooglePending, startGoogleTransition] = useTransition();
   const [googleError, setGoogleError] = useState<string | null>(null);
@@ -114,13 +118,45 @@ function LoginForm() {
 
   return (
     <>
+      {/* ── Consent Checkboxes ───────────────────────────────────── */}
+      <div className="flex flex-col gap-3 mb-2">
+        <label className="flex items-start gap-3 cursor-pointer group">
+          <div className="flex items-center h-5">
+            <input
+              type="checkbox"
+              checked={agreedToTerms}
+              onChange={(e) => setAgreedToTerms(e.target.checked)}
+              disabled={isAnyLoading}
+              className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer disabled:opacity-50"
+            />
+          </div>
+          <span className="text-xs text-gray-600 leading-snug">
+            I agree to the <a href="/terms" target="_blank" className="text-indigo-600 hover:underline">Terms of Service</a> and <a href="/privacy" target="_blank" className="text-indigo-600 hover:underline">Privacy Policy</a>.
+          </span>
+        </label>
+        <label className="flex items-start gap-3 cursor-pointer group">
+          <div className="flex items-center h-5">
+            <input
+              type="checkbox"
+              checked={agreedToAge}
+              onChange={(e) => setAgreedToAge(e.target.checked)}
+              disabled={isAnyLoading}
+              className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer disabled:opacity-50"
+            />
+          </div>
+          <span className="text-xs text-gray-600 leading-snug">
+            I am 18 or older, or I have verifiable parental/guardian consent.
+          </span>
+        </label>
+      </div>
+
       {/* ── Google OAuth button ──────────────────────────────────── */}
       <div className="flex flex-col gap-3">
         <button
           id="google-sign-in-btn"
           type="button"
           onClick={handleGoogleSignIn}
-          disabled={isAnyLoading}
+          disabled={isAnyLoading || !agreedToTerms || !agreedToAge}
           aria-label="Continue with Google"
           className="w-full flex items-center justify-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3.5 text-sm font-semibold text-gray-700 shadow-sm transition-all duration-150 hover:border-gray-300 hover:bg-gray-50 hover:shadow-md active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
           style={{ minHeight: "52px" }}
@@ -173,7 +209,7 @@ function LoginForm() {
             <button
               id="send-magic-link-btn"
               type="submit"
-              disabled={isOtpPending}
+              disabled={isOtpPending || !agreedToTerms || !agreedToAge}
               className="ep-btn-primary"
               style={isOtpPending ? { opacity: 0.7, transform: "none", boxShadow: "none", cursor: "not-allowed" } : {}}
               aria-label="Send magic link to your email"
@@ -226,9 +262,7 @@ export default function LoginPage() {
 
       {/* Fine print */}
       <p className="text-center text-xs text-gray-400 leading-relaxed">
-        By continuing, you agree to our{" "}
-        <span className="underline decoration-gray-300">Terms of Service</span>{" "}and{" "}
-        <span className="underline decoration-gray-300">Privacy Policy</span>.
+        We are committed to protecting your personal data.
       </p>
     </div>
   );

@@ -1,9 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
-import { unstable_noStore as noStore } from "next/cache";
+import { cache } from "react";
 
-export async function checkIsAdmin(email: string | null | undefined): Promise<boolean> {
-  noStore();
-  
+export const checkIsAdmin = cache(async (email: string | null | undefined): Promise<boolean> => {
+
   if (!email) return false;
   
   try {
@@ -34,4 +33,4 @@ export async function checkIsAdmin(email: string | null | undefined): Promise<bo
     console.error("[ADMIN CHECK FATAL ERROR]:", err);
     return false;
   }
-}
+});

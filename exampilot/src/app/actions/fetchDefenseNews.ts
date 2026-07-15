@@ -1,7 +1,8 @@
 "use server";
 
-import { createClient } from "@/utils/supabase/server";
+import { getAdminClient } from "@/lib/adminClient";
 import { headers } from "next/headers";
+import { unstable_cache } from "next/cache";
 
 export type NewsItem = {
   id: string;
@@ -55,12 +56,12 @@ const MOCK_DEFENSE_NEWS: NewsItem[] = [
   }
 ];
 
-export async function fetchDefenseNews(page = 0, limit = 20): Promise<{ data: NewsItem[], hasMore: boolean }> {
+export const fetchDefenseNews = unstable_cache(async (page = 0, limit = 20): Promise<{ data: NewsItem[], hasMore: boolean }> => {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 3500);
 
   try {
-    const supabase = createClient();
+    const supabase = getAdminClient();
     
     const from = page * limit;
     const to = from + limit - 1;
@@ -90,8 +91,16 @@ export async function fetchDefenseNews(page = 0, limit = 20): Promise<{ data: Ne
       console.log("News cache is older than 12 hours. Triggering auto-refresh.");
       const secret = process.env.CRON_SECRET;
       if (secret) {
-        const host = headers().get("host");
-        const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
+        // unstable_cache context may not have headers() available depending on Next.js version
+        let host = "localhost";
+        let protocol = "http";
+        try {
+          host = headers().get("host") || host;
+          protocol = process.env.NODE_ENV === "development" ? "http" : "https";
+        } catch {
+          // headers() can't be used during some cached builds
+        }
+        
         const url = `${protocol}://${host}/api/cron/fetch-news?secret=${secret}`;
         fetch(url, { method: 'GET', cache: 'no-store' }).catch(err => 
           console.error("Auto-refresh fetch failed:", err)
@@ -115,4 +124,4 @@ export async function fetchDefenseNews(page = 0, limit = 20): Promise<{ data: Ne
     console.error("[News Fetch Error]:", error);
     return { data: page === 0 ? MOCK_DEFENSE_NEWS : [], hasMore: false };
   }
-}
+}, ['defense-news'], { revalidate: 3600, tags: ['news'] });

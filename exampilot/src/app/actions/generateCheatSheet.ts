@@ -3,6 +3,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { createClient } from "@/utils/supabase/server";
 import { checkAndDeductCredits } from "@/lib/creditManager";
+import { robustJsonParse } from "@/lib/robustJsonParse";
 
 export interface CheatSheetSection {
   subject: string;
@@ -79,10 +80,7 @@ export async function generateCheatSheet(planId: string): Promise<GenerateCheatS
     let rawText = result.response.text();
 
     // Aggressively strip out markdown code blocks just in case Gemini hallucinates them
-    rawText = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
-
-    // Parse the cleaned JSON
-    const parsedData = JSON.parse(rawText);
+    const parsedData = robustJsonParse(rawText);
 
     // Flexibly grab the array whether Gemini returned it directly or wrapped it in the object
     const cheatSheet = Array.isArray(parsedData)

@@ -1,6 +1,7 @@
 import { google } from '@ai-sdk/google';
-import { streamText, UIMessage } from 'ai';
+import { streamText } from 'ai';
 import { createClient } from '@/utils/supabase/server';
+import { sanitizePrompt } from '@/lib/sanitizer';
 
 export const maxDuration = 30; // max duration for Vercel Hobby
 
@@ -26,15 +27,19 @@ export async function POST(req: Request) {
 
     const { messages } = await req.json();
 
+    const sanitizedMessages = messages.map((m: any) => ({
+      ...m,
+      content: sanitizePrompt(m.content)
+    }));
+
     const result = await streamText({
       model: google('gemini-3.1-flash-lite'),
       system: systemInstruction,
-      messages: messages as UIMessage[],
+      messages: sanitizedMessages,
       temperature: 0.5,
-      maxTokens: 1024,
     });
 
-    return result.toDataStreamResponse();
+    return result.toTextStreamResponse();
   } catch (error) {
     console.error('[API Chat] Error:', error);
     return new Response('Error generating response', { status: 500 });

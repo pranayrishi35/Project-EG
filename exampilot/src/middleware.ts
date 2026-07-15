@@ -53,7 +53,36 @@ export async function middleware(request: NextRequest) {
 
   // IMPORTANT: do NOT remove — this refreshes the session on every request.
   // See: https://supabase.com/docs/guides/auth/server-side/nextjs
-  await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (user) {
+    const pathname = request.nextUrl.pathname;
+    const isConsentRoute = pathname === '/consent';
+    const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/auth');
+    const isLegalRoute = ['/terms', '/privacy', '/cookies', '/aup', '/refund-policy'].includes(pathname);
+    const isApiRoute = pathname.startsWith('/api') || pathname.startsWith('/_next');
+
+    if (!isConsentRoute && !isAuthRoute && !isLegalRoute && !isApiRoute) {
+      // FAST PATH: Check if the cookie exists to avoid a 150ms+ database query on every page load
+      if (!request.cookies.has("consent_granted")) {
+        // SLOW PATH: Fallback to DB check (e.g. user logged in on a new device where cookie is missing)
+        const { data: profile } = await supabase
+          .from('user_profiles')
+          .select('legal_consent_version')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (!profile?.legal_consent_version) {
+          const url = request.nextUrl.clone();
+          url.pathname = '/consent';
+          return NextResponse.redirect(url);
+        } else {
+          // User has consent in DB, but was missing the cookie. Set it now to speed up future requests!
+          supabaseResponse.cookies.set("consent_granted", "true", { maxAge: 60 * 60 * 24 * 365, path: "/" });
+        }
+      }
+    }
+  }
 
   return supabaseResponse;
 }

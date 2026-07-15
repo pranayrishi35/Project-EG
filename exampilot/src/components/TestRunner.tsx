@@ -3,7 +3,8 @@
 import { useState, useEffect, useRef, useMemo, useCallback, memo } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import MissionClock from "./MissionClock";
+import dynamic from "next/dynamic";
+const MissionClock = dynamic(() => import("./MissionClock"), { ssr: false });
 import { generateTestStrategy } from "@/app/actions/generateTestStrategy";
 import { saveMockProgress } from "@/app/actions/mockAttempts";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";

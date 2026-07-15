@@ -3,6 +3,8 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { createClient } from "@/utils/supabase/server";
 import { checkAndDeductCredits } from "@/lib/creditManager";
+import { sanitizePrompt } from "@/lib/sanitizer";
+import { robustJsonParse } from "@/lib/robustJsonParse";
 
 export async function generateTestStrategy(
   score: number,
@@ -46,19 +48,18 @@ export async function generateTestStrategy(
     }
   });
 
-  const subjectsContext = incorrectSubjects.length > 0 
-    ? `They missed questions in the following subjects: ${incorrectSubjects.join(", ")}.`
+  const validArchetypes = ["Visual", "Auditory", "Reading/Writing", "Kinesthetic", "General"];
+  const safeArchetype = validArchetypes.includes(studentArchetype) ? studentArchetype : "General";
+  
+  const safeSubjects = incorrectSubjects.map(s => sanitizePrompt(s).replace(/[^a-zA-Z0-9\s]/g, '').substring(0, 50));
+
+  const subjectsContext = safeSubjects.length > 0 
+    ? `They missed questions in the following subjects: ${safeSubjects.join(", ")}.`
     : `They scored a perfect test!`;
 
   const prompt = `You are an elite defense exam tactical coach. Analyze this test result. The student scored ${score} out of ${maxScore}. ${subjectsContext}
   
-The student learns best via the "${studentArchetype}" archetype. You must output a JSON object with exactly two keys: "weaknesses" (a short string summarizing their critical weaknesses) and "actionPlan" (an array of 3 actionable string steps for tomorrow). Keep the tone focused, tactical, and encouraging. Return ONLY the JSON object.`;
-
-  function extractJSON(text: string) {
-    const match = text.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
-    if (!match) throw new Error("No JSON object or array found in text.");
-    return match[0];
-  }
+The student learns best via the "${safeArchetype}" archetype. You must output a JSON object with exactly two keys: "weaknesses" (a short string summarizing their critical weaknesses) and "actionPlan" (an array of 3 actionable string steps for tomorrow). Keep the tone focused, tactical, and encouraging. Return ONLY the JSON object.`;
 
   try {
     const result = await model.generateContent(prompt);
@@ -66,8 +67,7 @@ The student learns best via the "${studentArchetype}" archetype. You must output
     
     let strategyData;
     try {
-      const cleanJson = extractJSON(text);
-      strategyData = JSON.parse(cleanJson);
+      strategyData = robustJsonParse(text);
       
       // Basic validation
       if (!strategyData.weaknesses || !Array.isArray(strategyData.actionPlan)) {

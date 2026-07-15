@@ -2,6 +2,7 @@ import { google } from '@ai-sdk/google';
 import { streamText } from 'ai';
 import { createClient } from '@/utils/supabase/server';
 import { checkAndDeductCredits } from '@/lib/creditManager';
+import { sanitizePrompt } from '@/lib/sanitizer';
 
 export const maxDuration = 30;
 
@@ -15,6 +16,7 @@ export async function POST(req: Request) {
     }
 
     const { prompt } = await req.json();
+    const sanitizedPrompt = sanitizePrompt(prompt);
 
     const creditCheck = await checkAndDeductCredits(authData.user.id, authData.user.email, 1);
     if (!creditCheck.success) {
@@ -33,12 +35,11 @@ export async function POST(req: Request) {
     const result = await streamText({
       model: google('gemini-3.1-flash-lite'),
       system: systemInstruction,
-      prompt,
+      prompt: sanitizedPrompt,
       temperature: 0.7,
-      maxTokens: 800,
     });
 
-    return result.toDataStreamResponse();
+    return result.toTextStreamResponse();
   } catch (error) {
     console.error('[API Coach] Error:', error);
     return new Response('Error generating strategy', { status: 500 });

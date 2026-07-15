@@ -70,6 +70,19 @@ const withPWA = withPWAInit({
   },
 });
 
+const cspHeader = `
+    default-src 'self';
+    script-src 'self' 'unsafe-eval' 'unsafe-inline';
+    style-src 'self' 'unsafe-inline';
+    img-src 'self' blob: data: https://*.supabase.co https://*.googleusercontent.com https://avatars.githubusercontent.com;
+    font-src 'self';
+    object-src 'none';
+    base-uri 'self';
+    form-action 'self';
+    frame-ancestors 'none';
+    connect-src 'self' https://*.supabase.co wss://*.supabase.co;
+`;
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -77,6 +90,7 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   images: {
+    unoptimized: true,
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [
       {
@@ -98,6 +112,29 @@ const nextConfig = {
         pathname: '/**',
       },
     ],
+  },
+  experimental: {
+    outputFileTracingIncludes: {
+      '/(legal)/**': ['./docs/legal/**/*'],
+      '/terms': ['./docs/legal/**/*'],
+      '/privacy': ['./docs/legal/**/*'],
+      '/cookies': ['./docs/legal/**/*'],
+      '/aup': ['./docs/legal/**/*'],
+      '/refund-policy': ['./docs/legal/**/*']
+    },
+  },
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: cspHeader.replace(/\n/g, ''),
+          },
+        ],
+      },
+    ];
   },
 };
 

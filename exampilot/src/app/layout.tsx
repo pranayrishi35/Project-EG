@@ -5,6 +5,7 @@ import Header from "@/components/Header";
 import BottomNav from "@/components/BottomNav";
 import Sidebar from "@/components/Sidebar";
 import FloatingAssistant from "@/components/FloatingAssistant";
+import { LegalFooter } from "@/components/LegalFooter";
 import { createClient } from "@/utils/supabase/server";
 
 export const metadata: Metadata = {
@@ -58,7 +59,8 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { session } } = await supabase.auth.getSession();
+  const user = session?.user;
   
   const isAdmin = await checkIsAdmin(user?.email);
 
@@ -79,8 +81,11 @@ export default async function RootLayout({
             paddingTop: "var(--header-height)",
           }}
         >
-          <div className="pb-16 md:pb-0 min-h-[100dvh]">
-            {children}
+          <div className="pb-16 md:pb-0 min-h-[100dvh] flex flex-col">
+            <div className="flex-1">
+              {children}
+            </div>
+            <LegalFooter />
           </div>
         </main>
 

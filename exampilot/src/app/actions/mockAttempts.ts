@@ -2,6 +2,31 @@
 
 import { createClient } from "@/utils/supabase/server";
 import { getAdminClient } from "@/lib/adminClient";
+import { z } from "zod";
+
+const QStatusSchema = z.enum(["unvisited", "unanswered", "answered", "marked", "answered_and_marked"]);
+
+const QuestionSchema = z.object({
+  id: z.string().max(200),
+  text: z.string().optional(),
+  options: z.array(z.string()).optional(),
+  imageUrl: z.string().nullable().optional(),
+  subject: z.string().optional(),
+  correctIndex: z.number().optional(),
+  pyqYear: z.number().nullable().optional(),
+});
+
+const AnswerStateSchema = z.object({
+  currentQuestionIndex: z.number().optional(),
+  selectedAnswers: z.record(z.string(), z.number()).optional(),
+  statuses: z.record(z.string(), QStatusSchema).optional(),
+  questions: z.array(QuestionSchema).optional(),
+  scoringMap: z.object({
+    correct: z.number(),
+    incorrect: z.number()
+  }).optional(),
+  testNumber: z.number().optional()
+});
 
 const EXAM_CONFIGS = {
   "AFCAT": { limit: 100, correct: 3, incorrect: -1 },
@@ -16,7 +41,31 @@ export async function saveMockProgress(payload: any) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false, error: "Not authenticated" };
 
-  const { id, exam_target, test_number, status, score, time_remaining, answers_state } = payload;
+  // Explicit Authorization Verification
+  if (payload.user_id && payload.user_id !== user.id) {
+    return { success: false, error: "Unauthorized: payload user_id mismatch" };
+  }
+  
+  if (payload.id) {
+    // Verify attempt ownership if it exists
+    const { data: existingAuth } = await supabase.from('mock_attempts').select('user_id').eq('id', payload.id).single();
+    if (existingAuth && existingAuth.user_id !== user.id) {
+      return { success: false, error: "Unauthorized: You do not own this mock attempt." };
+    }
+  }
+
+  const { id, exam_target, test_number, status, score, time_remaining, answers_state: rawAnswersState } = payload;
+  
+  // Zod Validation to strip unexpected payload fields
+  let answers_state = rawAnswersState;
+  if (rawAnswersState) {
+    const parseResult = AnswerStateSchema.safeParse(rawAnswersState);
+    if (!parseResult.success) {
+      console.error("[Mock Sync] Invalid answers_state structure:", parseResult.error);
+      return { success: false, error: "Invalid payload structure" };
+    }
+    answers_state = parseResult.data;
+  }
   
   let currentTestNumber = test_number;
 

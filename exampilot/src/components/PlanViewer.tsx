@@ -1,15 +1,17 @@
 "use client";
 
 import { useState, useTransition, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { toggleTopic } from "@/app/actions/toggleTopic";
 import type { ExtendedPlan } from "@/app/actions/toggleTopic";
 import type { PlanWeek, PlanDay } from "@/app/actions/planner";
 import type { MockTestResult } from "@/app/actions/logMockTest";
 import FocusTimer from "@/components/FocusTimer";
 import MockTestAnalyzer from "@/components/MockTestAnalyzer";
-import MissionClock from "@/components/MissionClock";
 import CheatSheetView from "@/components/CheatSheetView";
-import TestRunner from "@/components/TestRunner";
+
+const MissionClock = dynamic(() => import("@/components/MissionClock"), { ssr: false });
+const TestRunner = dynamic(() => import("@/components/TestRunner"), { ssr: false });
 import { getMockTest } from "@/app/actions/getMockTest";
 import { getMiniTest } from "@/app/actions/getMiniTest";
 import type { Question, ScoringMap } from "@/app/actions/getMockTest";

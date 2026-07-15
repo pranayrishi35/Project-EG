@@ -4,7 +4,9 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getCurrentAffairsTest } from "@/app/actions/getCurrentAffairsTest";
 import type { Question, ScoringMap } from "@/app/actions/getMockTest";
-import TestRunner from "@/components/TestRunner";
+import dynamic from "next/dynamic";
+
+const TestRunner = dynamic(() => import("@/components/TestRunner"), { ssr: false });
 
 export default function CurrentAffairsPracticePage() {
   const router = useRouter();

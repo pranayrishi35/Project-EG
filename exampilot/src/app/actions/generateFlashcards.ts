@@ -3,6 +3,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { createClient } from "@/utils/supabase/server";
 import { checkAndDeductCredits } from "@/lib/creditManager";
+import { robustJsonParse } from "@/lib/robustJsonParse";
 
 export interface Flashcard {
   question: string;
@@ -84,10 +85,8 @@ export async function generateFlashcards(): Promise<GenerateFlashcardsResult> {
     const result = await model.generateContent(prompt);
     let rawText = result.response.text();
 
-    // 3. Failsafe cleaning for rogue markdown
-    rawText = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
-
-    const flashcards = JSON.parse(rawText);
+    // 3. Failsafe cleaning for rogue markdown and trailing commas
+    const flashcards = robustJsonParse(rawText);
 
     if (!Array.isArray(flashcards) || flashcards.length === 0) {
       throw new Error("AI returned invalid data format.");

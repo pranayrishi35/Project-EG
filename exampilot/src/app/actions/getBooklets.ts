@@ -2,6 +2,7 @@
 
 import { createClient } from "@/utils/supabase/server";
 import { getAdminClient } from "@/lib/adminClient";
+import { unstable_cache } from "next/cache";
 
 export type BookletMetadata = Record<string, Record<string, number>>;
 
@@ -17,8 +18,8 @@ export type BookletQuestion = {
  * Fetches lightweight metadata for the directory page.
  * We only query exam_target, then group and count in JS.
  */
-export async function getBookletDirectory(): Promise<BookletMetadata> {
-  const supabase = createClient();
+export const getBookletDirectory = unstable_cache(async (): Promise<BookletMetadata> => {
+  const supabase = getAdminClient();
 
   const { data, error } = await supabase
     .from("question_bank")
@@ -42,12 +43,12 @@ export async function getBookletDirectory(): Promise<BookletMetadata> {
   }
 
   return counts;
-}
+}, ['booklet-directory'], { revalidate: 3600, tags: ['booklets'] });
 
 /**
  * Fetches the heavy content payload for a specific exam target.
  */
-export async function getBookletContent(examTarget: string, subject?: string, page = 0, limit = 20): Promise<{ data: BookletQuestion[], hasMore: boolean }> {
+export const getBookletContent = unstable_cache(async (examTarget: string, subject?: string, page = 0, limit = 20): Promise<{ data: BookletQuestion[], hasMore: boolean }> => {
   // Use admin client because correct_index is revoked for standard clients, but booklets explicitly require it.
   const supabase = getAdminClient();
   const from = page * limit;
@@ -88,4 +89,4 @@ export async function getBookletContent(examTarget: string, subject?: string, pa
   }
 
   return { data: data as BookletQuestion[], hasMore: data.length === limit };
-}
+}, ['booklet-content'], { revalidate: 3600, tags: ['booklets'] });
