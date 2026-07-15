@@ -10,8 +10,8 @@ export default function FloatingAssistant() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const [input, setInput] = useState('');
-  const { messages, status, sendMessage } = useChat({
-    messages: [
+  const { messages, status, append } = useChat({
+    initialMessages: [
       { id: "init", role: "assistant", content: "Hi! I'm your ExamPilot AI Tutor. How can I help you study today?" }
     ] as any[],
     onError: (error) => {
@@ -34,7 +34,7 @@ export default function FloatingAssistant() {
   const onFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!input?.trim() || isLoading) return;
-    sendMessage({ role: 'user', content: input });
+    append({ role: 'user', content: input });
     setInput('');
   };
 
