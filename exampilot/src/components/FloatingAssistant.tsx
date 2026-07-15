@@ -73,10 +73,10 @@ export default function FloatingAssistant() {
               }`}>
                 {msg.role === "assistant" ? (
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {msg.content}
+                    {msg.content || (msg.parts && msg.parts.map((p: any) => p.text).join("")) || "..."}
                   </ReactMarkdown>
                 ) : (
-                  msg.content
+                  msg.content || (msg.parts && msg.parts.map((p: any) => p.text).join("")) || "..."
                 )}
               </div>
             </div>
