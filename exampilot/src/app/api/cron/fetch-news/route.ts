@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
   // Fetching news related to defense, space, and sports for Indian exams
   let articles: any[] = [];
   try {
-    const gnewsRes = await fetch(`https://gnews.io/api/v4/search?q=defence OR military OR ISRO OR DRDO OR "Indian Navy" OR "Indian Army" OR "Air Force" OR sports&country=in&max=10&apikey=${gnewsKey}`);
+    const gnewsRes = await fetch(`https://gnews.io/api/v4/search?q=defence OR military OR ISRO OR DRDO OR "Indian Navy" OR "Indian Army" OR "Air Force" OR sports&country=in&max=5&apikey=${gnewsKey}`);
     const data = await gnewsRes.json();
     if (data.articles) {
       articles = data.articles;
