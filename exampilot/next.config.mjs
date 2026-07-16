@@ -1,4 +1,5 @@
 import withPWAInit from "@ducanh2912/next-pwa";
+import { withReticle } from "@reticlehq/next";
 
 const withPWA = withPWAInit({
   dest: "public",
@@ -138,4 +139,4 @@ const nextConfig = {
   },
 };
 
-export default withPWA(nextConfig);
+export default withReticle(withPWA(nextConfig));

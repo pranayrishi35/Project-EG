@@ -68,6 +68,7 @@ export default async function Header() {
         {/* ── Logo ───────────────────────────────────────────────── */}
         <Link
           href="/"
+          data-testid="header-title"
           className="flex items-center gap-2 outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 rounded-lg"
           aria-label="ExamPilot home"
         >
@@ -106,6 +107,7 @@ export default async function Header() {
             
             <Link
               id="header-settings-link"
+              data-testid="header-settings-link"
               href="/settings"
               aria-label={`Account settings for ${userEmail}`}
               className="flex items-center gap-2 outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 rounded-full"
@@ -123,6 +125,7 @@ export default async function Header() {
           /* Logged out — show Sign In link */
           <Link
             id="header-sign-in-link"
+            data-testid="header-sign-in-link"
             href="/login"
             className="text-sm font-semibold text-indigo-600 hover:text-indigo-700 transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 rounded"
           >

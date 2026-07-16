@@ -77,6 +77,7 @@ export default function BottomNav({ isAdmin }: { isAdmin?: boolean }) {
               <Link
                 href={item.href}
                 id={`nav-${item.label.toLowerCase()}`}
+                data-testid={`bottom-nav-${item.label.toLowerCase()}`}
                 className={`flex flex-col items-center justify-center w-full h-full gap-1 text-xs font-medium transition-colors duration-150 ${
                   isActive
                     ? "text-indigo-600"

@@ -35,6 +35,7 @@ export default function DeletePlanButton({ planId, planName }: DeletePlanButtonP
   return (
     <button
       id={`delete-plan-${planId}`}
+      data-testid="delete-plan-button"
       type="button"
       onClick={handleDelete}
       disabled={isPending}

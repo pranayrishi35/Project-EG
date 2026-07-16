@@ -7,6 +7,8 @@ import Sidebar from "@/components/Sidebar";
 import FloatingAssistant from "@/components/FloatingAssistant";
 import { LegalFooter } from "@/components/LegalFooter";
 import { createClient } from "@/utils/supabase/server";
+import dynamic from 'next/dynamic';
+const ReticleDev = dynamic(() => import('./reticle-dev').then(m => m.ReticleDev), { ssr: false });
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://exampilot.in'),
@@ -66,6 +68,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body>
+        {process.env.NODE_ENV === 'development' ? <ReticleDev /> : null}
         {/* Fixed Header */}
         <Header />
 
