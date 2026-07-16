@@ -15,7 +15,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import CreditModal from "./CreditModal";
 import { create } from 'zustand';
-
+import { EXAM_CONFIGS, ExamTarget } from "@/lib/examConfig";
 import type { Question, ScoringMap } from "@/app/actions/getMockTest";
 
 // --- Zustand Store (Granular State Management) ---
@@ -496,6 +496,39 @@ const ResultsView = memo(function ResultsView({ type, questions, scoringMap, isR
   const maxScore = (questions.length * finalMarksCorrect).toFixed(2);
   const accuracy = ((correct / (correct + incorrect || 1)) * 100).toFixed(1);
 
+  // Compute Subject Stats dynamically for display
+  const config = EXAM_CONFIGS[type as ExamTarget];
+  const subjectStats: Record<string, { correct: number; total: number }> = {};
+  
+  if (config) {
+    for (const [subject, total] of Object.entries(config.subject_breakdown)) {
+      subjectStats[subject] = { correct: 0, total };
+    }
+  }
+
+  questions.forEach((q: any) => {
+    const subject = q.subject || "General Awareness";
+    const status = statuses[q.id] || "unvisited";
+    const isConsidered = status === "answered" || status === "answered_and_marked";
+    
+    if (isConsidered) {
+      const selected = selectedAnswers[q.id];
+      if (selected === q.correctIndex) {
+        if (!subjectStats[subject]) {
+           subjectStats[subject] = { correct: 0, total: 0 };
+        }
+        subjectStats[subject].correct++;
+      }
+    }
+    
+    if (!config) {
+      if (!subjectStats[subject]) {
+         subjectStats[subject] = { correct: 0, total: 0 };
+      }
+      subjectStats[subject].total++;
+    }
+  });
+
   useEffect(() => {
     async function fetchRank() {
       if (!testNumber || isReviewMode || !attemptId) {
@@ -585,6 +618,34 @@ const ResultsView = memo(function ResultsView({ type, questions, scoringMap, isR
             <span className="font-bold text-lg">{unattempted}</span>
           </div>
         </div>
+
+        {/* Subject-Wise Breakdown */}
+        {Object.keys(subjectStats).length > 0 && (
+          <div className="mb-8 w-full print:break-inside-avoid">
+            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+              Subject Accuracy
+            </h3>
+            <div className="space-y-4">
+              {Object.entries(subjectStats).map(([subject, stats]) => {
+                const percentage = stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0;
+                return (
+                  <div key={subject} className="flex flex-col gap-1.5">
+                    <div className="flex justify-between items-center text-sm font-bold">
+                      <span className="text-slate-300 print:text-black">{subject}</span>
+                      <span className="text-indigo-400 print:text-indigo-700">{percentage}% <span className="text-slate-500 font-medium">({stats.correct}/{stats.total})</span></span>
+                    </div>
+                    <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden print:border print:border-gray-300">
+                      <div 
+                        className="h-full bg-indigo-500 transition-all duration-1000 ease-out print:bg-indigo-600" 
+                        style={{ width: `${percentage}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         <div className="w-full bg-slate-700/30 border border-slate-700/50 rounded-2xl p-6 mb-8 print:hidden">
           <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">

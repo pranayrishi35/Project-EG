@@ -22,12 +22,7 @@ export type GetTestResult =
   | { success: true; questions: Question[]; scoringMap: ScoringMap }
   | { success: false; error: string; shortage?: boolean };
 
-const EXAM_CONFIGS = {
-  "AFCAT": { limit: 100, correct: 3, incorrect: -1 },
-  "NDA_MATH": { limit: 120, correct: 2.5, incorrect: -0.83 },
-  "NDA_GAT": { limit: 150, correct: 4, incorrect: -1.33 },
-  "CDS": { limit: 120, correct: 0.83, incorrect: -0.27 },
-};
+import { EXAM_CONFIGS } from "@/lib/examConfig"; // centralized config
 
 export async function getMockTest(examTarget: string, mini: boolean = false): Promise<GetTestResult> {
   const supabase = createClient();
@@ -37,7 +32,7 @@ export async function getMockTest(examTarget: string, mini: boolean = false): Pr
     return { success: false, error: "Invalid exam target for test generation." };
   }
 
-  const totalQuestions = mini ? 15 : config.limit;
+  const totalQuestions = mini ? 15 : config.total_questions;
   const pyqTarget = Math.floor(totalQuestions * 0.25); // Target ~25% PYQs
 
   try {
@@ -99,7 +94,7 @@ export async function getMockTest(examTarget: string, mini: boolean = false): Pr
     return { 
       success: true, 
       questions: mappedQuestions, 
-      scoringMap: { correct: config.correct, incorrect: config.incorrect } 
+      scoringMap: { correct: config.marks_per_correct, incorrect: config.negative_marking } 
     };
 
   } catch (e: any) {

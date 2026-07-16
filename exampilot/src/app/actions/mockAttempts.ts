@@ -3,6 +3,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { getAdminClient } from "@/lib/adminClient";
 import { z } from "zod";
+import { EXAM_CONFIGS } from "@/lib/examConfig";
 
 const QStatusSchema = z.enum(["unvisited", "unanswered", "answered", "marked", "answered_and_marked"]);
 
@@ -27,14 +28,6 @@ const AnswerStateSchema = z.object({
   }).optional(),
   testNumber: z.number().optional()
 });
-
-const EXAM_CONFIGS = {
-  "AFCAT": { limit: 100, correct: 3, incorrect: -1 },
-  "NDA_MATH": { limit: 120, correct: 2.5, incorrect: -0.83 },
-  "NDA_GAT": { limit: 150, correct: 4, incorrect: -1.33 },
-  "CDS": { limit: 120, correct: 0.83, incorrect: -0.27 },
-  "Mini-Test": { limit: 15, correct: 1, incorrect: -0.33 },
-};
 
 export async function saveMockProgress(payload: any) {
   const supabase = createClient();
@@ -95,11 +88,18 @@ export async function saveMockProgress(payload: any) {
   }
   let finalScore = score;
 
+  let subjectStats: Record<string, { correct: number; total: number }> = {};
+
   // Phase 2: Server-Side Score Recalculation (Security Audit Fix)
   if (status === 'completed' && answers_state?.questions) {
-    const config = EXAM_CONFIGS[exam_target as keyof typeof EXAM_CONFIGS] || EXAM_CONFIGS["AFCAT"];
-    const mpc = config.correct;
-    const pip = config.incorrect;
+    const config = EXAM_CONFIGS[exam_target as keyof typeof EXAM_CONFIGS] || EXAM_CONFIGS["AFCAT"]!;
+    const mpc = config.marks_per_correct;
+    const pip = config.negative_marking;
+
+    // 1. Pre-fill the stats object with the guaranteed totals
+    for (const [subject, total] of Object.entries(config.subject_breakdown)) {
+      subjectStats[subject] = { correct: 0, total };
+    }
 
     const qIds = answers_state.questions.map((q: any) => q.id);
     
@@ -117,6 +117,7 @@ export async function saveMockProgress(payload: any) {
       let incorrectCount = 0;
 
       answers_state.questions.forEach((q: any) => {
+        const subject = q.subject || "General Awareness"; // Fallback
         const qStatus = answers_state.statuses[q.id] || "unvisited";
         const isConsidered = qStatus === "answered" || qStatus === "answered_and_marked";
         
@@ -126,6 +127,9 @@ export async function saveMockProgress(payload: any) {
           
           if (realCorrectIndex !== undefined && selected === realCorrectIndex) {
             correctCount++;
+            if (subjectStats[subject]) {
+              subjectStats[subject].correct++;
+            }
           } else {
             incorrectCount++;
           }
@@ -138,18 +142,19 @@ export async function saveMockProgress(payload: any) {
       finalScore = (correctCount * mpc) + (incorrectCount * pip);
     }
   }
-
-  const { data, error } = await supabase.from('mock_attempts').upsert({
-    id,
-    user_id: user.id,
-    exam_target,
-    test_number: currentTestNumber,
-    status,
-    score: finalScore,
-    time_remaining,
-    answers_state,
-    updated_at: new Date().toISOString()
-  }, { onConflict: 'id' }).select().single();
+        const payloadToSave = {
+          id,
+          user_id: user.id,
+          exam_target,
+          test_number: currentTestNumber,
+          status,
+          score: finalScore,
+          time_remaining,
+          answers_state,
+          subject_stats: subjectStats, // new field
+          updated_at: new Date().toISOString()
+        };
+        const { data, error } = await supabase.from('mock_attempts').upsert(payloadToSave, { onConflict: 'id' }).select().single();
 
   if (error) {
     console.error("[Mock Sync Error]", error);
