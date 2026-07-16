@@ -48,7 +48,6 @@ export async function GET(req: NextRequest) {
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
 
-  const processedArticles = [];
   const fetchedAt = new Date().toISOString();
 
   // 3. Summarize via Gemini
