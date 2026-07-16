@@ -11,7 +11,8 @@ import { fetchRecentUsers, fetchQuestions, deleteQuestion, addManualQuestion } f
 
 const subjectsByExam: Record<string, string[]> = {
   AFCAT: ["English", "General Awareness", "Numerical Ability", "Reasoning"],
-  NDA: ["Math", "English", "General Science", "General Studies"],
+  NDA_MATH: ["Algebra", "Calculus", "Trigonometry and Geometry", "Statistics and Probability"],
+  NDA_GAT: ["English", "General Science", "General Studies"],
   CDS: ["English", "General Knowledge", "Elementary Mathematics"]
 };
 
@@ -444,7 +445,8 @@ export default function AdminDashboard() {
                             className="w-full min-w-0 bg-slate-950 border border-slate-700 text-slate-200 text-sm font-medium px-4 py-3.5 rounded-xl focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none appearance-none shadow-inner"
                           >
                             <option value="AFCAT">AFCAT</option>
-                            <option value="NDA">NDA</option>
+                            <option value="NDA_MATH">NDA Math</option>
+                            <option value="NDA_GAT">NDA GAT</option>
                             <option value="CDS">CDS</option>
                           </select>
                           <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
@@ -728,7 +730,8 @@ export default function AdminDashboard() {
                     className="w-full md:w-48 bg-slate-950 border border-slate-700 text-slate-200 text-sm font-medium px-4 py-2.5 rounded-xl focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none"
                   >
                     <option value="AFCAT">AFCAT</option>
-                    <option value="NDA">NDA</option>
+                    <option value="NDA_MATH">NDA Math</option>
+                    <option value="NDA_GAT">NDA GAT</option>
                     <option value="CDS">CDS</option>
                   </select>
                 </div>

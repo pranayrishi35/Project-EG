@@ -187,3 +187,78 @@ export async function fetchMockAttempt(id: string) {
   }
   return { success: true, data };
 }
+
+export async function fetchAggregateStats(target?: string) {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: "Not authenticated" };
+
+  let query = supabase.from('mock_attempts')
+    .select('id, score, exam_target, created_at, subject_stats')
+    .eq('user_id', user.id)
+    .eq('status', 'completed')
+    .order('created_at', { ascending: true }); // chronological for trendline
+
+  if (target) {
+    query = query.eq('exam_target', target);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    return { success: false, error: error.message };
+  }
+
+  if (!data || data.length === 0) {
+    return { success: true, stats: null };
+  }
+
+  let totalAccuracy = 0;
+  let bestScore = -Infinity;
+  let validTestsCount = 0;
+
+  const trendData = data.map((attempt) => {
+    let testAccuracy = 0;
+    let totalQuestions = 0;
+    
+    if (attempt.subject_stats) {
+      let totalCorrect = 0;
+      Object.values(attempt.subject_stats).forEach((stat: any) => {
+         totalCorrect += stat.correct || 0;
+         totalQuestions += stat.total || 0;
+      });
+      testAccuracy = totalQuestions > 0 ? (totalCorrect / totalQuestions) * 100 : 0;
+    }
+
+    if (totalQuestions > 0) {
+      totalAccuracy += testAccuracy;
+      validTestsCount++;
+    }
+
+    if (attempt.score !== null && attempt.score > bestScore) {
+      bestScore = attempt.score;
+    }
+
+    return {
+      id: attempt.id,
+      date: new Date(attempt.created_at).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' }),
+      accuracy: Math.round(testAccuracy),
+      score: attempt.score,
+      exam_target: attempt.exam_target
+    };
+  });
+
+  const avgAccuracy = validTestsCount > 0 ? Math.round(totalAccuracy / validTestsCount) : 0;
+  // Slice to last 15 tests so chart doesn't overflow horizontally infinitely
+  const recentTrend = trendData.slice(-15);
+
+  return { 
+    success: true, 
+    stats: {
+      totalAttempts: data.length,
+      bestScore: bestScore === -Infinity ? 0 : bestScore,
+      avgAccuracy,
+      trendData: recentTrend
+    }
+  };
+}

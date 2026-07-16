@@ -115,6 +115,7 @@ export default function CreatePlanForm({ streak, compact = false }: { streak: nu
   const [dragError, setDragError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [showCreditModal, setShowCreditModal] = useState(false);
+  const [examName, setExamName] = useState("AFCAT");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -185,22 +186,52 @@ export default function CreatePlanForm({ streak, compact = false }: { streak: nu
       <form id="create-plan-form" aria-label="Create study plan form" onSubmit={handleSubmit} className="flex flex-col gap-5" noValidate>
 
         {/* Exam Name */}
-        <div id="exam-name-section" className="flex flex-col gap-1.5">
-          <label htmlFor="exam-name" className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
+        <div id="exam-name-section" className="flex flex-col gap-3">
+          <label className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
             <span className="text-base" aria-hidden="true">🎯</span> Target Exam
           </label>
-          <div className="relative">
-            <select id="exam-name" name="examName" required disabled={isPending} defaultValue="" className="ep-input peer disabled:opacity-60 disabled:cursor-not-allowed appearance-none bg-white" aria-required="true">
-              <option value="" disabled>Select your Target Exam</option>
-              <option value="AFCAT">AFCAT</option>
-              <option value="NDA">NDA</option>
-              <option value="CDS">CDS</option>
-            </select>
-            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* AFCAT Card */}
+            <div 
+              role="button" 
+              tabIndex={0}
+              onClick={() => { if (!isPending) setExamName("AFCAT"); }}
+              className={`relative flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border-2 transition-all cursor-pointer ${
+                isPending ? "opacity-60 cursor-not-allowed border-gray-200" 
+                : examName === "AFCAT" ? "border-indigo-500 bg-indigo-50/50 shadow-sm" 
+                : "border-gray-200 bg-white hover:border-indigo-300 hover:bg-indigo-50/30"
+              }`}
+            >
+              <div className="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center text-xl">
+                ✈️
+              </div>
+              <span className={`font-bold ${examName === "AFCAT" ? "text-indigo-900" : "text-gray-700"}`}>AFCAT</span>
             </div>
-            <div className="pointer-events-none absolute inset-0 rounded-xl ring-0 peer-focus:ring-2 ring-indigo-400 transition-all duration-200" aria-hidden="true" />
+
+            {/* NDA Card (Disabled) */}
+            <div className="relative flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border-2 border-gray-100 bg-gray-50 opacity-60 cursor-not-allowed transition-all">
+              <div className="absolute -top-2 -right-2 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full shadow-sm">
+                Coming Soon
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-gray-200 text-gray-500 flex items-center justify-center text-xl grayscale">
+                🎖️
+              </div>
+              <span className="font-bold text-gray-500">NDA</span>
+            </div>
+
+            {/* CDS Card (Disabled) */}
+            <div className="relative flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border-2 border-gray-100 bg-gray-50 opacity-60 cursor-not-allowed transition-all">
+              <div className="absolute -top-2 -right-2 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full shadow-sm">
+                Coming Soon
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-gray-200 text-gray-500 flex items-center justify-center text-xl grayscale">
+                ⚓
+              </div>
+              <span className="font-bold text-gray-500">CDS</span>
+            </div>
           </div>
+          {/* Hidden input to pass the selected exam to the server action */}
+          <input type="hidden" name="examName" value={examName} />
         </div>
 
         {/* Exam Date */}

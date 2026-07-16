@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
 import { Suspense } from "react";
 import { fetchMockHistory } from "@/app/actions/mockAttempts";
+import PerformanceDashboard from "@/components/PerformanceDashboard";
 
 export const metadata = {
   title: "Practice Hub | ExamPilot",
@@ -79,6 +80,8 @@ async function PracticeContent() {
           </div>
         </Link>
       </div>
+
+      <PerformanceDashboard />
 
       <div className="mb-6">
         <h2 className="text-xl font-black text-gray-900 tracking-tight mb-4">Test Archive</h2>

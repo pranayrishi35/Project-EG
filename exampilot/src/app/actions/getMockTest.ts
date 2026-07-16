@@ -71,7 +71,7 @@ export async function getMockTest(examTarget: string, mini: boolean = false): Pr
     if (combined.length === 0) {
       return { 
         success: false, 
-        error: "Question bank is currently being replenished. Check back soon!", 
+        error: `Not enough questions in the Question Bank for this Mock Test. Please ask your administrator to generate a Full Mock for ${examTarget} in the Command Center.`, 
         shortage: true 
       };
     }
