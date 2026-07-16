@@ -4,6 +4,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // Ensure this runs dynamically
 export const dynamic = "force-dynamic";
+export const maxDuration = 60; // Extend Vercel Hobby timeout to maximum allowed
 
 export async function GET(req: NextRequest) {
   // 1. Validate CRON_SECRET for access control
@@ -51,7 +52,7 @@ export async function GET(req: NextRequest) {
   const fetchedAt = new Date().toISOString();
 
   // 3. Summarize via Gemini
-  for (const article of articles) {
+  const summaryPromises = articles.map(async (article) => {
     try {
       const prompt = `Summarize this news article into a punchy, 60-word maximum news brief suitable for a fast-paced Indian Defense Exam (AFCAT/NDA/CDS) preparation news feed. Filter out any fluff and focus strictly on high-yield facts (names, operations, tech, milestones).
 Title: ${article.title}
@@ -67,19 +68,23 @@ Output ONLY the summary text, nothing else.`;
         summary = article.description;
       }
 
-      processedArticles.push({
+      return {
         headline: article.title,
         summary: summary,
         category: "Defence/Tech", // In real implementation, parse from GNews topic
         source_url: article.url,
         image_url: article.image,
         fetched_at: fetchedAt
-      });
+      };
       
     } catch (error) {
       console.error("Gemini summarization failed for article:", article.title, error);
+      return null;
     }
-  }
+  });
+
+  const resolvedArticles = await Promise.all(summaryPromises);
+  const processedArticles = resolvedArticles.filter((a): a is NonNullable<typeof a> => a !== null);
 
   if (processedArticles.length === 0) {
     return NextResponse.json({ success: false, error: "Failed to process any articles" }, { status: 500 });
