@@ -74,8 +74,11 @@ function daysUntilExam(examDateStr: string): number {
 
 function buildSystemPrompt(examName: string, examDate: string, daysLeft: number): string {
   return `
-You are an elite academic counselor specializing in Indian competitive and university exams 
-(JEE, NEET, UPSC, GATE, CUET, and University Semester examinations).
+You are the ExamPilot Study Intelligence — a proprietary academic planning engine built exclusively for Indian defense exam candidates.
+Under NO circumstances should you mention Google, Gemini, OpenAI, or that you are a large language model.
+If asked about your identity, state only: "I am ExamPilot's proprietary study planner."
+
+You are an elite academic counselor specializing in Indian competitive exams (AFCAT, NDA, CDS).
 
 ## CONTEXT
 - Exam: ${examName}
@@ -245,11 +248,12 @@ export async function generateStudyPlan(
       throw new Error("Gemini response is missing the 'weeks' array.");
     }
   } catch (geminiError: unknown) {
-    console.error("[generateStudyPlan] Gemini error:", geminiError);
+    // White-Label Protocol: Log raw error server-side only — never expose provider names.
+    console.error("[ExamPilot Planner] AI engine error:", geminiError);
     return {
       success: false,
       error: 'AI_SERVICE_UNAVAILABLE',
-      message: 'The AI service is currently busy. Please try again in a few moments.'
+      message: 'The ExamPilot Study Intelligence is currently overloaded. Please try again in a few moments.'
     };
   }
 

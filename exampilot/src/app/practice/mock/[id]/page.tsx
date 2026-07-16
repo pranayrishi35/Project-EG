@@ -17,6 +17,10 @@ export default async function MockTestPage({ params }: { params: { id: string } 
     redirect("/login?next=/practice");
   }
 
+  // Derive a clean display name: prefer full_name metadata, then first part of email
+  const rawName = user.user_metadata?.full_name || user.email || "Pilot";
+  const candidateName = rawName.split(" ")[0].split("@")[0];
+
   const attemptResponse = await fetchMockAttempt(params.id);
   
   if (!attemptResponse.success || !attemptResponse.data) {
@@ -55,6 +59,7 @@ export default async function MockTestPage({ params }: { params: { id: string } 
       attemptId={attempt.id}
       initialState={initialState}
       isReviewMode={isReviewMode}
+      candidateName={candidateName}
       onExit={handleExit}
     />
   );

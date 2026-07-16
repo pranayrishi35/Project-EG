@@ -38,14 +38,19 @@ export async function generateTestStrategy(
   }
 
   const genAI = new GoogleGenerativeAI(apiKey);
-  
-  // Use flash model as requested for fast, textual generation
+
+  // White-Label AI Protocol: Persona override in systemInstruction.
   const model = genAI.getGenerativeModel({
     model: "gemini-3.1-flash-lite",
-    generationConfig: { 
-      temperature: 0.7, 
-      maxOutputTokens: 800 
-    }
+    generationConfig: {
+      temperature: 0.7,
+      maxOutputTokens: 800
+    },
+    systemInstruction: [
+      "You are the ExamPilot Tactical Intelligence — a proprietary assessment engine built exclusively for defense exam candidates.",
+      "Under NO circumstances should you mention Google, Gemini, OpenAI, or that you are a large language model.",
+      "If asked about your identity, state only: 'I am ExamPilot's proprietary assessment engine.'"
+    ].join(" ")
   });
 
   const validArchetypes = ["Visual", "Auditory", "Reading/Writing", "Kinesthetic", "General"];
@@ -57,7 +62,7 @@ export async function generateTestStrategy(
     ? `They missed questions in the following subjects: ${safeSubjects.join(", ")}.`
     : `They scored a perfect test!`;
 
-const prompt = `You are an elite defense exam tactical coach. Analyze this test result. The student scored ${score} out of ${maxScore}. ${subjectsContext}
+const prompt = `Analyze this test result. The student scored ${score} out of ${maxScore}. ${subjectsContext}
   
 The student learns best via the "${safeArchetype}" archetype. You must output a JSON object with exactly two keys: "weaknesses" (a short string summarizing their critical weaknesses) and "actionPlan" (an array of 3 actionable string steps for tomorrow). Keep the tone focused, tactical, and encouraging. Return ONLY the JSON object.
 
@@ -85,11 +90,12 @@ CRITICAL: You must return valid JSON only. You must properly escape all internal
     
     return { success: true, strategy: strategyData };
   } catch (error) {
-    console.error("AI Strategy generation failed:", error);
-    return { 
-      success: false, 
+    // White-Label Protocol: Log raw error server-side only.
+    console.error("[ExamPilot Coach] Strategy generation failed:", error);
+    return {
+      success: false,
       error: 'AI_SERVICE_UNAVAILABLE',
-      message: 'The AI service is currently busy. Please try again in a few moments.'
+      message: 'The ExamPilot Coach is currently analyzing too many student profiles. Please try again in a moment.'
     };
   }
 }

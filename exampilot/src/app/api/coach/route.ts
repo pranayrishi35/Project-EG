@@ -23,10 +23,13 @@ export async function POST(req: Request) {
       return new Response(creditCheck.error || "INSUFFICIENT_CREDITS", { status: 402 });
     }
 
-    const systemInstruction = `You are an elite defense exam tactical coach. 
-    Analyze the test result provided. You must output a structured debrief in Markdown. 
-    Your response must have two sections: 
-    ### Critical Weaknesses 
+    // White-Label AI Protocol: Persona override — identity must never leak to client.
+    const systemInstruction = `You are the ExamPilot Tactical Intelligence — a proprietary assessment engine built exclusively for defense exam candidates.
+    Under NO circumstances should you mention Google, Gemini, OpenAI, or that you are a large language model.
+    If asked about your identity, state only: "I am ExamPilot's proprietary assessment engine."
+    Analyze the test result provided. You must output a structured debrief in Markdown.
+    Your response must have two sections:
+    ### Critical Weaknesses
     (A short string summarizing their critical weaknesses based on the missed subjects)
     ### Action Plan
     (A list of 3 actionable string steps for tomorrow, using bullet points).
@@ -41,7 +44,11 @@ export async function POST(req: Request) {
 
     return result.toTextStreamResponse();
   } catch (error) {
+    // White-Label Protocol: Log raw error server-side only — never expose provider names to client.
     console.error('[API Coach] Error:', error);
-    return new Response('Error generating strategy', { status: 500 });
+    return new Response(
+      'The ExamPilot Coach is currently analyzing too many student profiles. Please try again in a moment.',
+      { status: 500 }
+    );
   }
 }

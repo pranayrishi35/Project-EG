@@ -210,6 +210,61 @@ const PaletteLegend = memo(function PaletteLegend({ questions }: { questions: an
   );
 });
 
+const PaletteLegendGrid = memo(function PaletteLegendGrid({ questions }: { questions: any[] }) {
+  const [counts, setCounts] = useState({
+    unvisited: questions.length,
+    unanswered: 0,
+    answered: 0,
+    marked: 0,
+    answered_and_marked: 0
+  });
+
+  useEffect(() => {
+    return useTestStore.subscribe((state) => {
+      const newCounts = {
+        unvisited: 0,
+        unanswered: 0,
+        answered: 0,
+        marked: 0,
+        answered_and_marked: 0
+      };
+      questions.forEach((q) => {
+        const s = state.statuses[q.id] || "unvisited";
+        newCounts[s as keyof typeof newCounts]++;
+      });
+      setCounts(newCounts);
+    });
+  }, [questions]);
+
+  return (
+    <div className="grid grid-cols-2 gap-y-3 gap-x-2 text-xs font-semibold text-slate-600">
+      <div className="flex items-center gap-2">
+         <div className="w-6 h-6 rounded bg-slate-200 border border-slate-300 flex items-center justify-center text-slate-700">{counts.unvisited}</div>
+         <span>Unvisited</span>
+      </div>
+      <div className="flex items-center gap-2">
+         <div className="w-6 h-6 bg-red-500 text-white flex items-center justify-center rounded-t-md">{counts.unanswered}</div>
+         <span>Unanswered</span>
+      </div>
+      <div className="flex items-center gap-2">
+         <div className="w-6 h-6 bg-green-600 text-white flex items-center justify-center rounded-b-md">{counts.answered}</div>
+         <span>Answered</span>
+      </div>
+      <div className="flex items-center gap-2">
+         <div className="w-6 h-6 bg-purple-600 text-white flex items-center justify-center rounded-full">{counts.marked}</div>
+         <span>Marked</span>
+      </div>
+      <div className="flex items-center gap-2 col-span-2">
+         <div className="w-6 h-6 bg-purple-600 text-white flex items-center justify-center rounded-full relative">
+            {counts.answered_and_marked}
+            <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-[1.5px] border-white"></div>
+         </div>
+         <span>Answered & Marked</span>
+      </div>
+    </div>
+  );
+});
+
 const MobilePaletteToggle = memo(function MobilePaletteToggle({ questions, onClick }: { questions: any[], onClick: () => void }) {
   const [counts, setCounts] = useState({ unanswered: 0, marked: 0 });
   useEffect(() => {
@@ -370,7 +425,7 @@ const ActiveQuestionView = memo(function ActiveQuestionView({ questions, isRevie
          <div className="flex justify-start">
             <button 
               onClick={() => { if(!isReviewMode) clearResponse(currentQ.id) }}
-              className="px-6 py-3 rounded-lg border border-slate-300 text-slate-600 font-bold hover:bg-slate-50 transition-colors text-sm min-h-[44px]"
+              className="px-4 md:px-6 py-3 rounded-lg border border-slate-300 text-slate-600 font-bold hover:bg-slate-50 transition-colors text-xs sm:text-sm min-h-[44px]"
             >
               Clear Response
             </button>
@@ -378,13 +433,14 @@ const ActiveQuestionView = memo(function ActiveQuestionView({ questions, isRevie
          <div className="flex items-center justify-end gap-3 flex-1">
             <button 
               onClick={() => { if(!isReviewMode) markForReviewAndNext(currentQ.id, questions) }}
-              className="px-4 md:px-6 py-3 rounded-lg bg-white border-2 border-indigo-600 text-indigo-600 font-bold hover:bg-indigo-50 transition-colors text-sm shadow-sm min-h-[44px]"
+              className="px-3 md:px-6 py-3 rounded-lg bg-white border-2 border-indigo-600 text-indigo-600 font-bold hover:bg-indigo-50 transition-colors shadow-sm min-h-[44px] text-xs sm:text-sm"
             >
-              Mark for Review
+              <span className="hidden sm:inline">Mark for Review</span>
+              <span className="sm:hidden">Mark Review</span>
             </button>
             <button 
               onClick={() => { if(!isReviewMode) saveAndNext(currentQ.id, questions) }}
-              className="px-6 md:px-8 py-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition-all shadow-md active:scale-95 text-sm min-h-[44px]"
+              className="px-4 md:px-8 py-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition-all shadow-md active:scale-95 text-xs sm:text-sm min-h-[44px]"
             >
               Save & Next
             </button>
@@ -648,9 +704,10 @@ interface TestRunnerProps {
   attemptId?: string;
   initialState?: any;
   isReviewMode?: boolean;
+  candidateName?: string;
 }
 
-export default function TestRunner({ type, questions, scoringMap, onExit, attemptId, initialState, isReviewMode }: TestRunnerProps) {
+export default function TestRunner({ type, questions, scoringMap, onExit, attemptId, initialState, isReviewMode, candidateName }: TestRunnerProps) {
   const isOnline = useNetworkStatus();
   
   const [isSubmitted, setIsSubmitted] = useState(isReviewMode || false);
@@ -917,8 +974,8 @@ export default function TestRunner({ type, questions, scoringMap, onExit, attemp
           
           <div className="hidden md:flex items-center gap-3 border-l border-slate-300 pl-6">
             <div className="text-right">
-              <p className="text-xs text-slate-500 font-bold uppercase">Candidate Profile</p>
-              <p className="text-sm font-black text-slate-900">DEF-PILOT-01</p>
+              <p className="text-xs text-slate-500 font-bold uppercase">Candidate</p>
+              <p className="text-sm font-black text-slate-900">{candidateName || 'Pilot'}</p>
             </div>
             <div className="w-10 h-10 rounded-full bg-slate-300 flex items-center justify-center overflow-hidden">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-500"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
@@ -951,31 +1008,7 @@ export default function TestRunner({ type, questions, scoringMap, onExit, attemp
               <span>Legend</span>
               <PaletteLegend questions={questions} />
             </h3>
-            <div className="grid grid-cols-2 gap-y-3 gap-x-2 text-xs font-semibold text-slate-600">
-              <div className="flex items-center gap-2">
-                 <div className="w-6 h-6 rounded bg-slate-200 border border-slate-300 flex items-center justify-center text-slate-700">1</div>
-                 <span>Unvisited</span>
-              </div>
-              <div className="flex items-center gap-2">
-                 <div className="w-6 h-6 bg-red-500 text-white flex items-center justify-center rounded-t-md">2</div>
-                 <span>Unanswered</span>
-              </div>
-              <div className="flex items-center gap-2">
-                 <div className="w-6 h-6 bg-green-600 text-white flex items-center justify-center rounded-b-md">3</div>
-                 <span>Answered</span>
-              </div>
-              <div className="flex items-center gap-2">
-                 <div className="w-6 h-6 bg-purple-600 text-white flex items-center justify-center rounded-full">4</div>
-                 <span>Marked</span>
-              </div>
-              <div className="flex items-center gap-2 col-span-2">
-                 <div className="w-6 h-6 bg-purple-600 text-white flex items-center justify-center rounded-full relative">
-                    5
-                    <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-[1.5px] border-white"></div>
-                 </div>
-                 <span>Answered & Marked</span>
-              </div>
-            </div>
+            <PaletteLegendGrid questions={questions} />
           </div>
 
           <div className="flex-1 overflow-y-auto p-4 bg-slate-100">
