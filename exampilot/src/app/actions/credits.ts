@@ -1,8 +1,13 @@
 "use server";
 
 import { createClient } from "@supabase/supabase-js";
+import { createClient as createServerClient } from "@/utils/supabase/server";
 
 export async function initializeCreditsAction(userId: string) {
+  const supabase = createServerClient();
+  // Use provided userId directly; no need to fetch authenticated user here.
+  if (!userId) throw new Error("UNAUTHORIZED");
+
   console.log("Attempting to initialize credits for:", userId);
   
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;

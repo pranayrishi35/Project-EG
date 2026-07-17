@@ -13,7 +13,8 @@ export async function generateTestStrategy(
   studentArchetype: string
 ) {
   const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  
   
   if (!user) {
     return {

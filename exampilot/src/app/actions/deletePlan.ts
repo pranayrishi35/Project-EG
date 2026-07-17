@@ -15,21 +15,23 @@ export type DeletePlanResult =
  * - Revalidates /planner and / so the history list and streak badge
  *   refresh immediately without a full reload.
  */
-export async function deletePlan(planId: string): Promise<DeletePlanResult> {
-  if (!planId) {
+import { z } from "zod";
+
+const DeletePlanSchema = z.object({
+  planId: z.string().min(1),
+});
+
+export async function deletePlan(rawPlanId: string): Promise<DeletePlanResult> {
+  const parsed = DeletePlanSchema.safeParse({ planId: rawPlanId });
+  if (!parsed.success) {
     return { success: false, error: "Invalid plan ID." };
   }
+  const { planId } = parsed.data;
 
   const supabase = createClient();
 
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    return { success: false, error: "You must be signed in to delete a plan." };
-  }
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) throw new Error("UNAUTHORIZED");
 
   const { error: deleteError } = await supabase
     .from("study_plans")

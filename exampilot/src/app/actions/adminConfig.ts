@@ -1,4 +1,5 @@
 "use server";
+import { z } from "zod";
 
 import { createClient } from "@/utils/supabase/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -22,14 +23,12 @@ export interface SystemInsights {
  */
 async function verifyAdmin(supabase: SupabaseClient) {
   const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user || !user.email) {
-    throw new Error("Unauthorized access.");
-  }
+  if (authError || !user) throw new Error("UNAUTHORIZED");
 
   const { data, error } = await supabase
     .from("admin_whitelist")
     .select("email")
-    .ilike("email", user.email)
+    .ilike("email", user?.email || "")
     .maybeSingle();
 
   if (error || !data) {
@@ -59,7 +58,11 @@ export async function getAppConfig(): Promise<{ success: boolean; data?: AppConf
   }
 }
 
-export async function updateAppConfig(key: string, value: string): Promise<{ success: boolean; error?: string }> {
+const UpdateAppConfigSchema = z.object({ key: z.string(), value: z.string() });
+export async function updateAppConfig(rawKey: string, rawValue: string): Promise<{ success: boolean; error?: string }> {
+  const parsed = UpdateAppConfigSchema.safeParse({ key: rawKey, value: rawValue });
+  if (!parsed.success) throw new Error("BAD_REQUEST");
+  const { key, value } = parsed.data;
   const supabase = createClient();
   
   try {

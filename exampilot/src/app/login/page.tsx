@@ -2,7 +2,7 @@
 
 import { useTransition, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { signInWithGoogle, signInWithOtp } from "@/app/login/actions";
+import { signInWithGoogle, signInWithOtp, signUpWithPassword } from "@/app/login/actions";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type FormState = { error?: string; success?: boolean } | null;
@@ -89,18 +89,22 @@ function LoginForm() {
   const [isGooglePending, startGoogleTransition] = useTransition();
   const [googleError, setGoogleError] = useState<string | null>(null);
 
-  // OTP / Magic link state — simple useState + useTransition (React 18 compatible)
+  // OTP / Magic link state
   const [isOtpPending, startOtpTransition] = useTransition();
   const [otpState, setOtpState] = useState<FormState>(null);
 
-  const isAnyLoading = isGooglePending || isOtpPending;
+  // Password Sign Up state
+  const [isPasswordPending, startPasswordTransition] = useTransition();
+  const [passwordState, setPasswordState] = useState<FormState>(null);
+  const [passwordInput, setPasswordInput] = useState("");
+
+  const isAnyLoading = isGooglePending || isOtpPending || isPasswordPending;
 
   // ── Google handler ──────────────────────────────────────────────────────────
   function handleGoogleSignIn() {
     setGoogleError(null);
     startGoogleTransition(async () => {
       const result = await signInWithGoogle();
-      // signInWithGoogle calls redirect() on success — if we get a return value it errored
       if (result?.error) setGoogleError(result.error);
     });
   }
@@ -113,6 +117,18 @@ function LoginForm() {
     startOtpTransition(async () => {
       const result = await signInWithOtp(null, formData);
       setOtpState(result);
+    });
+  }
+
+  // ── Password handler ───────────────────────────────────────────────────────
+  function handlePasswordSignUp(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setPasswordState(null);
+    if (passwordInput.length < 12) return; // double check client side
+    const formData = new FormData(e.currentTarget);
+    startPasswordTransition(async () => {
+      const result = await signUpWithPassword(null, formData);
+      setPasswordState(result);
     });
   }
 
@@ -224,6 +240,95 @@ function LoginForm() {
                   </svg>
                   <span>Send Magic Link</span>
                 </>
+              )}
+            </button>
+          </form>
+        )}
+      </section>
+      
+      {/* ── Divider ──────────────────────────────────────────────── */}
+      <OrDivider />
+
+      {/* ── Password Sign Up Form (DevSecOps) ────────────────────── */}
+      <section aria-labelledby="password-signup-label">
+        <p id="password-signup-label" className="text-sm font-semibold text-gray-700 mb-3">
+          Sign up with password
+        </p>
+
+        {passwordState?.success ? (
+          <Toast
+            type="success"
+            message="Check your email to verify your account!"
+          />
+        ) : (
+          <form
+            id="password-signup-form"
+            onSubmit={handlePasswordSignUp}
+            className="flex flex-col gap-3"
+            noValidate
+          >
+            <div>
+              <label htmlFor="pwd-email" className="sr-only">Email address</label>
+              <input
+                id="pwd-email"
+                name="email"
+                type="email"
+                placeholder="you@example.com"
+                required
+                disabled={isPasswordPending}
+                className="ep-input disabled:opacity-60 disabled:cursor-not-allowed"
+              />
+            </div>
+            
+            <div className="flex flex-col gap-1">
+              <label htmlFor="pwd-password" className="sr-only">Password</label>
+              <input
+                id="pwd-password"
+                name="password"
+                type="password"
+                placeholder="Password (min 12 chars)"
+                required
+                disabled={isPasswordPending}
+                value={passwordInput}
+                onChange={(e) => setPasswordInput(e.target.value)}
+                className={`ep-input disabled:opacity-60 disabled:cursor-not-allowed ${
+                  passwordInput.length > 0 && passwordInput.length < 12 ? 'border-red-500 focus:ring-red-500' : ''
+                }`}
+              />
+              {/* Real-time client-side validation error state */}
+              {passwordInput.length > 0 && passwordInput.length < 12 && (
+                <span className="text-xs text-red-600 font-medium">Password must be at least 12 characters.</span>
+              )}
+            </div>
+
+            {/* High z-index breach toast specifically for leaked passwords */}
+            {passwordState?.error && passwordState.error.startsWith("BREACHED_PASSWORD") && (
+              <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 w-[90%] max-w-sm">
+                <div className="bg-red-600 text-white rounded-lg p-4 shadow-2xl flex items-start gap-3 animate-fade-in border-2 border-red-800">
+                  <span className="text-xl">🚨</span>
+                  <div>
+                    <h3 className="font-bold text-sm uppercase tracking-wider mb-1">Data Breach Detected</h3>
+                    <p className="text-sm font-medium">{passwordState.error.replace("BREACHED_PASSWORD: ", "")}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Standard error fallback */}
+            {passwordState?.error && !passwordState.error.startsWith("BREACHED_PASSWORD") && (
+              <Toast type="error" message={passwordState.error} />
+            )}
+
+            <button
+              type="submit"
+              disabled={isPasswordPending || !agreedToTerms || !agreedToAge || (passwordInput.length > 0 && passwordInput.length < 12)}
+              className="ep-btn-primary bg-slate-800 hover:bg-slate-900 focus:ring-slate-500"
+              style={isPasswordPending ? { opacity: 0.7, transform: "none", boxShadow: "none", cursor: "not-allowed" } : {}}
+            >
+              {isPasswordPending ? (
+                <><Spinner light /><span>Creating Account…</span></>
+              ) : (
+                <span>Create Account</span>
               )}
             </button>
           </form>

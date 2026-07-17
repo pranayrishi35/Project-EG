@@ -16,9 +16,10 @@ export type GenerateFlashcardsResult =
 
 export async function generateFlashcards(): Promise<GenerateFlashcardsResult> {
   const supabase = createClient();
-  const { data: authData, error: authError } = await supabase.auth.getUser();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  
 
-  if (authError || !authData?.user) {
+  if (authError || !user) {
     return { success: false, error: "You must be signed in." };
   }
 
@@ -26,7 +27,7 @@ export async function generateFlashcards(): Promise<GenerateFlashcardsResult> {
   const { data: plan, error: dbError } = await supabase
     .from("study_plans")
     .select("id, exam_name, generated_plan")
-    .eq("user_id", authData.user.id)
+    .eq("user_id", user.id)
     .order("created_at", { ascending: false })
     .limit(1)
     .single();
@@ -45,7 +46,7 @@ export async function generateFlashcards(): Promise<GenerateFlashcardsResult> {
   const { data: cached } = await supabase
     .from("daily_flashcards")
     .select("flashcards")
-    .eq("user_id", authData.user.id)
+    .eq("user_id", user.id)
     .eq("plan_id", plan.id)
     .eq("generated_date", currentDate)
     .maybeSingle();
@@ -66,7 +67,7 @@ export async function generateFlashcards(): Promise<GenerateFlashcardsResult> {
     },
   });
 
-  const creditCheck = await checkAndDeductCredits(authData.user.id, authData.user.email, 3);
+  const creditCheck = await checkAndDeductCredits(user.id, user.email, 3);
   if (!creditCheck.success) {
     return { success: false, error: "INSUFFICIENT_CREDITS" };
   }
@@ -98,7 +99,7 @@ export async function generateFlashcards(): Promise<GenerateFlashcardsResult> {
 
     // Save to Cache
     await supabase.from("daily_flashcards").insert({
-      user_id: authData.user.id,
+      user_id: user.id,
       plan_id: plan.id,
       generated_date: currentDate,
       flashcards: finalFlashcards

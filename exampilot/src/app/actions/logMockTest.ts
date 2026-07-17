@@ -35,12 +35,8 @@ export async function logMockTest(
   const supabase = createClient();
 
   // ── Auth check ──────────────────────────────────────────────────────────────
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) throw new Error("You must be signed in.");
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) throw new Error("UNAUTHORIZED");
 
   // ── Fetch current JSONB ─────────────────────────────────────────────────────
   const { data, error: fetchError } = await supabase
@@ -120,12 +116,8 @@ export async function deleteMockTest(
 
   const supabase = createClient();
 
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) throw new Error("You must be signed in.");
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) throw new Error("UNAUTHORIZED");
 
   const { data, error: fetchError } = await supabase
     .from("study_plans")

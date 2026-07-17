@@ -9,10 +9,8 @@ import { createClient } from "@/utils/supabase/server";
  */
 async function verifyAdminCaller() {
   const supabase = createClient();
-  const { data: { user }, error } = await supabase.auth.getUser();
-  if (error || !user || !user.email) {
-    throw new Error("Unauthorized access");
-  }
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) throw new Error("UNAUTHORIZED");
   
   const isAdmin = await checkIsAdmin(user.email);
   if (!isAdmin) {

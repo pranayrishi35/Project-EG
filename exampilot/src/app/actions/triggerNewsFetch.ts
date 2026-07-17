@@ -8,8 +8,9 @@ export async function triggerNewsFetch() {
   const supabase = createClient();
   
   // Strict admin check (only logged-in admins can trigger this via UI)
-  const { data: authData, error: authError } = await supabase.auth.getUser();
-  if (authError || !authData?.user || !(await checkIsAdmin(authData.user.email))) {
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  
+  if (authError || !user || !(await checkIsAdmin(user.email))) {
     return { success: false, error: "Unauthorized access." };
   }
 

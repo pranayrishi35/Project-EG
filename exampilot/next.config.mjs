@@ -75,7 +75,7 @@ const cspHeader = `
     default-src 'self';
     script-src 'self' 'unsafe-eval' 'unsafe-inline';
     style-src 'self' 'unsafe-inline';
-    img-src 'self' blob: data: https://*.supabase.co https://*.googleusercontent.com https://avatars.githubusercontent.com;
+    img-src 'self' blob: data: https: http:;
     font-src 'self';
     object-src 'none';
     base-uri 'self';

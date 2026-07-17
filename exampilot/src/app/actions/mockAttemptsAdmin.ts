@@ -7,8 +7,9 @@ export async function deleteMockAttempt(attemptId: string) {
   const supabase = createClient();
 
   // 1. Authenticate user
-  const { data: { user }, error: userError } = await supabase.auth.getUser();
-  if (userError || !user) {
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  
+  if (authError || !user) {
     return { success: false, error: "Unauthorized" };
   }
 
@@ -42,8 +43,9 @@ export async function deleteMockAttempt(attemptId: string) {
 export async function getMockAttempts() {
   const supabase = createClient();
 
-  const { data: { user }, error: userError } = await supabase.auth.getUser();
-  if (userError || !user) return { success: false, data: [] };
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  
+  if (authError || !user) return { success: false, data: [] };
 
   const { data: adminData, error: adminError } = await supabase
     .from("admin_whitelist")

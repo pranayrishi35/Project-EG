@@ -70,8 +70,9 @@ async function generateQuestionsInBatches(model: any, examTarget: string, isPyq:
 export async function adminSeedQuestions(examTarget: string, isPyq: boolean = false, sourcePool: string = "booklet", subject: string = "General") {
   const supabase = createClient();
   
-  const { data: authData, error: authError } = await supabase.auth.getUser();
-  if (authError || !authData?.user || !(await checkIsAdmin(authData.user.email))) {
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  
+  if (authError || !user || !(await checkIsAdmin(user.email))) {
     return { success: false, error: "Unauthorized access to seeding script." };
   }
 
@@ -123,8 +124,9 @@ export async function adminSeedQuestions(examTarget: string, isPyq: boolean = fa
 export async function generateFullMockTest(examTarget: string) {
   const supabase = createClient();
   
-  const { data: authData, error: authError } = await supabase.auth.getUser();
-  if (authError || !authData?.user || !(await checkIsAdmin(authData.user.email))) {
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  
+  if (authError || !user || !(await checkIsAdmin(user.email))) {
     return { success: false, error: "Unauthorized access to seeding script." };
   }
 

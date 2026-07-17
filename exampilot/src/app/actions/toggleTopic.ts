@@ -27,14 +27,8 @@ export async function toggleTopic(
   const supabase = createClient();
 
   // Verify the session
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    throw new Error("You must be signed in to update a plan.");
-  }
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) throw new Error("UNAUTHORIZED");
 
   // Fetch current JSONB — RLS ensures the user owns this row
   const { data, error: fetchError } = await supabase

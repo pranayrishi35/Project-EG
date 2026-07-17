@@ -1,4 +1,5 @@
 "use server";
+import { z } from "zod";
 
 import { createClient } from "@/utils/supabase/server";
 
@@ -24,7 +25,11 @@ export type GetTestResult =
 
 import { EXAM_CONFIGS } from "@/lib/examConfig"; // centralized config
 
-export async function getMockTest(examTarget: string, mini: boolean = false): Promise<GetTestResult> {
+const GetMockTestSchema = z.object({ examTarget: z.string(), mini: z.boolean().default(false) });
+export async function getMockTest(rawExamTarget: string, rawMini: boolean = false): Promise<GetTestResult> {
+  const parsed = GetMockTestSchema.safeParse({ examTarget: rawExamTarget, mini: rawMini });
+  if (!parsed.success) throw new Error("BAD_REQUEST");
+  const { examTarget, mini } = parsed.data;
   const supabase = createClient();
   const config = EXAM_CONFIGS[examTarget as keyof typeof EXAM_CONFIGS];
   

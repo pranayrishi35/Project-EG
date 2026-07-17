@@ -31,7 +31,8 @@ const AnswerStateSchema = z.object({
 
 export async function saveMockProgress(payload: any) {
   const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  
   if (!user) return { success: false, error: "Not authenticated" };
 
   // Explicit Authorization Verification
@@ -165,7 +166,8 @@ export async function saveMockProgress(payload: any) {
 
 export async function fetchMockHistory() {
   const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  
   if (!user) return { success: false, error: "Not authenticated" };
 
   const { data, error } = await supabase.from('mock_attempts')
@@ -190,7 +192,8 @@ export async function fetchMockAttempt(id: string) {
 
 export async function fetchAggregateStats(target?: string) {
   const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  
   if (!user) return { success: false, error: "Not authenticated" };
 
   let query = supabase.from('mock_attempts')

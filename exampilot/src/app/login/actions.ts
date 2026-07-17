@@ -101,3 +101,38 @@ export async function signOut() {
   await supabase.auth.signOut();
   redirect("/login");
 }
+
+// ─── Password Sign Up (DevSecOps) ─────────────────────────────────────────────
+
+export async function signUpWithPassword(
+  _prevState: { error?: string; success?: boolean } | null,
+  formData: FormData
+): Promise<{ error?: string; success?: boolean }> {
+  const email = (formData.get("email") as string)?.trim();
+  const password = formData.get("password") as string;
+
+  if (!email || !password) {
+    return { error: "Please enter both email and password." };
+  }
+
+  const supabase = createClient();
+  const origin = getOrigin();
+
+  const { error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      emailRedirectTo: `${origin}/auth/callback`,
+    },
+  });
+
+  if (error) {
+    // Specifically catching the HIBP / weak password error from Supabase
+    if (error.code === "weak_password" || error.message.toLowerCase().includes("breach") || error.message.toLowerCase().includes("pwned")) {
+       return { error: "BREACHED_PASSWORD: This password has appeared in a known data breach. Please choose a different, secure password." };
+    }
+    return { error: error.message };
+  }
+
+  return { success: true };
+}

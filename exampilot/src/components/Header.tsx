@@ -20,8 +20,8 @@ export default async function Header() {
   let userInitial: string = "?";
   let userCredits: number | null = null;
 
+  const supabase = createClient();
   try {
-    const supabase = createClient();
     const {
       data: { session },
     } = await supabase.auth.getSession();

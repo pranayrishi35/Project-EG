@@ -13,9 +13,9 @@ import { createClient } from "@/utils/supabase/server";
  * The updated values are then saved back to the database.
  */
 export async function getStreak(): Promise<number> {
+  const supabase = createClient();
   try {
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (!user) return 0;
 

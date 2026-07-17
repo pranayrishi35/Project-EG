@@ -16,9 +16,10 @@ export type GenerateCheatSheetResult =
 
 export async function generateCheatSheet(planId: string): Promise<GenerateCheatSheetResult> {
   const supabase = createClient();
-  const { data: authData, error: authError } = await supabase.auth.getUser();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  
 
-  if (authError || !authData?.user) {
+  if (authError || !user) {
     return { success: false, error: "You must be signed in." };
   }
 
@@ -27,7 +28,7 @@ export async function generateCheatSheet(planId: string): Promise<GenerateCheatS
     .from("study_plans")
     .select("exam_name, generated_plan")
     .eq("id", planId)
-    .eq("user_id", authData.user.id)
+    .eq("user_id", user.id)
     .single();
 
   if (dbError || !plan) {
@@ -61,7 +62,7 @@ export async function generateCheatSheet(planId: string): Promise<GenerateCheatS
     systemInstruction: `Act as an expert tutor for Indian Defense Exams (${plan.exam_name}). Do NOT just spit out the syllabus. Generate high-yield, subject-wise revision notes and top 5 formulas/facts. Return STRICTLY a JSON object matching this schema: { "cheatSheet": [ { "subject": "...", "points": ["..."] } ] }`,
   });
 
-  const creditCheck = await checkAndDeductCredits(authData.user.id, authData.user.email, 5);
+  const creditCheck = await checkAndDeductCredits(user.id, user.email, 5);
   if (!creditCheck.success) {
     return { success: false, error: "INSUFFICIENT_CREDITS" };
   }

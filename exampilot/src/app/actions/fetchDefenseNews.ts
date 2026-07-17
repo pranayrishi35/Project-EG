@@ -1,4 +1,5 @@
 "use server";
+import { z } from "zod";
 
 import { getAdminClient } from "@/lib/adminClient";
 import { headers } from "next/headers";
@@ -8,6 +9,8 @@ export type NewsItem = {
   id: string;
   title: string;
   summary: string;
+  category: string;
+  relevanceScore: number;
   url: string;
   imageUrl: string;
   publishedAt: string;
@@ -18,47 +21,35 @@ const MOCK_DEFENSE_NEWS: NewsItem[] = [
     id: "mock-1",
     title: "DRDO Successfully Test-Fires Agni-V Ballistic Missile",
     summary: "India successfully flight-tested the Agni-V surface-to-surface ballistic missile, featuring Multiple Independently Targetable Re-entry Vehicle (MIRV) technology, bolstering strategic deterrence.",
+    category: "Defence",
+    relevanceScore: 95,
     url: "#",
-    imageUrl: "https://images.unsplash.com/photo-1541185933-ef5d8ed016c2?q=80&w=800&auto=format&fit=crop",
-    publishedAt: new Date().toISOString()
-  },
-  {
-    id: "mock-2",
-    title: "LCA Tejas Mk1A Completes Maiden Flight",
-    summary: "The first production aircraft of the LCA Tejas Mk1A variant successfully completed its maiden flight, marking a significant milestone in indigenous aerospace manufacturing.",
-    url: "#",
-    imageUrl: "https://images.unsplash.com/photo-1574343166827-0402b80a133b?q=80&w=800&auto=format&fit=crop",
-    publishedAt: new Date().toISOString()
-  },
-  {
-    id: "mock-3",
-    title: "Indian Navy Commissions INS Jatayu in Lakshadweep",
-    summary: "Bolstering maritime security in the strategic Indian Ocean Region, the Indian Navy has commissioned INS Jatayu, an upgraded naval base in the Lakshadweep islands.",
-    url: "#",
-    imageUrl: "https://images.unsplash.com/photo-1541185933-ef5d8ed016c2?q=80&w=800&auto=format&fit=crop",
-    publishedAt: new Date().toISOString()
-  },
-  {
-    id: "mock-4",
-    title: "ISRO Achieves Major Milestone in Gaganyaan Mission",
-    summary: "ISRO has successfully completed the human rating of the CE20 cryogenic engine, a crucial step forward for India's ambitious Gaganyaan human spaceflight program.",
-    url: "#",
-    imageUrl: "https://images.unsplash.com/photo-1574343166827-0402b80a133b?q=80&w=800&auto=format&fit=crop",
-    publishedAt: new Date().toISOString()
-  },
-  {
-    id: "mock-5",
-    title: "Joint Military Exercise 'Desert Knight' Concludes",
-    summary: "The joint military exercise involving the Indian Air Force and international partners concluded successfully, enhancing interoperability and tactical combat skills.",
-    url: "#",
-    imageUrl: "https://images.unsplash.com/photo-1541185933-ef5d8ed016c2?q=80&w=800&auto=format&fit=crop",
+    imageUrl: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='400'%3E%3Crect width='100%25' height='100%25' fill='%231e293b'/%3E%3Ctext x='50%25' y='50%25' font-family='sans-serif' font-size='24' fill='%236366f1' text-anchor='middle' dominant-baseline='middle'%3EDefense News%3C/text%3E%3C/svg%3E",
     publishedAt: new Date().toISOString()
   }
 ];
 
-export const fetchDefenseNews = unstable_cache(async (page = 0, limit = 20): Promise<{ data: NewsItem[], hasMore: boolean }> => {
+const FetchDefenseNewsSchema = z.object({ 
+  page: z.number().default(0), 
+  limit: z.number().default(20),
+  category: z.string().optional(),
+  minScore: z.number().optional(),
+  dateFilter: z.string().optional()
+});
+
+export const fetchDefenseNews = async (
+  rawPage = 0, 
+  rawLimit = 20, 
+  category?: string, 
+  minScore?: number, 
+  dateFilter?: string
+): Promise<{ data: NewsItem[], hasMore: boolean }> => {
+  const parsed = FetchDefenseNewsSchema.safeParse({ page: rawPage, limit: rawLimit, category, minScore, dateFilter });
+  if (!parsed.success) throw new Error("BAD_REQUEST");
+  const { page, limit, category: cat, minScore: score, dateFilter: date } = parsed.data;
+  
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 3500);
+  const timeoutId = setTimeout(() => controller.abort(), 4000);
 
   try {
     const supabase = getAdminClient();
@@ -66,14 +57,31 @@ export const fetchDefenseNews = unstable_cache(async (page = 0, limit = 20): Pro
     const from = page * limit;
     const to = from + limit - 1;
 
-    // Instead of fetch, we do the Supabase call
-    const { data, error } = await supabase
+    let query = supabase
       .from("news_cache")
-      .select("id, headline, summary, source_url, image_url, fetched_at")
+      .select("id, headline, summary, category, exam_relevance_score, source_url, image_url, fetched_at")
       .order("fetched_at", { ascending: false })
       .range(from, to)
       .abortSignal(controller.signal);
 
+    if (cat && cat !== "All") {
+      query = query.ilike("category", `%${cat}%`);
+    }
+    if (score && score > 0) {
+      query = query.gte("exam_relevance_score", score);
+    }
+    if (date && date !== "All Time") {
+      const now = new Date();
+      if (date === "Last 24 Hours") {
+        now.setHours(now.getHours() - 24);
+        query = query.gte("fetched_at", now.toISOString());
+      } else if (date === "Last 7 Days") {
+        now.setDate(now.getDate() - 7);
+        query = query.gte("fetched_at", now.toISOString());
+      }
+    }
+
+    const { data, error } = await query;
     clearTimeout(timeoutId);
 
     if (error) {
@@ -81,42 +89,49 @@ export const fetchDefenseNews = unstable_cache(async (page = 0, limit = 20): Pro
     }
     
     if (!data || data.length === 0) {
-      throw new Error("Empty data returned");
+      return { data: [], hasMore: false };
     }
 
-    // Auto-refresh logic: If the latest news is older than 12 hours, trigger a refresh in the background
-    const latestFetch = data.length > 0 ? new Date(data[0].fetched_at).getTime() : 0;
-    const twelveHoursMs = 12 * 60 * 60 * 1000;
-    if (Date.now() - latestFetch > twelveHoursMs) {
-      console.log("News cache is older than 12 hours. Triggering auto-refresh.");
-      const secret = process.env.CRON_SECRET;
-      if (secret) {
-        // unstable_cache context may not have headers() available depending on Next.js version
-        let host = "localhost";
-        let protocol = "http";
-        try {
-          host = headers().get("host") || host;
-          protocol = process.env.NODE_ENV === "development" ? "http" : "https";
-        } catch {
-          // headers() can't be used during some cached builds
+    // Auto-refresh logic (only trigger if no filters are applied to prevent weird behavior)
+    if (!cat && !score && !date && data.length > 0) {
+      const latestFetch = new Date(data[0].fetched_at).getTime();
+      if (Date.now() - latestFetch > 12 * 60 * 60 * 1000) {
+        const secret = process.env.CRON_SECRET;
+        if (secret) {
+          let host = process.env.VERCEL_URL || "localhost:3000";
+          let protocol = process.env.NODE_ENV === "development" ? "http" : "https";
+          const url = `${protocol}://${host}/api/cron/fetch-news?secret=${secret}`;
+          fetch(url, { method: 'GET', cache: 'no-store' }).catch(() => {});
         }
-        
-        const url = `${protocol}://${host}/api/cron/fetch-news?secret=${secret}`;
-        fetch(url, { method: 'GET', cache: 'no-store' }).catch(err => 
-          console.error("Auto-refresh fetch failed:", err)
-        );
       }
     }
 
-    // Map to the expected UI type
-    const formattedData = data.map((item: any) => ({
-      id: item.id,
-      title: item.headline,
-      summary: item.summary,
-      url: item.source_url,
-      imageUrl: item.image_url || "https://images.unsplash.com/photo-1574343166827-0402b80a133b?q=80&w=800&auto=format&fit=crop",
-      publishedAt: item.fetched_at,
-    }));
+    const formattedData = data.map((item: any) => {
+      let finalImageUrl = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='400'%3E%3Crect width='100%25' height='100%25' fill='%231e293b'/%3E%3Ctext x='50%25' y='50%25' font-family='sans-serif' font-size='24' fill='%236366f1' text-anchor='middle' dominant-baseline='middle'%3EDefense News%3C/text%3E%3C/svg%3E";
+      if (item.image_url && item.image_url !== "null" && item.image_url !== "undefined") {
+        if (typeof item.image_url === 'string' && item.image_url.startsWith('[')) {
+          try {
+            const arr = JSON.parse(item.image_url);
+            if (arr.length > 0) finalImageUrl = arr[0];
+          } catch (e) {}
+        } else {
+          finalImageUrl = item.image_url;
+        }
+        if (finalImageUrl.startsWith('//')) {
+          finalImageUrl = 'https:' + finalImageUrl;
+        }
+      }
+      return {
+        id: item.id,
+        title: item.headline,
+        summary: item.summary,
+        category: item.category || "General",
+        relevanceScore: item.exam_relevance_score || 50,
+        url: item.source_url,
+        imageUrl: finalImageUrl,
+        publishedAt: item.fetched_at,
+      };
+    });
 
     return { data: formattedData, hasMore: formattedData.length === limit };
   } catch (error) {
@@ -124,4 +139,4 @@ export const fetchDefenseNews = unstable_cache(async (page = 0, limit = 20): Pro
     console.error("[News Fetch Error]:", error);
     return { data: page === 0 ? MOCK_DEFENSE_NEWS : [], hasMore: false };
   }
-}, ['defense-news'], { revalidate: 3600, tags: ['news'] });
+};

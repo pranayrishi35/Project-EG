@@ -1,25 +1,51 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { Ratelimit } from "@upstash/ratelimit";
+import { kv } from "@vercel/kv";
+
+const ratelimit = new Ratelimit({
+  redis: kv,
+  limiter: Ratelimit.slidingWindow(5, "15 m"),
+  analytics: true,
+});
 
 /**
  * Middleware: runs on every request before page rendering.
  *
  * Responsibilities:
- * 1. Refresh the Supabase session cookie so it never expires mid-browsing.
- * 2. (Later) Protect routes — redirect unauthenticated users to /login.
- *
- * Keep this file as thin as possible — heavy logic belongs in Server Actions.
- */
-/**
- * Tell Next.js to run this middleware in the Node.js runtime, NOT the Edge
- * runtime. @supabase/supabase-js uses process.version which is unavailable
- * in Edge — this export silences the build warning.
+ * 1. Rate-limit auth endpoints (/login, /signup, /reset-password) using Upstash
+ * 2. Refresh the Supabase session cookie so it never expires mid-browsing.
  */
 export const runtime = "nodejs";
 
 export async function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+  
+  // Guard: Rate Limit Auth Routes (Sliding Window 5 req / 15m)
+  const isAuthRouteForLimit = pathname.startsWith('/login') || pathname.startsWith('/signup') || pathname.startsWith('/reset-password');
+  
+  if (isAuthRouteForLimit) {
+    // Extract IP. Fallbacks for proxies/Vercel/local
+    const ip = request.ip ?? request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip") ?? "127.0.0.1";
+    const { success, limit, reset, remaining } = await ratelimit.limit(`ratelimit_${ip}`);
+    
+    if (!success) {
+      return new NextResponse(
+        JSON.stringify({ error: "Too Many Requests", message: "You have exceeded the rate limit for authentication." }),
+        { 
+          status: 429, 
+          headers: { 
+            "Content-Type": "application/json",
+            "X-RateLimit-Limit": limit.toString(),
+            "X-RateLimit-Remaining": remaining.toString(),
+            "X-RateLimit-Reset": reset.toString()
+          } 
+        }
+      );
+    }
+  }
+
   // Guard: pass through silently when Supabase env vars are not configured yet
-  // (e.g. during initial development before .env.local is created).
   if (
     !process.env.NEXT_PUBLIC_SUPABASE_URL ||
     !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -37,14 +63,22 @@ export async function middleware(request: NextRequest) {
         getAll() {
           return request.cookies.getAll();
         },
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet: { name: string; value: string; options: any }[]) {
+  // Write updated session cookies to both the request and the response
           // Write updated session cookies to both the request and the response
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          );
+          cookiesToSet.forEach(({ name, value, options }) => {
+            request.cookies.set(name, value);
+            // Options applied to response later
+          });
+
           supabaseResponse = NextResponse.next({ request });
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
+            supabaseResponse.cookies.set(name, value, {
+              ...options,
+              httpOnly: true,
+              secure: process.env.NODE_ENV === "production",
+              sameSite: "lax",
+            })
           );
         },
       },

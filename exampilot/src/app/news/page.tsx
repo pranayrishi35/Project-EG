@@ -11,7 +11,9 @@ const MOCK_DEFENSE_NEWS = [
     summary: "India successfully flight-tested the Agni-V surface-to-surface ballistic missile, featuring Multiple Independently Targetable Re-entry Vehicle (MIRV) technology, bolstering strategic deterrence.",
     url: "#",
     imageUrl: "https://images.unsplash.com/photo-1541185933-ef5d8ed016c2?q=80&w=800&auto=format&fit=crop",
-    publishedAt: new Date().toISOString()
+    publishedAt: new Date().toISOString(),
+    category: "Defence",
+    relevanceScore: 95,
   },
   {
     id: "mock-2",
@@ -19,7 +21,9 @@ const MOCK_DEFENSE_NEWS = [
     summary: "The first production aircraft of the LCA Tejas Mk1A variant successfully completed its maiden flight, marking a significant milestone in indigenous aerospace manufacturing.",
     url: "#",
     imageUrl: "https://images.unsplash.com/photo-1574343166827-0402b80a133b?q=80&w=800&auto=format&fit=crop",
-    publishedAt: new Date().toISOString()
+    publishedAt: new Date().toISOString(),
+    category: "Aerospace",
+    relevanceScore: 80,
   },
   {
     id: "mock-3",
@@ -27,7 +31,9 @@ const MOCK_DEFENSE_NEWS = [
     summary: "Bolstering maritime security in the strategic Indian Ocean Region, the Indian Navy has commissioned INS Jatayu, an upgraded naval base in the Lakshadweep islands.",
     url: "#",
     imageUrl: "https://images.unsplash.com/photo-1541185933-ef5d8ed016c2?q=80&w=800&auto=format&fit=crop",
-    publishedAt: new Date().toISOString()
+    publishedAt: new Date().toISOString(),
+    category: "Defence",
+    relevanceScore: 70,
   },
   {
     id: "mock-4",
@@ -35,7 +41,9 @@ const MOCK_DEFENSE_NEWS = [
     summary: "ISRO has successfully completed the human rating of the CE20 cryogenic engine, a crucial step forward for India's ambitious Gaganyaan human spaceflight program.",
     url: "#",
     imageUrl: "https://images.unsplash.com/photo-1574343166827-0402b80a133b?q=80&w=800&auto=format&fit=crop",
-    publishedAt: new Date().toISOString()
+    publishedAt: new Date().toISOString(),
+    category: "Space",
+    relevanceScore: 85,
   },
   {
     id: "mock-5",
@@ -43,8 +51,10 @@ const MOCK_DEFENSE_NEWS = [
     summary: "The joint military exercise involving the Indian Air Force and international partners concluded successfully, enhancing interoperability and tactical combat skills.",
     url: "#",
     imageUrl: "https://images.unsplash.com/photo-1541185933-ef5d8ed016c2?q=80&w=800&auto=format&fit=crop",
-    publishedAt: new Date().toISOString()
-  }
+    publishedAt: new Date().toISOString(),
+    category: "Defence",
+    relevanceScore: 65,
+  },
 ];
 
 export default async function NewsPage() {

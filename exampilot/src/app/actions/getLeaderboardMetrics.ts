@@ -4,15 +4,16 @@ import { createClient } from "@/utils/supabase/server";
 
 export async function getLeaderboardMetrics(attemptId: string) {
   const supabase = createClient();
-  const { data: authData } = await supabase.auth.getUser();
-  if (!authData?.user) return { success: false, error: "Unauthorized" };
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  
+  if (!user) return { success: false, error: "Unauthorized" };
   
   try {
     const { data: attempt } = await supabase
       .from('mock_attempts')
       .select('exam_target, test_number, score')
       .eq('id', attemptId)
-      .eq('user_id', authData.user.id)
+      .eq('user_id', user.id)
       .single();
       
     if (!attempt) return { success: false, error: "Attempt not found or access denied." };
