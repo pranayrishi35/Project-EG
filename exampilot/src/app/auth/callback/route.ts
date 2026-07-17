@@ -102,10 +102,20 @@ export async function GET(request: NextRequest) {
       </html>
     `;
 
-    return new NextResponse(html, {
+    const res = new NextResponse(html, {
       status: 200,
       headers: { "Content-Type": "text/html" }
     });
+
+    // Next.js 13/14 bug: new NextResponse() does not always inherit cookies().set() automatically.
+    // We must manually attach the updated cookies to the response object.
+    const { cookies } = require("next/headers");
+    const cookieStore = cookies();
+    cookieStore.getAll().forEach((c: any) => {
+      res.cookies.set(c.name, c.value, c);
+    });
+
+    return res;
   } catch (unexpectedError: unknown) {
     // ── 4. Safety net: catches network timeouts, env-var misconfigurations, etc.
     console.error("[/auth/callback] Unexpected error:", unexpectedError);
