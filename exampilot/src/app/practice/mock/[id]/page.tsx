@@ -10,8 +10,7 @@ export const metadata = {
 
 export default async function MockTestPage({ params }: { params: { id: string } }) {
   const supabase = createClient();
-  const { data: { session } } = await supabase.auth.getSession();
-  const user = session?.user;
+  const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
     redirect("/login?next=/practice");

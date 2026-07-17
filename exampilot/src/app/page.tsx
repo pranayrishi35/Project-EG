@@ -171,8 +171,7 @@ function PlanCardSkeleton() {
 export default async function HomePage() {
   // We still await user auth here to get the firstName, but this is fast.
   const supabase = createClient();
-  const { data: { session } } = await supabase.auth.getSession();
-  const user = session?.user;
+  const { data: { user } } = await supabase.auth.getUser();
   const firstName = user?.user_metadata?.full_name?.split(" ")[0] || "Pilot";
 
   return (

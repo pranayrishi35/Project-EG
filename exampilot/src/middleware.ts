@@ -5,7 +5,7 @@ import { kv } from "@vercel/kv";
 
 const ratelimit = new Ratelimit({
   redis: kv,
-  limiter: Ratelimit.slidingWindow(5, "15 m"),
+  limiter: Ratelimit.slidingWindow(30, "15 m"),
   analytics: true,
 });
 
@@ -25,26 +25,29 @@ export async function middleware(request: NextRequest) {
   const isAuthRouteForLimit = pathname.startsWith('/login') || pathname.startsWith('/signup') || pathname.startsWith('/reset-password');
   
   if (isAuthRouteForLimit) {
-    if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) {
-      // Skip rate limiting in local dev if Vercel KV is not configured
-    } else {
-      // Extract IP. Fallbacks for proxies/Vercel/local
-      const ip = request.ip ?? request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip") ?? "127.0.0.1";
-      const { success, limit, reset, remaining } = await ratelimit.limit(`ratelimit_${ip}`);
-      
-      if (!success) {
-        return new NextResponse(
-          JSON.stringify({ error: "Too Many Requests", message: "You have exceeded the rate limit for authentication." }),
-          { 
-            status: 429, 
-            headers: { 
-              "Content-Type": "application/json",
-              "X-RateLimit-Limit": limit.toString(),
-              "X-RateLimit-Remaining": remaining.toString(),
-              "X-RateLimit-Reset": reset.toString()
-            } 
-          }
-        );
+    // Only rate-limit actual submission attempts, not page loads
+    if (request.method !== 'GET') {
+      if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) {
+        // Skip rate limiting in local dev if Vercel KV is not configured
+      } else {
+        // Extract IP. Fallbacks for proxies/Vercel/local
+        const ip = request.ip ?? request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip") ?? "127.0.0.1";
+        const { success, limit, reset, remaining } = await ratelimit.limit(`ratelimit_${ip}`);
+        
+        if (!success) {
+          return new NextResponse(
+            JSON.stringify({ error: "Too Many Requests", message: "You have exceeded the rate limit for authentication." }),
+            { 
+              status: 429, 
+              headers: { 
+                "Content-Type": "application/json",
+                "X-RateLimit-Limit": limit.toString(),
+                "X-RateLimit-Remaining": remaining.toString(),
+                "X-RateLimit-Reset": reset.toString()
+              } 
+            }
+          );
+        }
       }
     }
   }

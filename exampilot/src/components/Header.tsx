@@ -25,10 +25,7 @@ export default async function Header() {
 
   const supabase = createClient();
   try {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    const user = session?.user;
+    const { data: { user } } = await supabase.auth.getUser();
 
     if (user) {
       userEmail = user.email ?? null;
