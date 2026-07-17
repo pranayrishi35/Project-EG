@@ -107,12 +107,10 @@ function LoginForm() {
     startGoogleTransition(async () => {
       const supabase = createClient();
       const origin = window.location.origin;
-      // Pass consent=granted so the callback auto-records it,
-      // eliminating the /consent redirect loop on mobile
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${origin}/auth/callback?consent=granted`,
+          redirectTo: `${origin}/auth/callback`,
           queryParams: {
             access_type: "offline",
             prompt: "consent",
@@ -125,10 +123,15 @@ function LoginForm() {
         return;
       }
       if (data?.url) {
+        // Set a short-lived cookie to signal that user agreed to terms on this device.
+        // The callback reads this cookie and auto-records consent, eliminating the
+        // post-login /consent redirect that was causing the Android loop.
+        document.cookie = "ep_consent_pending=1; path=/; max-age=600; SameSite=Lax";
         window.location.href = data.url;
       }
     });
   }
+
 
   // ── OTP handler ────────────────────────────────────────────────────────────
   function handleMagicLink(e: React.FormEvent<HTMLFormElement>) {
