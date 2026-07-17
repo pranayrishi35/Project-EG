@@ -3,6 +3,8 @@ import { createClient } from "@/utils/supabase/server";
 import { Suspense } from "react";
 import { fetchMockHistory } from "@/app/actions/mockAttempts";
 import dynamic from 'next/dynamic';
+import { redirect } from "next/navigation";
+import { isGuestUser } from "@/lib/guestShield";
 
 const PerformanceDashboard = dynamic(() => import("@/components/PerformanceDashboard"), {
   ssr: false,
@@ -15,6 +17,12 @@ export const metadata = {
 
 async function PracticeContent() {
   const supabase = createClient();
+  const { data: { session } } = await supabase.auth.getSession();
+  const user = session?.user;
+
+  if (!user && !isGuestUser()) {
+    redirect("/login?next=/practice");
+  }
   
   // Fetch recent plans to dynamically route the Mock Test button
   const { data: recentPlans } = await supabase

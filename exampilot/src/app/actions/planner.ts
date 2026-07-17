@@ -6,6 +6,7 @@ import { checkAndDeductCredits } from "@/lib/creditManager";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { sanitizePrompt } from "@/lib/sanitizer";
 import { robustJsonParse } from "@/lib/robustJsonParse";
+import { isGuestUser } from "@/lib/guestShield";
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -131,6 +132,9 @@ CRITICAL: You must return valid JSON only. You must properly escape all internal
 export async function generateStudyPlan(
   formData: FormData
 ): Promise<GeneratePlanResult> {
+  if (isGuestUser()) {
+    return { success: true, planId: "trial-plan" };
+  }
   // ── 1. Extract form fields ──────────────────────────────────────────────────
   const rawExamName = (formData.get("examName") as string | null)?.trim();
   const rawExamDate = (formData.get("examDate") as string | null)?.trim();

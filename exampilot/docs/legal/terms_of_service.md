@@ -91,13 +91,13 @@ These Terms shall be governed by and construed in accordance with the laws of In
 ## 12. Contact & Grievance Officer
 
 If you have questions regarding these Terms, please contact our legal team at:
-**Email:** legal@exampilot.com
+**Email:** atpr3105@gmail.com
 
 In accordance with the Consumer Protection (E-Commerce) Rules, 2020 and the Information Technology Rules, 2021, the details of our Grievance Officer are as follows:
 
-**Name:** Grievance Officer
+**Name:** Pranay Rishi
 **Designation:** Grievance Officer
-**Email:** grievance@exampilot.com
+**Email:** atpr3105@gmail.com
 **Address:** ExamPilot Registered Office, Bengaluru, Karnataka, India
 
 The Grievance Officer will acknowledge your complaint within 48 hours of receipt and endeavor to resolve it within one (1) month from the date of receipt, in accordance with applicable law.

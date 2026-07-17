@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import SignOutButton from "@/components/SignOutButton";
+import DeleteAccountForm from "@/components/DeleteAccountForm";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -66,9 +67,9 @@ export default async function SettingsPage() {
     redirect("/login?next=/settings");
   }
 
-  // ── Profile data from the profiles table (created by DB trigger on signup)
+  // ── Profile data from the user_profiles table (created by DB trigger on signup)
   const { data: profile } = await supabase
-    .from("profiles")
+    .from("user_profiles")
     .select("full_name, avatar_url")
     .eq("id", user.id)
     .single();
@@ -178,6 +179,11 @@ export default async function SettingsPage() {
       </Section>
 
       {/* ── Danger zone ───────────────────────────────────────────────── */}
+      <Section title="Danger Zone">
+        <DeleteAccountForm />
+      </Section>
+
+      {/* ── Session ───────────────────────────────────────────────────── */}
       <Section title="Session">
         <div className="p-4">
           <SignOutButton fullWidth />

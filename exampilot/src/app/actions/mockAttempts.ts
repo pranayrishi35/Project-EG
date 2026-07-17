@@ -4,6 +4,8 @@ import { createClient } from "@/utils/supabase/server";
 import { getAdminClient } from "@/lib/adminClient";
 import { z } from "zod";
 import { EXAM_CONFIGS } from "@/lib/examConfig";
+import { isGuestUser } from "@/lib/guestShield";
+import { MOCK_HISTORY_DATA, MOCK_PERFORMANCE_DASHBOARD_DATA } from "@/lib/mockData";
 
 const QStatusSchema = z.enum(["unvisited", "unanswered", "answered", "marked", "answered_and_marked"]);
 
@@ -165,6 +167,9 @@ export async function saveMockProgress(payload: any) {
 }
 
 export async function fetchMockHistory() {
+  if (isGuestUser()) {
+    return { success: true, data: MOCK_HISTORY_DATA };
+  }
   const supabase = createClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   
@@ -191,6 +196,23 @@ export async function fetchMockAttempt(id: string) {
 }
 
 export async function fetchAggregateStats(target?: string) {
+  if (isGuestUser()) {
+    return {
+      success: true,
+      stats: {
+        totalAttempts: MOCK_PERFORMANCE_DASHBOARD_DATA.tests_taken,
+        bestScore: MOCK_PERFORMANCE_DASHBOARD_DATA.average_score,
+        avgAccuracy: 85,
+        trendData: [{
+          id: MOCK_HISTORY_DATA[0].id,
+          date: new Date().toLocaleDateString('en-IN', { month: 'short', day: 'numeric' }),
+          accuracy: 85,
+          score: MOCK_PERFORMANCE_DASHBOARD_DATA.average_score,
+          exam_target: "AFCAT"
+        }]
+      }
+    };
+  }
   const supabase = createClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   

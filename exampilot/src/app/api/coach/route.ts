@@ -3,11 +3,20 @@ import { streamText } from 'ai';
 import { createClient } from '@/utils/supabase/server';
 import { checkAndDeductCredits } from '@/lib/creditManager';
 import { sanitizePrompt } from '@/lib/sanitizer';
+import { isGuestUser } from '@/lib/guestShield';
+import { MOCK_AI_COACHING_INSIGHTS } from '@/lib/mockData';
 
 export const maxDuration = 30;
 
 export async function POST(req: Request) {
   try {
+    if (isGuestUser()) {
+      const mockText = `### Critical Weaknesses\nGeneral Awareness and Numerical Ability.\n\n### Action Plan\n${MOCK_AI_COACHING_INSIGHTS.insights.map(i => `- ${i}`).join('\n')}`;
+      return new Response(mockText, {
+        headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+      });
+    }
+
     const supabase = createClient();
     const { data: authData, error: authError } = await supabase.auth.getUser();
 

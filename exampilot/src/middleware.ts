@@ -95,21 +95,44 @@ export async function middleware(request: NextRequest) {
 
   if (user) {
     const pathname = request.nextUrl.pathname;
+    
+    // Check deletion status
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('is_deleted, deletion_deadline, legal_consent_version')
+      .eq('user_id', user.id)
+      .single();
+
+    if (profile?.is_deleted) {
+      if (profile.deletion_deadline) {
+        const deadline = new Date(profile.deletion_deadline);
+        if (Date.now() < deadline.getTime()) {
+          // In grace window -> force to /settings/recover
+          if (pathname !== '/settings/recover' && !pathname.startsWith('/api')) {
+            const url = request.nextUrl.clone();
+            url.pathname = '/settings/recover';
+            return NextResponse.redirect(url);
+          }
+        } else {
+          // Past deadline -> deny all access
+          await supabase.auth.signOut();
+          const url = request.nextUrl.clone();
+          url.pathname = '/login';
+          url.searchParams.set('account', 'permanently-deleted');
+          return NextResponse.redirect(url);
+        }
+      }
+    }
+
     const isConsentRoute = pathname === '/consent';
     const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/auth');
     const isLegalRoute = ['/terms', '/privacy', '/cookies', '/aup', '/refund-policy'].includes(pathname);
     const isApiRoute = pathname.startsWith('/api') || pathname.startsWith('/_next');
 
-    if (!isConsentRoute && !isAuthRoute && !isLegalRoute && !isApiRoute) {
+    if (!isConsentRoute && !isAuthRoute && !isLegalRoute && !isApiRoute && !profile?.is_deleted) {
       // FAST PATH: Check if the cookie exists to avoid a 150ms+ database query on every page load
       if (!request.cookies.has("consent_granted")) {
-        // SLOW PATH: Fallback to DB check (e.g. user logged in on a new device where cookie is missing)
-        const { data: profile } = await supabase
-          .from('user_profiles')
-          .select('legal_consent_version')
-          .eq('user_id', user.id)
-          .single();
-        
+        // SLOW PATH: Use the profile fetched above
         if (!profile?.legal_consent_version) {
           const url = request.nextUrl.clone();
           url.pathname = '/consent';

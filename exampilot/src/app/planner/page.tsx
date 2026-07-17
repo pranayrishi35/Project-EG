@@ -7,6 +7,7 @@ import type { ExtendedPlan } from "@/app/actions/toggleTopic";
 import DeletePlanButton from "@/components/DeletePlanButton";
 import StudyPlanWizard from "@/app/planner/StudyPlanWizard";
 import PrimaryButton from "@/components/PrimaryButton";
+import { isGuestUser } from "@/lib/guestShield";
 
 export const metadata: Metadata = {
   title: "My Plans — ExamPilot",
@@ -133,7 +134,7 @@ export default async function PlannerPage() {
   } = await supabase.auth.getSession();
   const user = session?.user;
 
-  if (!user) {
+  if (!user && !isGuestUser()) {
     redirect("/login?next=/planner");
   }
 
@@ -170,6 +171,10 @@ export default async function PlannerPage() {
 }
 
 async function PlansLoader() {
+  if (isGuestUser()) {
+    return <EmptyState />;
+  }
+
   const supabase = createClient();
   const { data: plans, error } = await supabase
     .from("study_plans")

@@ -2,6 +2,7 @@ import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { streamText } from 'ai';
 import { createClient } from '@/utils/supabase/server';
 import { sanitizePrompt } from '@/lib/sanitizer';
+import { isGuestUser } from '@/lib/guestShield';
 
 const google = createGoogleGenerativeAI({
   apiKey: process.env.GEMINI_API_KEY,
@@ -22,6 +23,12 @@ FORMATTING RULES: You must optimize for extreme readability on a small mobile sc
 
 export async function POST(req: Request) {
   try {
+    if (isGuestUser()) {
+      return new Response('0:"I am your Trial AI Assistant! I can help you with your studies. Create an account to chat with me fully!"\n', {
+        headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+      });
+    }
+
     const supabase = createClient();
     const { data: authData, error: authError } = await supabase.auth.getUser();
 

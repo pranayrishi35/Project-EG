@@ -57,4 +57,4 @@ We may occasionally update this Cookie Policy to reflect changes in our technica
 ## 6. Contact Us
 
 If you have any questions regarding our use of cookies, please contact our Data Privacy Officer at:
-**Email:** privacy@exampilot.com
+**Email:** atpr3105@gmail.com

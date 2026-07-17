@@ -24,8 +24,8 @@ export function LegalFooter() {
             <div>
               <h3 className="text-sm font-semibold text-gray-900 mb-3">Grievance Officer</h3>
               <div className="text-sm text-gray-600 space-y-1">
-                <p><strong>Name:</strong> Grievance Officer</p>
-                <p><strong>Email:</strong> grievance@exampilot.com</p>
+                <p><strong>Name:</strong> Pranay Rishi</p>
+                <p><strong>Email:</strong> atpr3105@gmail.com</p>
                 <p><strong>Address:</strong> ExamPilot Registered Office, Bengaluru, Karnataka, India</p>
               </div>
             </div>

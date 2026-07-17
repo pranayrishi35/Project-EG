@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { createClient } from "@/utils/supabase/server";
 import Link from "next/link";
 import { Suspense } from "react";
+import OnboardingTrigger from "@/components/onboarding/OnboardingTrigger";
 
 const CreatePlanForm = dynamic(() => import("@/components/CreatePlanForm"), {
   ssr: false,
@@ -135,19 +136,22 @@ export default async function HomePage() {
   return (
     <div className="flex flex-col gap-6 p-4 pt-6 pb-24 max-w-5xl mx-auto">
       {/* ── Top Header ── */}
-      <div className="flex items-center justify-between min-h-[60px]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between min-h-[60px] gap-4">
         <div>
           <h1 className="text-2xl font-black text-gray-900 tracking-tight">
-            Welcome Back, {firstName}
+            Welcome {user ? "Back, " + firstName : "to ExamPilot"}
           </h1>
           {/* LIGHTHOUSE FIX: WCAG Contrast Ratio */}
-          <p className="text-sm text-slate-700 font-medium">
-            Ready to crush your next exam?
+          <p className="text-sm text-slate-700 font-medium mt-1">
+            {user ? "Ready to crush your next exam?" : "Experience the future of AI-powered defense exam preparation."}
           </p>
         </div>
-        <Suspense fallback={<StreakSkeleton />}>
-          <StreakLoader />
-        </Suspense>
+        <div className="flex items-center gap-3">
+          {!user && <OnboardingTrigger />}
+          <Suspense fallback={<StreakSkeleton />}>
+            <StreakLoader />
+          </Suspense>
+        </div>
       </div>
 
       {/* ── Hub Navigation Cards ── */}

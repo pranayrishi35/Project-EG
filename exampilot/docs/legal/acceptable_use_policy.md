@@ -47,4 +47,4 @@ Where applicable, ExamPilot also reserves the right to report malicious activiti
 ## 3. Reporting Violations
 
 If you discover a security vulnerability or witness a violation of this AUP, please report it immediately to our security and legal team at:
-**Email:** security@exampilot.com
+**Email:** atpr3105@gmail.com
