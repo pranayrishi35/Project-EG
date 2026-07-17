@@ -77,6 +77,13 @@ export async function middleware(request: NextRequest) {
           });
         },
       },
+      cookieOptions: {
+        // Remove port if present (e.g., "10.0.2.2:3000")
+        domain: request.headers.get('host')?.split(':')[0] ?? undefined,
+        path: '/',
+        sameSite: 'Lax',
+        secure: false,
+      },
     }
   );
 

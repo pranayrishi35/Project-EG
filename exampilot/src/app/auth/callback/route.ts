@@ -56,6 +56,12 @@ export async function GET(request: NextRequest) {
           });
         },
       },
+      cookieOptions: {
+        domain: request.headers.get('host') ?? undefined,
+        path: '/',
+        sameSite: 'Lax',
+        secure: false,
+      },
     }
   );
 
