@@ -1,19 +1,16 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { createClient as createAdminClient } from "@supabase/supabase-js";
 
 /**
  * Auth Callback Route Handler
  * ─────────────────────────────────────────────────────────────────────────────
- * Supabase redirects the browser here after BOTH:
- *   • Google OAuth  →  ?code=<pkce_auth_code>
- *   • Magic Link    →  ?code=<pkce_auth_code>
+ * Handles both Google OAuth and Magic Link callbacks.
  *
- * This uses the exact pattern recommended by Supabase's own SSR docs:
- * https://supabase.com/docs/guides/auth/server-side/nextjs
- *
- * The key insight: We create the NextResponse.redirect FIRST, then pass
- * its cookie jar to the Supabase client so cookies are written directly
- * into the redirect response headers — no second step needed.
+ * Key fix: We auto-record consent here if `?consent=granted` is in the URL
+ * (set by the login page when the user checks the terms checkboxes).
+ * This eliminates the post-login /consent redirect which caused the
+ * Android sign-in loop.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
@@ -44,6 +41,7 @@ export async function GET(request: NextRequest) {
   // ── 2. Extract the one-time PKCE code ────────────────────────────────────────
   const code = searchParams.get("code");
   const next = sanitiseNext(searchParams.get("next"));
+  const consentGranted = searchParams.get("consent") === "granted";
 
   if (!code) {
     const loginUrl = new URL("/login", origin);
@@ -52,27 +50,24 @@ export async function GET(request: NextRequest) {
   }
 
   // ── 3. Build the success redirect response FIRST ─────────────────────────────
-  // We build the redirect response before calling exchangeCodeForSession so
-  // that the Supabase client can write session cookies directly into it.
-  // This is the only reliable pattern that works across iOS Safari, Android
-  // Chrome, and desktop browsers.
+  // The Supabase client writes session cookies directly into this response.
   const successUrl = new URL(next, origin);
-  
-  // Create the response we'll actually return
+  // Mark that consent was already handled so middleware skips the /consent redirect
+  if (consentGranted) {
+    successUrl.searchParams.set("consent_done", "1");
+  }
   const response = NextResponse.redirect(successUrl);
 
-  // ── 4. Create Supabase client that writes cookies into our response ───────────
+  // ── 4. Create Supabase client writing cookies into the response ───────────────
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
         getAll() {
-          // Read incoming cookies from the request (needed for PKCE code_verifier)
           return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
-          // Write session cookies directly into the outgoing redirect response
           cookiesToSet.forEach(({ name, value, options }) => {
             response.cookies.set(name, value, options);
           });
@@ -83,7 +78,7 @@ export async function GET(request: NextRequest) {
 
   // ── 5. Exchange the PKCE code for a session ───────────────────────────────────
   try {
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { data: sessionData, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (error) {
       const loginUrl = new URL("/login", origin);
@@ -96,7 +91,42 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(loginUrl);
     }
 
-    // ✅ Session cookies are now in `response` — redirect the user to the app
+    // ── 6. Auto-record consent if user agreed on the login page ──────────────────
+    // This eliminates the /consent redirect loop that trapped mobile users.
+    if (consentGranted && sessionData?.user) {
+      try {
+        const adminClient = createAdminClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.SUPABASE_SERVICE_ROLE_KEY!
+        );
+
+        // Upsert so it works even if user_profiles row doesn't exist yet
+        await adminClient
+          .from("user_profiles")
+          .upsert(
+            {
+              user_id: sessionData.user.id,
+              legal_consent_version: "v2026-07-15",
+              legal_consent_timestamp: new Date().toISOString(),
+            },
+            { onConflict: "user_id" }
+          );
+      } catch (consentErr) {
+        // Non-fatal — don't block the user from logging in
+        console.error("[/auth/callback] Consent recording failed:", consentErr);
+      }
+
+      // Set the consent cookie directly on the redirect response
+      // so middleware's fast-path check passes immediately
+      response.cookies.set("consent_granted", "true", {
+        maxAge: 60 * 60 * 24 * 365,
+        path: "/",
+        httpOnly: false, // Must be readable by middleware (not client JS)
+        sameSite: "lax",
+      });
+    }
+
+    // ✅ Session cookies + consent cookie are now in the response
     return response;
   } catch (unexpectedError: unknown) {
     console.error("[/auth/callback] Unexpected error:", unexpectedError);

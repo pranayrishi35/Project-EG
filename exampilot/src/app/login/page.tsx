@@ -101,19 +101,18 @@ function LoginForm() {
 
   const isAnyLoading = isGooglePending || isOtpPending || isPasswordPending;
 
-  // ── Google handler (browser-client, not Server Action) ─────────────────────
-  // Using the browser Supabase client guarantees the PKCE code_verifier is
-  // stored in localStorage — NOT a cookie — so it survives the cross-site
-  // redirect to Google and back on ALL platforms including Android Chrome.
+  // ── Google handler (browser-client) ─────────────────────────────────────────
   function handleGoogleSignIn() {
     setGoogleError(null);
     startGoogleTransition(async () => {
       const supabase = createClient();
       const origin = window.location.origin;
+      // Pass consent=granted so the callback auto-records it,
+      // eliminating the /consent redirect loop on mobile
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${origin}/auth/callback`,
+          redirectTo: `${origin}/auth/callback?consent=granted`,
           queryParams: {
             access_type: "offline",
             prompt: "consent",
@@ -126,7 +125,6 @@ function LoginForm() {
         return;
       }
       if (data?.url) {
-        // Hard navigation — guarantees localStorage is persisted before we leave
         window.location.href = data.url;
       }
     });

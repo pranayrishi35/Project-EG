@@ -120,8 +120,10 @@ export async function middleware(request: NextRequest) {
     const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/auth');
     const isLegalRoute = ['/terms', '/privacy', '/cookies', '/aup', '/refund-policy'].includes(pathname);
     const isApiRoute = pathname.startsWith('/api') || pathname.startsWith('/_next');
+    // Home page is public (shows either guest or user content) — never force consent redirect from /
+    const isHomePage = pathname === '/';
 
-    if (!isConsentRoute && !isAuthRoute && !isLegalRoute && !isApiRoute && !profile?.is_deleted) {
+    if (!isConsentRoute && !isAuthRoute && !isLegalRoute && !isApiRoute && !isHomePage && !profile?.is_deleted) {
       // FAST PATH: Check if the cookie exists to avoid a 150ms+ database query on every page load
       if (!request.cookies.has("consent_granted")) {
         // SLOW PATH: Use the profile fetched above
