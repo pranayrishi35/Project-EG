@@ -66,25 +66,9 @@ export async function GET(request: NextRequest) {
 
   // ── 3. Exchange code for session ─────────────────────────────────────────────
   try {
-    const supabase = createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-
-    if (error) {
-      // Known failure: code expired, already used, verifier mismatch, etc.
-      const loginUrl = new URL("/login", origin);
-      loginUrl.searchParams.set(
-        "error",
-        error.message.length < 200
-          ? error.message
-          : "Session exchange failed. Please sign in again."
-      );
-      return NextResponse.redirect(loginUrl);
-    }
-
-    // ✅ Success — session cookies set by @supabase/ssr, send user to the app
-    // Fix for Safari/iOS ITP dropping cookies on 30x cross-site redirects: return a 200 OK HTML bouncer
     const successUrl = new URL(next, origin);
     
+    // Fix for Safari/iOS ITP dropping cookies on 30x cross-site redirects: return a 200 OK HTML bouncer
     const html = `
       <!DOCTYPE html>
       <html>
@@ -107,13 +91,46 @@ export async function GET(request: NextRequest) {
       headers: { "Content-Type": "text/html" }
     });
 
-    // Next.js 13/14 bug: new NextResponse() does not always inherit cookies().set() automatically.
-    // We must manually attach the updated cookies to the response object.
+    // Instead of using the global createClient() which sets cookies on the incoming request context,
+    // we instantiate a dedicated client here. This guarantees that the fully-hydrated cookie options 
+    // (specifically `path: '/'` and `maxAge`) are injected directly into our outgoing HTML response.
+    const { createServerClient } = require("@supabase/ssr");
     const { cookies } = require("next/headers");
     const cookieStore = cookies();
-    cookieStore.getAll().forEach((c: any) => {
-      res.cookies.set(c.name, c.value, c);
-    });
+
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll();
+          },
+          setAll(cookiesToSet: any[]) {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              // Ensure critical options like path are retained
+              res.cookies.set(name, value, {
+                ...options,
+                httpOnly: true,
+                sameSite: "lax",
+                secure: process.env.NODE_ENV === "production",
+              });
+            });
+          },
+        },
+      }
+    );
+
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+
+    if (error) {
+      const loginUrl = new URL("/login", origin);
+      loginUrl.searchParams.set(
+        "error",
+        error.message.length < 200 ? error.message : "Session exchange failed. Please sign in again."
+      );
+      return NextResponse.redirect(loginUrl);
+    }
 
     return res;
   } catch (unexpectedError: unknown) {
