@@ -71,14 +71,10 @@ export async function middleware(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet: { name: string; value: string; options: any }[]) {
-          // Supabase official pattern: write to both request and response
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          );
-          supabaseResponse = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          );
+          // Supabase sets cookies on the response only; no mutation of the request
+          cookiesToSet.forEach(({ name, value, options }) => {
+            supabaseResponse.cookies.set(name, value, options);
+          });
         },
       },
     }
@@ -86,7 +82,19 @@ export async function middleware(request: NextRequest) {
 
   // IMPORTANT: do NOT remove — this refreshes the session on every request.
   // See: https://supabase.com/docs/guides/auth/server-side/nextjs
-  const { data: { user } } = await supabase.auth.getUser();
+  let user = null;
+  // Only attempt to get a user if a Supabase auth cookie is present
+  const hasSupabaseCookie = request.cookies.getAll().some(c => c.name.startsWith('sb-'));
+  if (hasSupabaseCookie) {
+    try {
+      const { data } = await supabase.auth.getUser();
+      user = data.user;
+    } catch (e) {
+      // Ignore refresh token errors – treat as unauthenticated
+      user = null;
+    }
+  }
+
 
   if (user) {
     const pathname = request.nextUrl.pathname;

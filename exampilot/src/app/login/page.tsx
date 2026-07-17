@@ -126,7 +126,7 @@ function LoginForm() {
         // Set a short-lived cookie to signal that user agreed to terms on this device.
         // The callback reads this cookie and auto-records consent, eliminating the
         // post-login /consent redirect that was causing the Android loop.
-        document.cookie = "ep_consent_pending=1; path=/; max-age=600; SameSite=Lax";
+
         window.location.href = data.url;
       }
     });
