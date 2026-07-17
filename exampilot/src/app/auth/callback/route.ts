@@ -67,35 +67,51 @@ export async function GET(request: NextRequest) {
   // ── 3. Exchange code for session ─────────────────────────────────────────────
   try {
     const successUrl = new URL(next, origin);
+    // CRITICAL FIX: PWA Service Workers on Android often cache the Guest version of '/' 
+    // and serve it even after login. Adding a timestamp query param forces a network hit.
+    successUrl.searchParams.set("t", Date.now().toString());
     
-    // Fix for Safari/iOS ITP dropping cookies on 30x cross-site redirects: return a 200 OK HTML bouncer
-    const html = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8">
-          <meta http-equiv="refresh" content="0;url=${successUrl.toString()}">
-          <title>Authenticating...</title>
-          <script>
-            window.location.replace("${successUrl.toString()}");
-          </script>
-        </head>
-        <body>
-          <p>Redirecting you to the app...</p>
-        </body>
-      </html>
-    `;
+    // Check User-Agent to determine if we need the HTML bouncer for Safari ITP
+    const { headers, cookies } = require("next/headers");
+    const userAgent = headers().get("user-agent") || "";
+    const isIOS = /iPad|iPhone|iPod/.test(userAgent) || (/Mac OS X/.test(userAgent) && /Safari/.test(userAgent) && !/Chrome/.test(userAgent));
+    
+    let res: NextResponse;
 
-    const res = new NextResponse(html, {
-      status: 200,
-      headers: { "Content-Type": "text/html" }
-    });
+    if (isIOS) {
+      // Fix for Safari/iOS ITP dropping cookies on 30x cross-site redirects: return a 200 OK HTML bouncer
+      const html = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <title>Authenticating...</title>
+            <script>
+              // 100ms delay ensures iOS has time to write the Set-Cookie headers to its store
+              setTimeout(function() {
+                window.location.replace("${successUrl.toString()}");
+              }, 100);
+            </script>
+          </head>
+          <body>
+            <p>Redirecting you to the app...</p>
+          </body>
+        </html>
+      `;
+      res = new NextResponse(html, {
+        status: 200,
+        headers: { "Content-Type": "text/html" }
+      });
+    } else {
+      // Standard HTTP 307 Redirect for Android/Windows/Chrome.
+      // Android Chrome perfectly handles Set-Cookie on 30x redirects and avoids HTML parsing race conditions.
+      res = NextResponse.redirect(successUrl);
+    }
 
     // Instead of using the global createClient() which sets cookies on the incoming request context,
     // we instantiate a dedicated client here. This guarantees that the fully-hydrated cookie options 
-    // (specifically `path: '/'` and `maxAge`) are injected directly into our outgoing HTML response.
+    // (specifically `path: '/'` and `maxAge`) are injected directly into our outgoing response.
     const { createServerClient } = require("@supabase/ssr");
-    const { cookies } = require("next/headers");
     const cookieStore = cookies();
 
     const supabase = createServerClient(
