@@ -460,6 +460,11 @@ const ResultsView = memo(function ResultsView({ type, questions, scoringMap, isR
   const [showCreditModal, setShowCreditModal] = useState(false);
   const [rankData, setRankData] = useState<{ rank?: number, percentile?: number, loading: boolean }>({ loading: true });
 
+  // Prefetch the dashboard for instantaneous exit
+  useEffect(() => {
+    router.prefetch('/');
+  }, [router]);
+
   const { statuses, selectedAnswers } = useTestStore.getState();
 
   const { completion, complete, isLoading: isAnalyzing, error: analysisError } = useCompletion({

@@ -43,7 +43,7 @@ export default async function Header() {
           .maybeSingle();
           
         if (!data) {
-          userCredits = 50;
+          userCredits = 500;
           // Fire asynchronously without blocking the server render
           void initializeCreditsAction(user.id);
         } else {
@@ -98,6 +98,14 @@ export default async function Header() {
         {/* ── Auth area ──────────────────────────────────────────── */}
         {userEmail ? (
           <div className="flex items-center gap-4">
+            <a 
+              href="mailto:support@exampilot.in?subject=[Beta%20Feedback]%20ExamPilot"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-amber-100 border border-amber-200 rounded-full text-xs font-bold text-amber-700 shadow-sm hover:bg-amber-200 transition-colors focus-visible:ring-2 focus-visible:ring-amber-400 outline-none"
+            >
+              <span aria-hidden="true" className="text-sm leading-none">💬</span> 
+              Give Feedback
+            </a>
+            
             {userCredits !== null && (
               <div className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 border border-indigo-100 rounded-full text-xs font-bold text-indigo-600 shadow-sm">
                 <span aria-hidden="true" className="text-sm leading-none">⚡</span> 

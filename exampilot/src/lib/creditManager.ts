@@ -25,7 +25,7 @@ async function ensureUserProfile(userId: string): Promise<{ data: any | null, er
   if (!data) {
     const { data: newData, error: insertError } = await admin
       .from("user_profiles")
-      .insert({ user_id: userId, credits: 50, tier: "beta" })
+      .insert({ user_id: userId, credits: 500, tier: "beta" })
       .select("credits, tier")
       .single();
       
@@ -59,7 +59,7 @@ export async function checkAndDeductCredits(userId: string, userEmail: string | 
   }
 
   if (profile.credits < cost) {
-    return { success: false, error: "INSUFFICIENT_CREDITS" };
+    return { success: false, error: "Beta Quota Reached. Thanks for testing! Premium features unlocking soon." };
   }
 
   const { data: updatedData, error: updateError } = await admin

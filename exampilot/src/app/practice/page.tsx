@@ -2,8 +2,12 @@ import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
 import { Suspense } from "react";
 import { fetchMockHistory } from "@/app/actions/mockAttempts";
-import PerformanceDashboard from "@/components/PerformanceDashboard";
+import dynamic from 'next/dynamic';
 
+const PerformanceDashboard = dynamic(() => import("@/components/PerformanceDashboard"), {
+  ssr: false,
+  loading: () => <div className="w-full h-[320px] animate-pulse bg-slate-200 dark:bg-slate-800 rounded-xl mb-6" />
+});
 export const metadata = {
   title: "Practice Hub | ExamPilot",
   description: "Mock Tests, Mini-Tests, and Daily Flashcards",

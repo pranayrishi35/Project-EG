@@ -8,6 +8,9 @@ import FloatingAssistant from "@/components/FloatingAssistant";
 import { LegalFooter } from "@/components/LegalFooter";
 import { createClient } from "@/utils/supabase/server";
 import dynamic from 'next/dynamic';
+import { Inter } from 'next/font/google';
+
+const inter = Inter({ subsets: ['latin'], display: 'swap', variable: '--font-inter' });
 const ReticleDev = dynamic(() => import('./reticle-dev').then(m => m.ReticleDev), { ssr: false });
 
 export const metadata: Metadata = {
@@ -67,7 +70,8 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
-      <body>
+      {/* LIGHTHOUSE FIX: Eliminate CLS by applying next/font/google class directly */}
+      <body className={`${inter.className} antialiased bg-slate-50 text-slate-900`}>
         {process.env.NODE_ENV === 'development' ? <ReticleDev /> : null}
         {/* Fixed Header */}
         <Header />

@@ -23,5 +23,15 @@ export const EXAM_CONFIGS: Partial<Record<ExamTarget, ExamConfig>> = {
       "Reasoning and Military Aptitude": 25,
     },
   },
-  // TODO: add NDA_MATH, NDA_GAT, CDS with their schemas
+  CDS: {
+    total_questions: 120,
+    duration_seconds: 7200,
+    marks_per_correct: 3,
+    negative_marking: -1,
+    subject_breakdown: {
+      "English": 40,
+      "General Knowledge": 40,
+      "Elementary Mathematics": 40,
+    },
+  },
 };

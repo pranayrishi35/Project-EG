@@ -5,6 +5,7 @@ import {
   useRef,
   useTransition,
   useCallback,
+  useEffect,
   type DragEvent,
   type ChangeEvent,
 } from "react";
@@ -109,6 +110,11 @@ function StreakBadge({ streak }: { streak: number }) {
 
 export default function CreatePlanForm({ streak, compact = false }: { streak: number; compact?: boolean }) {
   const router = useRouter();
+
+  // Aggressively prefetch the planner route so the transition is instant
+  useEffect(() => {
+    router.prefetch('/planner');
+  }, [router]);
 
   const [isDragging, setIsDragging] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null);
@@ -219,15 +225,21 @@ export default function CreatePlanForm({ streak, compact = false }: { streak: nu
               <span className="font-bold text-gray-500">NDA</span>
             </div>
 
-            {/* CDS Card (Disabled) */}
-            <div className="relative flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border-2 border-gray-100 bg-gray-50 opacity-60 cursor-not-allowed transition-all">
-              <div className="absolute -top-2 -right-2 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full shadow-sm">
-                Coming Soon
-              </div>
-              <div className="w-10 h-10 rounded-xl bg-gray-200 text-gray-500 flex items-center justify-center text-xl grayscale">
+            {/* CDS Card */}
+            <div 
+              role="button" 
+              tabIndex={0}
+              onClick={() => { if (!isPending) setExamName("CDS"); }}
+              className={`relative flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border-2 transition-all cursor-pointer ${
+                isPending ? "opacity-60 cursor-not-allowed border-gray-200" 
+                : examName === "CDS" ? "border-indigo-500 bg-indigo-50/50 shadow-sm" 
+                : "border-gray-200 bg-white hover:border-indigo-300 hover:bg-indigo-50/30"
+              }`}
+            >
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl transition-colors ${examName === "CDS" ? "bg-indigo-100 text-indigo-600" : "bg-gray-100 text-gray-500"}`}>
                 ⚓
               </div>
-              <span className="font-bold text-gray-500">CDS</span>
+              <span className={`font-bold ${examName === "CDS" ? "text-indigo-900" : "text-gray-700"}`}>CDS</span>
             </div>
           </div>
           {/* Hidden input to pass the selected exam to the server action */}

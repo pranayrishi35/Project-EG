@@ -76,6 +76,7 @@ export default function BottomNav({ isAdmin }: { isAdmin?: boolean }) {
             <li key={item.href} className="flex-1">
               <Link
                 href={item.href}
+                prefetch={true}
                 id={`nav-${item.label.toLowerCase()}`}
                 data-testid={`bottom-nav-${item.label.toLowerCase()}`}
                 className={`flex flex-col items-center justify-center w-full h-full min-h-[44px] min-w-[44px] gap-1 text-xs font-medium transition-colors duration-150 ${

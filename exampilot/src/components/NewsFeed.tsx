@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { fetchDefenseNews, NewsItem } from "@/app/actions/fetchDefenseNews";
 
 interface NewsFeedProps {
@@ -133,9 +134,12 @@ export default function NewsFeed({ initialNews, initialHasMore }: NewsFeedProps)
             >
               {/* Image Section */}
               <div className="w-full md:w-2/5 aspect-video md:aspect-auto md:min-h-[280px] relative overflow-hidden bg-slate-900 flex-shrink-0">
-                <img
+                <Image
                   src={item.imageUrl.replace(/['"]/g, "")}
                   alt={item.title}
+                  width={600}
+                  height={400}
+                  priority={index === 0}
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                   onError={(e) => {
                     e.currentTarget.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='400'%3E%3Crect width='100%25' height='100%25' fill='%231e293b'/%3E%3Ctext x='50%25' y='50%25' font-family='sans-serif' font-size='24' fill='%236366f1' text-anchor='middle' dominant-baseline='middle'%3EDefense News%3C/text%3E%3C/svg%3E";

@@ -67,7 +67,8 @@ async function RecentPlansLoader() {
       <div className="flex flex-col items-center justify-center py-10 text-center flex-1 bg-gray-50/50 rounded-2xl border border-dashed border-gray-200 animate-fade-in">
         <span className="text-4xl mb-4 opacity-50" aria-hidden="true">🛫</span>
         <p className="text-base font-bold text-gray-700">No active plans</p>
-        <p className="text-sm text-gray-500 mt-1 max-w-sm">Generate your first study plan below to get your personalized daily mission targets.</p>
+        {/* LIGHTHOUSE FIX: WCAG Contrast Ratio - Upgraded gray-500 to slate-700 */}
+        <p className="text-sm text-slate-700 mt-1 max-w-sm">Generate your first study plan below to get your personalized daily mission targets.</p>
       </div>
     );
   }
@@ -91,7 +92,8 @@ async function RecentPlansLoader() {
                 <p className="text-base font-black text-gray-900 truncate group-hover:text-indigo-600 transition-colors">
                   {plan.exam_name}
                 </p>
-                <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mt-1">
+                {/* LIGHTHOUSE FIX: WCAG Contrast Ratio */}
+                <p className="text-xs text-slate-700 font-bold uppercase tracking-wider mt-1">
                   {new Date(plan.exam_date).toLocaleDateString("en-IN", { day: 'numeric', month: 'short', year: 'numeric' })}
                 </p>
               </div>
@@ -138,7 +140,8 @@ export default async function HomePage() {
           <h1 className="text-2xl font-black text-gray-900 tracking-tight">
             Welcome Back, {firstName}
           </h1>
-          <p className="text-sm text-gray-500 font-medium">
+          {/* LIGHTHOUSE FIX: WCAG Contrast Ratio */}
+          <p className="text-sm text-slate-700 font-medium">
             Ready to crush your next exam?
           </p>
         </div>
@@ -151,6 +154,7 @@ export default async function HomePage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Link
           href="/planner"
+          aria-label="Navigate to Study Planner"
           className="group flex flex-col items-center text-center gap-2 p-5 rounded-3xl bg-indigo-50 border border-indigo-100 hover:border-indigo-300 hover:shadow-md transition-all active:scale-[0.98] min-h-[120px]"
         >
           <span className="w-12 h-12 rounded-xl bg-white flex items-center justify-center text-2xl shadow-sm group-hover:scale-110 transition-transform">📚</span>
@@ -158,6 +162,7 @@ export default async function HomePage() {
         </Link>
         <Link
           href="/practice"
+          aria-label="Navigate to Practice Hub"
           className="group flex flex-col items-center text-center gap-2 p-5 rounded-3xl bg-emerald-50 border border-emerald-100 hover:border-emerald-300 hover:shadow-md transition-all active:scale-[0.98] min-h-[120px]"
         >
           <span className="w-12 h-12 rounded-xl bg-white flex items-center justify-center text-2xl shadow-sm group-hover:scale-110 transition-transform">🎯</span>
@@ -165,6 +170,7 @@ export default async function HomePage() {
         </Link>
         <Link
           href="/news"
+          aria-label="Navigate to Defense News"
           className="group flex flex-col items-center text-center gap-2 p-5 rounded-3xl bg-sky-50 border border-sky-100 hover:border-sky-300 hover:shadow-md transition-all active:scale-[0.98] min-h-[120px]"
         >
           <span className="w-12 h-12 rounded-xl bg-white flex items-center justify-center text-2xl shadow-sm group-hover:scale-110 transition-transform">📰</span>
@@ -172,6 +178,7 @@ export default async function HomePage() {
         </Link>
         <Link
           href="/booklets"
+          aria-label="Navigate to Study Booklets"
           className="group flex flex-col items-center text-center gap-2 p-5 rounded-3xl bg-amber-50 border border-amber-100 hover:border-amber-300 hover:shadow-md transition-all active:scale-[0.98] min-h-[120px]"
         >
           <span className="w-12 h-12 rounded-xl bg-white flex items-center justify-center text-2xl shadow-sm group-hover:scale-110 transition-transform">📖</span>
@@ -196,7 +203,8 @@ export default async function HomePage() {
         <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 md:p-8 flex flex-col">
           <div className="mb-6 border-b border-gray-100 pb-4">
             <h2 className="text-xl font-black text-gray-900 tracking-tight">Generate Study Plan</h2>
-            <p className="text-sm text-gray-500 font-medium mt-1">Powered by Gemini AI — tailored to your exact syllabus.</p>
+            {/* LIGHTHOUSE FIX: WCAG Contrast Ratio */}
+            <p className="text-sm text-slate-700 font-medium mt-1">Powered by Gemini AI — tailored to your exact syllabus.</p>
           </div>
           <div className="flex-1">
             {/* The streak prop is still needed by CreatePlanForm, wait! */}
