@@ -48,7 +48,7 @@ export function createClient() {
               cookieStore.set(name, value, {
                 ...options,
                 httpOnly: true,
-                sameSite: "lax",
+                sameSite: !isSecure ? "lax" : "none",
                 secure: isSecure,
               })
             });

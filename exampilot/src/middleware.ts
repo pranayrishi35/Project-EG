@@ -81,7 +81,7 @@ export async function middleware(request: NextRequest) {
             supabaseResponse.cookies.set(name, value, {
               ...options,
               httpOnly: true,
-              sameSite: "lax",
+              sameSite: !isLocalhost && process.env.NODE_ENV === "production" ? "none" : "lax",
               secure: !isLocalhost && process.env.NODE_ENV === "production",
             })
           });
