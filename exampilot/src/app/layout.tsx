@@ -83,7 +83,7 @@ export default async function RootLayout({
             paddingTop: "var(--header-height)",
           }}
         >
-          <div className="pb-16 md:pb-0 min-h-[100dvh] flex flex-col">
+          <div className="pb-24 md:pb-0 min-h-[100dvh] flex flex-col">
             <div className="flex-1">
               {children}
             </div>
@@ -92,7 +92,7 @@ export default async function RootLayout({
         </main>
 
         {/* Fixed Bottom Navigation for mobile */}
-        <div className="md:hidden">
+        <div className="flex md:hidden">
           <BottomNav isAdmin={isAdmin} />
         </div>
         

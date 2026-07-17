@@ -13,7 +13,7 @@ async function DirectoryContent() {
       <div className="flex flex-col items-center justify-center py-16 text-center bg-white rounded-3xl border border-gray-100 shadow-sm">
         <span className="text-4xl mb-3 opacity-50" aria-hidden="true">📭</span>
         <p className="text-sm font-bold text-gray-500">No booklets available</p>
-        <p className="text-xs text-gray-400 mt-1">Generate some questions in the Admin panel first.</p>
+        <p className="text-xs text-slate-700 mt-1">Generate some questions in the Admin panel first.</p>
       </div>
     );
   }
@@ -104,7 +104,7 @@ export default function BookletsPage() {
                 <h2 className="text-2xl font-black text-white tracking-tight mb-1">
                   Current Affairs Bulletins
                 </h2>
-                <p className="text-sm text-slate-400 font-medium max-w-md">
+                <p className="text-sm text-slate-700 font-medium max-w-md">
                   High-yield defense, tech, and sports news compiled into a printable revision booklet.
                 </p>
               </div>

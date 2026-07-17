@@ -34,7 +34,7 @@ export default function CurrentAffairsPracticePage() {
       <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white">
         <div className="animate-pulse flex flex-col items-center gap-4">
           <div className="w-12 h-12 rounded-full border-4 border-t-indigo-500 border-indigo-200/20 animate-spin" />
-          <p className="text-sm font-bold uppercase tracking-widest text-slate-400">Loading Current Affairs Quiz...</p>
+          <p className="text-sm font-bold uppercase tracking-widest text-slate-700">Loading Current Affairs Quiz...</p>
         </div>
       </div>
     );
@@ -48,7 +48,7 @@ export default function CurrentAffairsPracticePage() {
             ⚠️
           </div>
           <h2 className="text-xl font-bold text-white mb-2">Test Unavailable</h2>
-          <p className="text-slate-400 mb-8">{error || "Failed to load test."}</p>
+          <p className="text-slate-700 mb-8">{error || "Failed to load test."}</p>
           <button 
             onClick={() => router.push("/practice")}
             className="w-full py-4 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded-xl transition-all"

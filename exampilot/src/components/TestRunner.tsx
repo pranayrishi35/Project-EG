@@ -13,6 +13,9 @@ import { getLeaderboardMetrics } from "@/app/actions/getLeaderboardMetrics";
 import { useCompletion } from "@ai-sdk/react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import SkeletonCard from './SkeletonCard';
+import { createClient } from '@/utils/supabase/client';
+import PrimaryButton from './PrimaryButton';
 import CreditModal from "./CreditModal";
 import { create } from 'zustand';
 import { EXAM_CONFIGS, ExamTarget } from "@/lib/examConfig";
@@ -571,16 +574,16 @@ const ResultsView = memo(function ResultsView({ type, questions, scoringMap, isR
     <div className="fixed inset-0 z-[100] bg-slate-900 flex flex-col items-center justify-start pt-12 pb-24 px-6 text-white overflow-y-auto animate-fade-in print:static print:bg-white print:text-black print:h-auto print:overflow-visible print:p-0">
       <div className="w-full max-w-2xl bg-slate-800 rounded-3xl p-8 shadow-2xl border border-slate-700 print:bg-transparent print:border-none print:shadow-none print:p-0 print:max-w-none">
         <h2 className="text-3xl font-black text-center mb-2 print:text-black">{isReviewMode ? "Review Mode" : "Results Summary"}</h2>
-        <p className="text-slate-400 text-center mb-8 font-medium uppercase tracking-widest text-sm print:text-black">{type}</p>
+        <p className="text-slate-700 text-center mb-8 font-medium uppercase tracking-widest text-sm print:text-black">{type}</p>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-slate-700/50 p-4 rounded-2xl flex flex-col items-center border border-slate-600">
             <span className="text-4xl font-black text-indigo-400 mb-1">{score}</span>
-            <span className="text-xs text-slate-400 uppercase tracking-wider font-bold mt-auto">Score / {maxScore}</span>
+            <span className="text-xs text-slate-700 uppercase tracking-wider font-bold mt-auto">Score / {maxScore}</span>
           </div>
           <div className="bg-slate-700/50 p-4 rounded-2xl flex flex-col items-center border border-slate-600">
             <span className="text-4xl font-black text-emerald-400 mb-1">{accuracy}%</span>
-            <span className="text-xs text-slate-400 uppercase tracking-wider font-bold mt-auto">Accuracy</span>
+            <span className="text-xs text-slate-700 uppercase tracking-wider font-bold mt-auto">Accuracy</span>
           </div>
           <div className="bg-slate-700/50 p-4 rounded-2xl flex flex-col items-center border border-slate-600">
             {rankData.loading ? (
@@ -590,7 +593,7 @@ const ResultsView = memo(function ResultsView({ type, questions, scoringMap, isR
             ) : (
               <span className="text-sm font-bold text-slate-500 mb-1 mt-3">N/A</span>
             )}
-            <span className="text-xs text-slate-400 uppercase tracking-wider font-bold mt-auto">Global Rank</span>
+            <span className="text-xs text-slate-700 uppercase tracking-wider font-bold mt-auto">Global Rank</span>
           </div>
           <div className="bg-slate-700/50 p-4 rounded-2xl flex flex-col items-center border border-slate-600">
             {rankData.loading ? (
@@ -600,7 +603,7 @@ const ResultsView = memo(function ResultsView({ type, questions, scoringMap, isR
             ) : (
               <span className="text-sm font-bold text-slate-500 mb-1 mt-3">N/A</span>
             )}
-            <span className="text-xs text-slate-400 uppercase tracking-wider font-bold mt-auto">Percentile</span>
+            <span className="text-xs text-slate-700 uppercase tracking-wider font-bold mt-auto">Percentile</span>
           </div>
         </div>
 
@@ -613,7 +616,7 @@ const ResultsView = memo(function ResultsView({ type, questions, scoringMap, isR
             <span>Incorrect ({finalMarksIncorrect})</span>
             <span className="font-bold text-lg">{incorrect}</span>
           </div>
-          <div className="flex justify-between items-center text-sm font-medium bg-slate-700/30 border border-slate-700/50 p-3 rounded-xl text-slate-400">
+          <div className="flex justify-between items-center text-sm font-medium bg-slate-700/30 border border-slate-700/50 p-3 rounded-xl text-slate-700">
             <span>Skipped / Unmarked</span>
             <span className="font-bold text-lg">{unattempted}</span>
           </div>
@@ -622,7 +625,7 @@ const ResultsView = memo(function ResultsView({ type, questions, scoringMap, isR
         {/* Subject-Wise Breakdown */}
         {Object.keys(subjectStats).length > 0 && (
           <div className="mb-8 w-full print:break-inside-avoid">
-            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+            <h3 className="text-sm font-bold text-slate-700 uppercase tracking-widest mb-4 flex items-center gap-2">
               Subject Accuracy
             </h3>
             <div className="space-y-4">
@@ -660,7 +663,7 @@ const ResultsView = memo(function ResultsView({ type, questions, scoringMap, isR
                 </div>
               )}
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Learning Archetype</label>
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-widest">Learning Archetype</label>
                 <select 
                   value={archetype}
                   onChange={(e) => setArchetype(e.target.value)}
@@ -713,7 +716,7 @@ const ResultsView = memo(function ResultsView({ type, questions, scoringMap, isR
               return (
                 <div key={q.id} className={`p-5 rounded-2xl border transition-colors ${isCorrect ? 'bg-emerald-900/10 border-emerald-900/30 print:border-gray-300' : isUnattempted ? 'bg-slate-800/50 border-slate-700 print:border-gray-300' : 'bg-rose-900/10 border-rose-900/30 print:border-gray-300'}`}>
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest print:text-black">Q{idx + 1} • {q.subject}</span>
+                    <span className="text-xs font-bold text-slate-700 uppercase tracking-widest print:text-black">Q{idx + 1} • {q.subject}</span>
                     <span className={`text-xs font-bold px-2 py-1 rounded-md ${isCorrect ? 'bg-emerald-500/20 text-emerald-400 print:text-emerald-700' : isUnattempted ? 'bg-slate-700 text-slate-300 print:text-gray-600' : 'bg-rose-500/20 text-rose-400 print:text-rose-700'}`}>
                       {isCorrect ? 'Correct' : isUnattempted ? 'Skipped/Unmarked' : 'Incorrect'}
                     </span>
@@ -743,9 +746,9 @@ const ResultsView = memo(function ResultsView({ type, questions, scoringMap, isR
           </div>
         </div>
 
-        <button onClick={onExit} className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-all shadow-lg active:scale-[0.98]">
-          Return to Dashboard
-        </button>
+        <PrimaryButton onClick={onExit} className="w-full py-4 shadow-lg text-lg">
+          Exit to Dashboard
+        </PrimaryButton>
       </div>
       <CreditModal 
         isOpen={showCreditModal} 

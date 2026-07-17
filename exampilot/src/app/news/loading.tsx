@@ -3,7 +3,7 @@ export default function NewsLoading() {
     <div className="p-4 md:p-6 pb-24 max-w-7xl mx-auto">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-black tracking-tight">Defense News</h1>
-        <p className="text-sm text-slate-400 font-medium mt-1">Live updates and high-yield current affairs.</p>
+        <p className="text-sm text-slate-700 font-medium mt-1">Live updates and high-yield current affairs.</p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 animate-pulse">
         {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (

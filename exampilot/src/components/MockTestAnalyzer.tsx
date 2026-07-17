@@ -43,7 +43,7 @@ function EmptyMocks() {
       </div>
       <div>
         <p className="text-sm font-bold text-gray-700 mb-0.5">No mock tests logged yet</p>
-        <p className="text-xs text-gray-400 max-w-[240px] mx-auto leading-relaxed">
+        <p className="text-xs text-slate-500 max-w-[240px] mx-auto leading-relaxed">
           Log your first mock test above to start tracking your score trend and accuracy.
         </p>
       </div>
@@ -82,7 +82,7 @@ function TrendChart({ tests }: { tests: MockTestResult[] }) {
             className="flex-shrink-0 bg-gray-50 border border-gray-100 rounded-xl px-3 py-2 text-center min-w-[90px]"
           >
             <p className="text-xs font-black tabular-nums" style={{ color }}>{value}</p>
-            <p className="text-[10px] text-gray-400 mt-0.5">{label}</p>
+            <p className="text-[10px] text-slate-500 mt-0.5">{label}</p>
           </div>
         ))}
       </div>
@@ -155,7 +155,7 @@ function TrendChart({ tests }: { tests: MockTestResult[] }) {
         ].map(({ color, label }) => (
           <div key={label} className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ background: color }} />
-            <span className="text-[10px] text-gray-400">{label}</span>
+            <span className="text-[10px] text-slate-500">{label}</span>
           </div>
         ))}
       </div>
@@ -329,7 +329,7 @@ export default function MockTestAnalyzer({
               { label: "Incorrect ✗", value: incorrect, set: setIncorrect, id: "mock-incorrect" },
             ].map(({ label, value, set, id }) => (
               <div key={id} className="flex flex-col gap-1.5">
-                <label htmlFor={id} className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
+                <label htmlFor={id} className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
                   {label}
                 </label>
                 <input
@@ -348,7 +348,7 @@ export default function MockTestAnalyzer({
 
           {/* Scoring settings */}
           <div className="flex items-center gap-2 bg-gray-50 rounded-xl px-3 py-2.5">
-            <span className="text-[10px] text-gray-400 font-semibold flex-shrink-0 uppercase tracking-wider">Format:</span>
+            <span className="text-[10px] text-slate-500 font-semibold flex-shrink-0 uppercase tracking-wider">Format:</span>
             <div className="flex items-center gap-1.5 flex-1">
               <span className="text-[11px] text-emerald-600 font-bold flex-shrink-0">+</span>
               <input
@@ -361,7 +361,7 @@ export default function MockTestAnalyzer({
                 aria-label="Marks per correct answer"
                 className="w-12 text-center text-xs font-bold text-gray-700 bg-white border border-gray-200 rounded-lg py-1 outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent"
               />
-              <span className="text-[10px] text-gray-400 flex-shrink-0">correct</span>
+              <span className="text-[10px] text-slate-500 flex-shrink-0">correct</span>
             </div>
             <div className="flex items-center gap-1.5 flex-1">
               <span className="text-[11px] text-rose-500 font-bold flex-shrink-0">−</span>
@@ -375,7 +375,7 @@ export default function MockTestAnalyzer({
                 aria-label="Penalty per incorrect answer"
                 className="w-12 text-center text-xs font-bold text-gray-700 bg-white border border-gray-200 rounded-lg py-1 outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent"
               />
-              <span className="text-[10px] text-gray-400 flex-shrink-0">wrong</span>
+              <span className="text-[10px] text-slate-500 flex-shrink-0">wrong</span>
             </div>
           </div>
 
@@ -401,7 +401,7 @@ export default function MockTestAnalyzer({
                     <p className="text-lg font-black tabular-nums" style={{ color: totalScore >= 0 ? "#059669" : "#E11D48" }}>
                       {totalScore >= 0 ? "+" : ""}{totalScore}
                     </p>
-                    <p className="text-[10px] text-gray-400">Score</p>
+                    <p className="text-[10px] text-slate-500">Score</p>
                   </div>
                   <div className="w-px h-8 bg-gray-200 flex-shrink-0" />
                   <div className="text-center flex-1">
@@ -411,14 +411,14 @@ export default function MockTestAnalyzer({
                     >
                       {accuracy}%
                     </p>
-                    <p className="text-[10px] text-gray-400">Accuracy</p>
+                    <p className="text-[10px] text-slate-500">Accuracy</p>
                   </div>
                   <div className="w-px h-8 bg-gray-200 flex-shrink-0" />
                   <div className="text-center flex-1">
                     <p className="text-lg font-black tabular-nums text-gray-700">
                       {att - cor - inc}
                     </p>
-                    <p className="text-[10px] text-gray-400">Skipped</p>
+                    <p className="text-[10px] text-slate-500">Skipped</p>
                   </div>
                 </div>
               )}
@@ -462,7 +462,7 @@ export default function MockTestAnalyzer({
             Score Trend
           </p>
           {tests.length > 0 && (
-            <span className="text-xs font-bold text-gray-400">
+            <span className="text-xs font-bold text-slate-500">
               {tests.length} test{tests.length !== 1 ? "s" : ""}
             </span>
           )}

@@ -28,7 +28,7 @@ function getInitials(name: string | null, email: string | null): string {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-xs font-bold uppercase tracking-widest text-gray-400 px-1">
+      <p className="text-xs font-bold uppercase tracking-widest text-slate-700 px-1">
         {title}
       </p>
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
@@ -184,7 +184,7 @@ export default async function SettingsPage() {
         </div>
       </Section>
 
-      <p className="text-center text-xs text-gray-400 -mt-2">
+      <p className="text-center text-xs text-slate-700 -mt-2">
         ExamPilot · Powered by Google Gemini
       </p>
     </div>

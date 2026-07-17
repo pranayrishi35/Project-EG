@@ -65,8 +65,8 @@ export default function BottomNav({ isAdmin }: { isAdmin?: boolean }) {
   return (
     <nav
       id="bottom-nav"
-      className="print:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 safe-bottom"
-      style={{ height: "var(--nav-height)" }}
+      className="print:hidden fixed bottom-0 w-full z-50 bg-white border-t border-gray-200 pb-[env(safe-area-inset-bottom)]"
+      style={{ height: "calc(var(--nav-height) + env(safe-area-inset-bottom))" }}
       aria-label="Main navigation"
     >
       <ul className="flex h-full max-w-lg mx-auto" role="list">
@@ -78,7 +78,7 @@ export default function BottomNav({ isAdmin }: { isAdmin?: boolean }) {
                 href={item.href}
                 id={`nav-${item.label.toLowerCase()}`}
                 data-testid={`bottom-nav-${item.label.toLowerCase()}`}
-                className={`flex flex-col items-center justify-center w-full h-full gap-1 text-xs font-medium transition-colors duration-150 ${
+                className={`flex flex-col items-center justify-center w-full h-full min-h-[44px] min-w-[44px] gap-1 text-xs font-medium transition-colors duration-150 ${
                   isActive
                     ? "text-indigo-600"
                     : "text-gray-500 hover:text-indigo-500"

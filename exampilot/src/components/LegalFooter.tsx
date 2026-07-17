@@ -50,7 +50,7 @@ export function LegalFooter() {
               <h3 className="text-lg font-semibold text-gray-900">Cookie Preferences</h3>
               <button 
                 onClick={() => setIsCookieModalOpen(false)}
-                className="text-gray-400 hover:text-gray-500 transition-colors"
+                className="text-slate-500 hover:text-gray-500 transition-colors"
                 aria-label="Close modal"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

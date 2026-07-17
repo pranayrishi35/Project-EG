@@ -58,7 +58,7 @@ export default function NewsFeed({ initialNews, initialHasMore }: NewsFeedProps)
       <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 md:p-6 flex flex-col md:flex-row gap-4 items-end md:items-center justify-between shadow-xl">
         <div className="w-full flex flex-wrap gap-4 items-center">
           <div className="flex flex-col gap-1.5 w-full sm:w-auto flex-1 min-w-[140px]">
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Category</label>
+            <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Category</label>
             <select 
               value={filterCategory} 
               onChange={(e) => setFilterCategory(e.target.value)}
@@ -74,7 +74,7 @@ export default function NewsFeed({ initialNews, initialHasMore }: NewsFeedProps)
           </div>
           
           <div className="flex flex-col gap-1.5 w-full sm:w-auto flex-1 min-w-[140px]">
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Timeframe</label>
+            <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Timeframe</label>
             <select 
               value={filterDate} 
               onChange={(e) => setFilterDate(e.target.value)}
@@ -87,7 +87,7 @@ export default function NewsFeed({ initialNews, initialHasMore }: NewsFeedProps)
           </div>
 
           <div className="flex flex-col gap-1.5 w-full sm:w-auto flex-1 min-w-[140px]">
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Min Relevance Score</label>
+            <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Min Relevance Score</label>
             <select 
               value={filterScore} 
               onChange={(e) => setFilterScore(Number(e.target.value))}
@@ -121,7 +121,7 @@ export default function NewsFeed({ initialNews, initialHasMore }: NewsFeedProps)
         </div>
       ) : newsItems.length === 0 ? (
         <div className="text-center py-20 px-6 bg-slate-900 border border-slate-800 rounded-3xl">
-          <p className="text-slate-400 font-medium">No news articles found matching your filters.</p>
+          <p className="text-slate-700 font-medium">No news articles found matching your filters.</p>
         </div>
       ) : (
         <>
@@ -165,7 +165,7 @@ export default function NewsFeed({ initialNews, initialHasMore }: NewsFeedProps)
                 </p>
 
                 <div className="mt-auto flex items-center justify-between">
-                  <p className="text-xs text-slate-400 font-medium flex items-center gap-1.5">
+                  <p className="text-xs text-slate-700 font-medium flex items-center gap-1.5">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                     {new Date(item.publishedAt).toLocaleDateString("en-IN", {
                       day: "numeric",

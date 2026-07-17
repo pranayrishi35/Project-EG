@@ -50,7 +50,7 @@ export default function FlashcardViewer({ flashcards }: FlashcardViewerProps) {
       
       {/* Header Info */}
       <div className="w-full max-w-sm flex justify-between items-center mb-8">
-        <Link href="/" className="text-slate-400 hover:text-slate-600 font-medium text-sm transition-colors">
+        <Link href="/" className="text-slate-700 hover:text-slate-600 font-medium text-sm transition-colors">
           ← Back
         </Link>
         <div className="text-xs font-bold uppercase tracking-widest text-indigo-500 bg-indigo-50 px-3 py-1 rounded-full">

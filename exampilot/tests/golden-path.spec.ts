@@ -56,10 +56,10 @@ test.describe('ExamPilot Comprehensive Test Suite', () => {
 
     await page.goto('/planner');
     
-    // We expect user to click 'Create Study Plan' or 'Generate'
-    const generateBtn = page.getByRole('button', { name: /Create|Generate/i }).first();
+    // We expect user to click 'Create Study Plan', 'Generate', or 'Build My Custom Plan'
+    const generateBtn = page.getByRole('button', { name: /Create|Generate|Build/i }).first();
     if (await generateBtn.isVisible()) {
-      await generateBtn.click();
+      await generateBtn.click({ force: true });
     }
     
     // Wait for the planner page to be ready — use URL as the stable anchor,

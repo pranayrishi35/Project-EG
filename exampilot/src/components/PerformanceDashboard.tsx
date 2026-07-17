@@ -56,7 +56,7 @@ export default function PerformanceDashboard() {
             <button
               key={tab}
               onClick={() => setFilter(tab)}
-              className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${filter === tab ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}
+              className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${filter === tab ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-500 hover:bg-slate-700'}`}
             >
               {tab.replace("_", " ")}
             </button>
@@ -66,15 +66,15 @@ export default function PerformanceDashboard() {
 
       <div className="grid grid-cols-3 gap-4 mb-8">
         <div className="bg-slate-800/50 rounded-2xl p-4 border border-slate-700/50 flex flex-col items-center justify-center text-center">
-          <span className="text-slate-400 text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-1">Total Tests</span>
+          <span className="text-slate-500 text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-1">Total Tests</span>
           <span className="text-2xl font-black text-white">{stats?.totalAttempts || 0}</span>
         </div>
         <div className="bg-slate-800/50 rounded-2xl p-4 border border-slate-700/50 flex flex-col items-center justify-center text-center">
-          <span className="text-slate-400 text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-1">Avg Accuracy</span>
+          <span className="text-slate-500 text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-1">Avg Accuracy</span>
           <span className={`text-2xl font-black ${stats ? getTextColor(stats.avgAccuracy) : 'text-slate-500'}`}>{stats?.avgAccuracy || 0}%</span>
         </div>
         <div className="bg-slate-800/50 rounded-2xl p-4 border border-slate-700/50 flex flex-col items-center justify-center text-center">
-          <span className="text-slate-400 text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-1">Best Score</span>
+          <span className="text-slate-500 text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-1">Best Score</span>
           <span className="text-2xl font-black text-indigo-400">{stats?.bestScore || 0}</span>
         </div>
       </div>
@@ -91,8 +91,8 @@ export default function PerformanceDashboard() {
               
               {/* Tooltip */}
               <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-slate-800 border border-slate-700 text-white text-xs py-1.5 px-3 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 pointer-events-none shadow-xl">
-                <p className="font-bold">{attempt.accuracy}% <span className="text-slate-400 font-normal ml-1">({attempt.score} marks)</span></p>
-                <p className="text-[10px] text-slate-400">{attempt.date} • {attempt.exam_target}</p>
+                <p className="font-bold">{attempt.accuracy}% <span className="text-slate-500 font-normal ml-1">({attempt.score} marks)</span></p>
+                <p className="text-[10px] text-slate-500">{attempt.date} • {attempt.exam_target}</p>
               </div>
             </div>
           )) : (

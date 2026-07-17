@@ -325,7 +325,7 @@ export default function AdminDashboard() {
                 className={`px-6 py-2 rounded-md font-bold text-sm transition-all ${
                   activeTab === tab 
                     ? "bg-indigo-600 text-white shadow-md" 
-                    : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/50"
+                    : "text-slate-700 hover:text-slate-200 hover:bg-slate-800/50"
                 }`}
               >
                 {tab}
@@ -359,15 +359,15 @@ export default function AdminDashboard() {
                   <>
                     <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-sm hover:border-slate-700 hover:shadow-indigo-500/5 transition-all">
                       <div className="text-5xl font-black text-indigo-400 mb-2 tabular-nums">{insights?.profiles || 0}</div>
-                      <div className="text-xs text-slate-400 uppercase font-bold tracking-widest">Registered Profiles</div>
+                      <div className="text-xs text-slate-700 uppercase font-bold tracking-widest">Registered Profiles</div>
                     </div>
                     <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-sm hover:border-slate-700 hover:shadow-amber-500/5 transition-all">
                       <div className="text-5xl font-black text-amber-400 mb-2 tabular-nums">{insights?.studyPlans || 0}</div>
-                      <div className="text-xs text-slate-400 uppercase font-bold tracking-widest">Generated Plans</div>
+                      <div className="text-xs text-slate-700 uppercase font-bold tracking-widest">Generated Plans</div>
                     </div>
                     <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-sm hover:border-slate-700 hover:shadow-emerald-500/5 transition-all">
                       <div className="text-5xl font-black text-emerald-400 mb-2 tabular-nums">{insights?.questions || 0}</div>
-                      <div className="text-xs text-slate-400 uppercase font-bold tracking-widest">Question Bank Volume</div>
+                      <div className="text-xs text-slate-700 uppercase font-bold tracking-widest">Question Bank Volume</div>
                     </div>
                   </>
                 )}
@@ -401,7 +401,7 @@ export default function AdminDashboard() {
                       <div key={item.key} className="p-6 md:p-8 flex flex-col lg:flex-row gap-6 lg:items-center hover:bg-slate-800/30 transition-colors">
                         <div className="flex-1">
                           <h3 className="text-base font-black text-indigo-300 font-mono mb-1.5">{item.key}</h3>
-                          {item.description && <p className="text-sm text-slate-400 leading-relaxed max-w-2xl">{item.description}</p>}
+                          {item.description && <p className="text-sm text-slate-700 leading-relaxed max-w-2xl">{item.description}</p>}
                         </div>
                         <div className="flex w-full lg:w-96 items-center shrink-0">
                           <input 
@@ -437,7 +437,7 @@ export default function AdminDashboard() {
                   <form onSubmit={handleSeedQuestions} className="flex flex-col gap-5">
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
                       <div>
-                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Target Exam</label>
+                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-widest mb-2">Target Exam</label>
                         <div className="relative">
                           <select 
                             value={seedExam} 
@@ -456,7 +456,7 @@ export default function AdminDashboard() {
                       </div>
 
                       <div>
-                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Subject</label>
+                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-widest mb-2">Subject</label>
                         <div className="relative">
                           <select 
                             value={seedSubject} 
@@ -474,7 +474,7 @@ export default function AdminDashboard() {
                       </div>
 
                       <div>
-                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Destination Pool</label>
+                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-widest mb-2">Destination Pool</label>
                         <div className="relative">
                           <select 
                             value={sourcePool} 
@@ -539,7 +539,7 @@ export default function AdminDashboard() {
                   
                   <form onSubmit={handleGenerateFullMock} className="flex flex-col gap-5 flex-1">
                     <div>
-                      <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Target Exam Layout</label>
+                      <label className="block text-xs font-bold text-slate-700 uppercase tracking-widest mb-2">Target Exam Layout</label>
                       <div className="relative">
                         <select 
                           value={fullMockExam} 
@@ -579,7 +579,7 @@ export default function AdminDashboard() {
                                 </svg>
                                 <span>Building Mock ({mockProgress}%)</span>
                               </div>
-                              <span className="text-[10px] font-medium text-slate-400">Please wait up to 60 seconds...</span>
+                              <span className="text-[10px] font-medium text-slate-700">Please wait up to 60 seconds...</span>
                             </>
                           ) : (
                             <>
@@ -605,7 +605,7 @@ export default function AdminDashboard() {
                 
                 <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-sm flex flex-col h-full">
                   <h3 className="text-lg font-bold text-white mb-2">Manual Cron Trigger</h3>
-                  <p className="text-sm text-slate-400 mb-6">Hits the /api/cron/fetch-news route to pull fresh GNews and summarize via Gemini.</p>
+                  <p className="text-sm text-slate-700 mb-6">Hits the /api/cron/fetch-news route to pull fresh GNews and summarize via Gemini.</p>
                   <div className="flex-1 flex flex-col justify-end">
                     <button 
                       onClick={handleFetchNews}
@@ -628,7 +628,7 @@ export default function AdminDashboard() {
                 <div className="bg-slate-900 border border-emerald-900/50 rounded-3xl p-6 md:p-8 shadow-[0_0_30px_rgba(16,185,129,0.05)] relative overflow-hidden flex flex-col h-full">
                   <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-600 to-teal-500"></div>
                   <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2"><span>🎯</span> Extract MCQs from News</h3>
-                  <p className="text-sm text-slate-400 mb-6">Reviews news_cache entries from the last 24 hours and uses Gemini to generate highly relevant MCQs.</p>
+                  <p className="text-sm text-slate-700 mb-6">Reviews news_cache entries from the last 24 hours and uses Gemini to generate highly relevant MCQs.</p>
                   <div className="flex-1 flex flex-col justify-end">
                     <button 
                       onClick={handleGenerateNewsMCQs}
@@ -660,13 +660,13 @@ export default function AdminDashboard() {
               </h2>
               <div className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-sm">
                 {mockAttempts.length === 0 ? (
-                  <div className="p-8 text-center text-slate-400 font-medium">
+                  <div className="p-8 text-center text-slate-700 font-medium">
                     No mock tests found in the database.
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm text-slate-300">
-                      <thead className="bg-slate-800/50 text-xs uppercase font-bold text-slate-400 border-b border-slate-800">
+                      <thead className="bg-slate-800/50 text-xs uppercase font-bold text-slate-700 border-b border-slate-800">
                         <tr>
                           <th className="px-6 py-4">ID</th>
                           <th className="px-6 py-4">User ID</th>
@@ -682,7 +682,7 @@ export default function AdminDashboard() {
                             <td className="px-6 py-4 font-mono text-xs text-slate-500" title={attempt.id}>
                               {attempt.id.substring(0, 8)}...
                             </td>
-                            <td className="px-6 py-4 font-mono text-xs text-slate-400" title={attempt.user_id}>
+                            <td className="px-6 py-4 font-mono text-xs text-slate-700" title={attempt.user_id}>
                               {attempt.user_id.substring(0, 8)}...
                             </td>
                             <td className="px-6 py-4 font-bold text-white">
@@ -695,7 +695,7 @@ export default function AdminDashboard() {
                                 {attempt.status}
                               </span>
                             </td>
-                            <td className="px-6 py-4 text-slate-400 text-xs">
+                            <td className="px-6 py-4 text-slate-700 text-xs">
                               {new Date(attempt.created_at).toLocaleDateString()}
                             </td>
                             <td className="px-6 py-4 text-right">
@@ -723,7 +723,7 @@ export default function AdminDashboard() {
             <div className="flex flex-col md:flex-row justify-between gap-4 items-start md:items-center bg-slate-900 p-6 rounded-3xl border border-slate-800 shadow-sm">
               <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
                 <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">Exam Target</label>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-widest mb-1.5">Exam Target</label>
                   <select 
                     value={questionExam} 
                     onChange={e => setQuestionExam(e.target.value)}
@@ -736,7 +736,7 @@ export default function AdminDashboard() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">Subject</label>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-widest mb-1.5">Subject</label>
                   <select 
                     value={questionSubject} 
                     onChange={e => setQuestionSubject(e.target.value)}
@@ -768,7 +768,7 @@ export default function AdminDashboard() {
               ) : (
                 <div className="overflow-x-auto w-full">
                   <table className="w-full text-left text-sm text-slate-300">
-                    <thead className="bg-slate-800/50 text-xs uppercase font-bold text-slate-400 border-b border-slate-800">
+                    <thead className="bg-slate-800/50 text-xs uppercase font-bold text-slate-700 border-b border-slate-800">
                       <tr>
                         <th className="px-6 py-4 w-12"></th>
                         <th className="px-6 py-4">Question</th>
@@ -784,7 +784,7 @@ export default function AdminDashboard() {
                             <td className="px-6 py-4">
                               <button 
                                 onClick={() => setExpandedQuestionId(expandedQuestionId === q.id ? null : q.id)}
-                                className="text-slate-400 hover:text-white"
+                                className="text-slate-700 hover:text-white"
                               >
                                 {expandedQuestionId === q.id ? "▼" : "▶"}
                               </button>
@@ -792,7 +792,7 @@ export default function AdminDashboard() {
                             <td className="px-6 py-4 font-medium text-slate-200">
                               <div className="line-clamp-2">{q.question}</div>
                             </td>
-                            <td className="px-6 py-4 text-xs font-bold text-slate-400">
+                            <td className="px-6 py-4 text-xs font-bold text-slate-700">
                               {q.is_pyq ? <span className="text-amber-400">PYQ {q.pyq_year}</span> : <span className="text-indigo-400">Generated</span>}
                             </td>
                             <td className="px-6 py-4 text-slate-500 text-xs whitespace-nowrap">
@@ -814,7 +814,7 @@ export default function AdminDashboard() {
                                   <p className="text-white font-medium">{q.question}</p>
                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                     {q.options.map((opt: string, idx: number) => (
-                                      <div key={idx} className={`p-3 rounded-lg border text-sm ${idx === q.correct_index ? "bg-emerald-900/30 border-emerald-500/50 text-emerald-200" : "bg-slate-900 border-slate-700 text-slate-400"}`}>
+                                      <div key={idx} className={`p-3 rounded-lg border text-sm ${idx === q.correct_index ? "bg-emerald-900/30 border-emerald-500/50 text-emerald-200" : "bg-slate-900 border-slate-700 text-slate-700"}`}>
                                         <span className="font-bold mr-2">{String.fromCharCode(65 + idx)}.</span> {opt}
                                       </div>
                                     ))}
@@ -852,7 +852,7 @@ export default function AdminDashboard() {
               ) : (
                 <div className="overflow-x-auto w-full">
                   <table className="w-full text-left text-sm text-slate-300">
-                    <thead className="bg-slate-800/50 text-xs uppercase font-bold text-slate-400 border-b border-slate-800">
+                    <thead className="bg-slate-800/50 text-xs uppercase font-bold text-slate-700 border-b border-slate-800">
                       <tr>
                         <th className="px-6 py-4">Name</th>
                         <th className="px-6 py-4">Email</th>
@@ -867,7 +867,7 @@ export default function AdminDashboard() {
                           <td className="px-6 py-4 font-bold text-white whitespace-nowrap">
                             {u.name}
                           </td>
-                          <td className="px-6 py-4 text-slate-400">
+                          <td className="px-6 py-4 text-slate-700">
                             {u.email}
                           </td>
                           <td className="px-6 py-4 text-slate-500 text-xs whitespace-nowrap">
@@ -898,7 +898,7 @@ export default function AdminDashboard() {
           <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-2xl font-black text-white">Add New Question</h3>
-              <button onClick={() => setIsAddModalOpen(false)} className="text-slate-400 hover:text-white p-2">
+              <button onClick={() => setIsAddModalOpen(false)} className="text-slate-700 hover:text-white p-2">
                 ✕
               </button>
             </div>
@@ -906,7 +906,7 @@ export default function AdminDashboard() {
             <form onSubmit={handleAddQuestion} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Exam Target</label>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-widest mb-2">Exam Target</label>
                   <select 
                     value={newQuestion.exam_target}
                     onChange={e => setNewQuestion({...newQuestion, exam_target: e.target.value})}
@@ -918,7 +918,7 @@ export default function AdminDashboard() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Subject</label>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-widest mb-2">Subject</label>
                   <select 
                     value={newQuestion.subject}
                     onChange={e => setNewQuestion({...newQuestion, subject: e.target.value})}
@@ -932,7 +932,7 @@ export default function AdminDashboard() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Question Text</label>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-widest mb-2">Question Text</label>
                 <textarea 
                   value={newQuestion.question}
                   onChange={e => setNewQuestion({...newQuestion, question: e.target.value})}
@@ -946,7 +946,7 @@ export default function AdminDashboard() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {[1, 2, 3, 4].map(idx => (
                   <div key={idx}>
-                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Option {idx}</label>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-widest mb-2">Option {idx}</label>
                     <div className="flex gap-2">
                       <div className="flex items-center justify-center pt-3">
                         <input 
@@ -995,7 +995,7 @@ export default function AdminDashboard() {
               </div>
 
               <div className="pt-4 flex justify-end gap-3 border-t border-slate-800">
-                <button type="button" onClick={() => setIsAddModalOpen(false)} className="px-6 py-3 rounded-xl font-bold text-slate-400 hover:text-white transition-colors">
+                <button type="button" onClick={() => setIsAddModalOpen(false)} className="px-6 py-3 rounded-xl font-bold text-slate-700 hover:text-white transition-colors">
                   Cancel
                 </button>
                 <button type="submit" className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold transition-colors shadow-lg shadow-indigo-500/20">

@@ -62,7 +62,7 @@ function FilePill({ file, onRemove, disabled }: { file: UploadedFile; onRemove: 
         <p className="text-sm font-semibold text-gray-800 truncate">{file.name}</p>
         <p className="text-xs text-gray-500">{formatBytes(file.size)}</p>
       </div>
-      <button id="remove-file-btn" type="button" onClick={onRemove} disabled={disabled} aria-label="Remove selected file" className="w-7 h-7 flex items-center justify-center rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors flex-shrink-0 disabled:opacity-40 disabled:cursor-not-allowed">
+      <button id="remove-file-btn" type="button" onClick={onRemove} disabled={disabled} aria-label="Remove selected file" className="w-7 h-7 flex items-center justify-center rounded-full text-slate-700 hover:text-red-500 hover:bg-red-50 transition-colors flex-shrink-0 disabled:opacity-40 disabled:cursor-not-allowed">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
           <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
         </svg>
@@ -249,7 +249,7 @@ export default function CreatePlanForm({ streak, compact = false }: { streak: nu
         <div id="syllabus-upload-section" className="flex flex-col gap-1.5">
           <label className="text-sm font-semibold text-gray-700 flex items-center gap-1.5" id="upload-label">
             <span className="text-base" aria-hidden="true">📎</span> Upload Syllabus
-            <span className="text-xs font-normal text-gray-400 ml-1">(optional)</span>
+            <span className="text-xs font-normal text-slate-700 ml-1">(optional)</span>
           </label>
           <div
             id="syllabus-drop-zone"
@@ -265,13 +265,13 @@ export default function CreatePlanForm({ streak, compact = false }: { streak: nu
           >
             {isDragging && !isPending && <div className="absolute inset-0 rounded-2xl pointer-events-none" style={{ background: "radial-gradient(ellipse at center, rgba(99,102,241,0.08) 0%, transparent 70%)" }} aria-hidden="true" />}
             <div className={["w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-200", isDragging ? "bg-indigo-100 scale-110" : dragError ? "bg-red-100" : "bg-gray-50"].join(" ")} aria-hidden="true">
-              <UploadIcon className={["w-7 h-7 transition-colors duration-200", isDragging ? "text-indigo-500" : dragError ? "text-red-400" : "text-gray-400"].join(" ")} />
+              <UploadIcon className={["w-7 h-7 transition-colors duration-200", isDragging ? "text-indigo-500" : dragError ? "text-red-400" : "text-slate-700"].join(" ")} />
             </div>
             <div className="text-center">
               <p className={["text-sm font-semibold transition-colors duration-150", isDragging ? "text-indigo-600" : dragError ? "text-red-500" : "text-gray-700"].join(" ")}>
                 {isDragging ? "Drop it right here!" : dragError ? "Wrong file type" : "Tap to browse or drag & drop"}
               </p>
-              <p id="upload-hint" className="text-xs text-gray-400 mt-0.5">{dragError ?? `${ACCEPTED_LABEL} · Max 20 MB`}</p>
+              <p id="upload-hint" className="text-xs text-slate-700 mt-0.5">{dragError ?? `${ACCEPTED_LABEL} · Max 20 MB`}</p>
             </div>
             <input ref={fileInputRef} id="syllabus-file-input" type="file" accept=".pdf,.png,.jpg,.jpeg,.webp" className="sr-only" tabIndex={-1} aria-hidden="true" onChange={handleInputChange} disabled={isPending} />
           </div>
@@ -319,7 +319,7 @@ export default function CreatePlanForm({ streak, compact = false }: { streak: nu
           )}
         </button>
 
-        {!isPending && <p className="text-center text-xs text-gray-400 -mt-2">AI-powered · Personalised for your exam · Free</p>}
+        {!isPending && <p className="text-center text-xs text-slate-700 -mt-2">AI-powered · Personalised for your exam · Free</p>}
         {isPending && <p className="text-center text-xs text-indigo-400 -mt-2 animate-fade-in">Analysing syllabus and building your schedule — this takes ~15 seconds…</p>}
 
       </form>

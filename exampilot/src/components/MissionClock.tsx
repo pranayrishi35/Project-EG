@@ -103,7 +103,7 @@ export default function MissionClock({ examDate, initialSeconds, onTick, onTimeU
               <span className="text-2xl md:text-3xl font-bold bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 shadow-inner">
                 {String(value).padStart(2, '0')}
               </span>
-              <span className="text-[9px] uppercase tracking-widest text-slate-400 mt-1">
+              <span className="text-[9px] uppercase tracking-widest text-slate-700 mt-1">
                 {unit}
               </span>
             </div>

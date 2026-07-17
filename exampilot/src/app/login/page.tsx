@@ -65,7 +65,7 @@ function OrDivider() {
   return (
     <div className="flex items-center gap-3" aria-hidden="true">
       <div className="flex-1 h-px bg-gray-100" />
-      <span className="text-xs text-gray-400 font-medium tracking-wider">OR</span>
+      <span className="text-xs text-slate-700 font-medium tracking-wider">OR</span>
       <div className="flex-1 h-px bg-gray-100" />
     </div>
   );
@@ -366,7 +366,7 @@ export default function LoginPage() {
       </div>
 
       {/* Fine print */}
-      <p className="text-center text-xs text-gray-400 leading-relaxed">
+      <p className="text-center text-xs text-slate-700 leading-relaxed">
         We are committed to protecting your personal data.
       </p>
     </div>

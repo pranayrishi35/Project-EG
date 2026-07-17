@@ -34,7 +34,7 @@ export default function GlobalError({
           </p>
 
           {error.digest && (
-            <div className="mt-4 inline-block bg-slate-50 border border-slate-100 text-slate-400 text-[10px] font-mono px-2 py-1 rounded-md">
+            <div className="mt-4 inline-block bg-slate-50 border border-slate-100 text-slate-700 text-[10px] font-mono px-2 py-1 rounded-md">
               Error ID: {error.digest}
             </div>
           )}

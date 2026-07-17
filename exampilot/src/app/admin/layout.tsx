@@ -33,7 +33,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
              <span className="text-xs font-semibold px-3 py-1.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full">
                Verified: {user.email}
              </span>
-             <a href="/" className="text-sm font-bold text-slate-400 hover:text-white transition-colors">
+             <a href="/" className="text-sm font-bold text-slate-700 hover:text-white transition-colors">
                Return to App
              </a>
           </div>

@@ -68,7 +68,7 @@ export default async function NewsPage() {
     <div className="p-4 md:p-6 pb-24 max-w-7xl mx-auto">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-black tracking-tight">Defense News</h1>
-        <p className="text-sm text-slate-400 font-medium mt-1">Live updates and high-yield current affairs.</p>
+        <p className="text-sm text-slate-700 font-medium mt-1">Live updates and high-yield current affairs.</p>
       </div>
 
       <NewsFeed initialNews={newsItems} initialHasMore={hasMore} />
