@@ -50,14 +50,14 @@ export async function GET(request: NextRequest) {
         getAll() {
           return request.cookies.getAll();
         },
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet: { name: string; value: string; options?: any }[]) {
           cookiesToSet.forEach(({ name, value, options }) => {
             response.cookies.set(name, value, options);
           });
         },
       },
       cookieOptions: {
-        domain: request.headers.get('host') ?? undefined,
+        domain: request.headers.get('host')?.split(':')[0] ?? undefined,
         path: '/',
         sameSite: 'Lax',
         secure: false,
