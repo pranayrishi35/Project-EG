@@ -29,14 +29,29 @@ export function createClient() {
         },
         setAll(cookiesToSet) {
           try {
-            cookiesToSet.forEach(({ name, value, options }) =>
+            cookiesToSet.forEach(({ name, value, options }) => {
+              // Automatically handle secure flag based on the actual request protocol
+              let isSecure = process.env.NODE_ENV === "production";
+              try {
+                // headers() might throw in some Server Component contexts if not available
+                const { headers } = require("next/headers");
+                const headersList = headers();
+                const host = headersList.get("host") || "";
+                const proto = headersList.get("x-forwarded-proto") || "";
+                if (host.includes("localhost") || host.includes("127.0.0.1") || proto === "http") {
+                  isSecure = false;
+                }
+              } catch (e) {
+                // Fallback if headers() is unavailable
+              }
+
               cookieStore.set(name, value, {
                 ...options,
                 httpOnly: true,
-                secure: process.env.NODE_ENV === "production",
                 sameSite: "lax",
+                secure: isSecure,
               })
-            );
+            });
           } catch {
             // setAll called from a Server Component — cookies can only be
             // mutated from Server Actions or Route Handlers, so this is safe

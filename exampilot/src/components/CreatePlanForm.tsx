@@ -151,6 +151,10 @@ export default function CreatePlanForm({ streak, compact = false }: { streak: nu
     setSubmitError(null);
     const formData = new FormData(e.currentTarget);
     
+    // Step 1 fields are unmounted in Step 2, so manually append their states:
+    formData.set("examName", examName);
+    formData.set("examDate", examDate);
+    
     // Explicit guard: if skip is triggered, completely ignore any uploaded file.
     if (submitActionRef.current === "skip") {
       formData.delete("syllabusFile");

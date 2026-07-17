@@ -321,6 +321,16 @@ export default function DemoTestRunner({ questions }: { questions: Question[] })
                >
                   Save & Next
                </button>
+               {currentQuestionIndex === questions.length - 1 && (
+                 <button
+                   type="button"
+                   onClick={handleSubmit}
+                   disabled={isSubmitting}
+                   className="px-4 md:px-6 py-3 rounded-xl bg-rose-600 text-white font-black text-xs md:text-sm hover:bg-rose-700 hover:shadow-lg transition-all min-h-[44px] disabled:opacity-50 ml-2"
+                 >
+                   {isSubmitting ? "Submitting..." : "Submit Test"}
+                 </button>
+               )}
              </div>
           </div>
         </div>

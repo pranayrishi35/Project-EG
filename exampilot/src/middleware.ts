@@ -76,14 +76,15 @@ export async function middleware(request: NextRequest) {
           });
 
           supabaseResponse = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) =>
+          cookiesToSet.forEach(({ name, value, options }) => {
+            const isLocalhost = process.env.NEXT_PUBLIC_SUPABASE_URL?.includes("localhost") || process.env.NODE_ENV !== "production";
             supabaseResponse.cookies.set(name, value, {
               ...options,
               httpOnly: true,
-              secure: process.env.NODE_ENV === "production",
               sameSite: "lax",
+              secure: !isLocalhost && process.env.NODE_ENV === "production",
             })
-          );
+          });
         },
       },
     }

@@ -295,7 +295,7 @@ const MobilePaletteToggle = memo(function MobilePaletteToggle({ questions, onCli
   );
 });
 
-const ActiveQuestionView = memo(function ActiveQuestionView({ questions, isReviewMode }: { questions: any[], isReviewMode: boolean }) {
+const ActiveQuestionView = memo(function ActiveQuestionView({ questions, isReviewMode, onSubmit }: { questions: any[], isReviewMode: boolean, onSubmit?: () => void }) {
   const currentQuestionIndex = useTestStore(state => state.currentQuestionIndex);
   const currentQ = questions[currentQuestionIndex];
   const nextQ = questions[currentQuestionIndex + 1];
@@ -447,6 +447,14 @@ const ActiveQuestionView = memo(function ActiveQuestionView({ questions, isRevie
             >
               Save & Next
             </button>
+            {currentQuestionIndex === questions.length - 1 && !isReviewMode && (
+              <button 
+                onClick={onSubmit}
+                className="px-4 md:px-8 py-3 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold transition-all shadow-md active:scale-95 text-xs sm:text-sm min-h-[44px] ml-2"
+              >
+                Submit Exam
+              </button>
+            )}
          </div>
       </div>
     </>
@@ -1096,8 +1104,8 @@ export default function TestRunner({ type, questions, scoringMap, onExit, attemp
       <div className="flex-1 overflow-hidden flex flex-col md:flex-row max-w-[1600px] mx-auto w-full">
         
         {/* Left Column - Active Question */}
-        <div className="flex-1 flex flex-col bg-white md:border-r border-slate-300 relative pointer-events-auto">
-          <ActiveQuestionView questions={questions} isReviewMode={isReviewMode || false} />
+        <div className="flex-1 flex flex-col min-h-0 bg-white relative z-10 w-full">
+          <ActiveQuestionView questions={questions} isReviewMode={isReviewMode || false} onSubmit={handleSubmit} />
         </div>
 
         {/* Right Column - Question Palette */}
