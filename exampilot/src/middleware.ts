@@ -68,23 +68,14 @@ export async function middleware(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet: { name: string; value: string; options: any }[]) {
-  // Write updated session cookies to both the request and the response
-          // Write updated session cookies to both the request and the response
-          cookiesToSet.forEach(({ name, value, options }) => {
-            request.cookies.set(name, value);
-            // Options applied to response later
-          });
-
+          // Supabase official pattern: write to both request and response
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value)
+          );
           supabaseResponse = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) => {
-            const isLocalhost = process.env.NEXT_PUBLIC_SUPABASE_URL?.includes("localhost") || process.env.NODE_ENV !== "production";
-            supabaseResponse.cookies.set(name, value, {
-              ...options,
-              httpOnly: true,
-              sameSite: !isLocalhost && process.env.NODE_ENV === "production" ? "none" : "lax",
-              secure: !isLocalhost && process.env.NODE_ENV === "production",
-            })
-          });
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options)
+          );
         },
       },
     }

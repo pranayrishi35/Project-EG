@@ -1,5 +1,5 @@
-import { createClient } from "@/utils/supabase/server";
 import { NextResponse, type NextRequest } from "next/server";
+import { createServerClient } from "@supabase/ssr";
 
 /**
  * Auth Callback Route Handler
@@ -8,36 +8,25 @@ import { NextResponse, type NextRequest } from "next/server";
  *   • Google OAuth  →  ?code=<pkce_auth_code>
  *   • Magic Link    →  ?code=<pkce_auth_code>
  *
- * Flow (PKCE — Proof Key for Code Exchange):
- *   1. Our app generates a code_verifier (stored in a cookie by @supabase/ssr).
- *   2. Supabase returns a one-time `code` to this URL.
- *   3. We call exchangeCodeForSession(code) which sends the code + verifier
- *      to Supabase's token endpoint and receives JWT access + refresh tokens.
- *   4. @supabase/ssr writes those tokens as secure cookies.
- *   5. We redirect to the app — subsequent server renders are authenticated.
+ * This uses the exact pattern recommended by Supabase's own SSR docs:
+ * https://supabase.com/docs/guides/auth/server-side/nextjs
  *
- * Error surface:
- *   • User cancels Google consent     → ?error + ?error_description params
- *   • Code already used / expired     → exchangeCodeForSession returns error
- *   • No code at all                  → redirect to /login?error=auth-failed
- *   • Any unexpected throw            → caught, redirect to /login?error=...
+ * The key insight: We create the NextResponse.redirect FIRST, then pass
+ * its cookie jar to the Supabase client so cookies are written directly
+ * into the redirect response headers — no second step needed.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
-/** Allowed path prefixes for the ?next= redirect — prevents open redirects. */
 function sanitiseNext(raw: string | null): string {
   if (!raw) return "/";
-  // Only allow relative paths starting with / (reject http://, javascript:, etc.)
-  if (raw.startsWith("/") && !raw.startsWith("//")) {
-    return raw;
-  }
+  if (raw.startsWith("/") && !raw.startsWith("//")) return raw;
   return "/";
 }
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
 
-  // ── 1. Provider-level errors (e.g. user cancels Google consent) ─────────────
+  // ── 1. Provider-level errors ─────────────────────────────────────────────────
   const providerError = searchParams.get("error");
   const providerErrorDesc = searchParams.get("error_description");
 
@@ -47,7 +36,6 @@ export async function GET(request: NextRequest) {
       (providerError === "access_denied"
         ? "Sign-in was cancelled."
         : "Authentication error. Please try again.");
-
     const loginUrl = new URL("/login", origin);
     loginUrl.searchParams.set("error", message);
     return NextResponse.redirect(loginUrl);
@@ -58,99 +46,59 @@ export async function GET(request: NextRequest) {
   const next = sanitiseNext(searchParams.get("next"));
 
   if (!code) {
-    // No code and no provider error — something unexpected happened
     const loginUrl = new URL("/login", origin);
     loginUrl.searchParams.set("error", "auth-failed");
     return NextResponse.redirect(loginUrl);
   }
 
-  // ── 3. Exchange code for session ─────────────────────────────────────────────
-  try {
-    const successUrl = new URL(next, origin);
-    // CRITICAL FIX: PWA Service Workers on Android often cache the Guest version of '/' 
-    // and serve it even after login. Adding a timestamp query param forces a network hit.
-    successUrl.searchParams.set("t", Date.now().toString());
-    
-    // Check User-Agent to determine if we need the HTML bouncer for Safari ITP
-    const { headers, cookies } = require("next/headers");
-    const userAgent = headers().get("user-agent") || "";
-    const isIOS = /iPad|iPhone|iPod/.test(userAgent) || (/Mac OS X/.test(userAgent) && /Safari/.test(userAgent) && !/Chrome/.test(userAgent));
-    
-    let res: NextResponse;
+  // ── 3. Build the success redirect response FIRST ─────────────────────────────
+  // We build the redirect response before calling exchangeCodeForSession so
+  // that the Supabase client can write session cookies directly into it.
+  // This is the only reliable pattern that works across iOS Safari, Android
+  // Chrome, and desktop browsers.
+  const successUrl = new URL(next, origin);
+  
+  // Create the response we'll actually return
+  const response = NextResponse.redirect(successUrl);
 
-    if (isIOS) {
-      // Fix for Safari/iOS ITP dropping cookies on 30x cross-site redirects: return a 200 OK HTML bouncer
-      const html = `
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <meta charset="utf-8">
-            <title>Authenticating...</title>
-            <script>
-              // 100ms delay ensures iOS has time to write the Set-Cookie headers to its store
-              setTimeout(function() {
-                window.location.replace("${successUrl.toString()}");
-              }, 100);
-            </script>
-          </head>
-          <body>
-            <p>Redirecting you to the app...</p>
-          </body>
-        </html>
-      `;
-      res = new NextResponse(html, {
-        status: 200,
-        headers: { "Content-Type": "text/html" }
-      });
-    } else {
-      // Standard HTTP 307 Redirect for Android/Windows/Chrome.
-      // Android Chrome perfectly handles Set-Cookie on 30x redirects and avoids HTML parsing race conditions.
-      res = NextResponse.redirect(successUrl);
-    }
-
-    // Instead of using the global createClient() which sets cookies on the incoming request context,
-    // we instantiate a dedicated client here. This guarantees that the fully-hydrated cookie options 
-    // (specifically `path: '/'` and `maxAge`) are injected directly into our outgoing response.
-    const { createServerClient } = require("@supabase/ssr");
-    const cookieStore = cookies();
-
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return cookieStore.getAll();
-          },
-          setAll(cookiesToSet: any[]) {
-            cookiesToSet.forEach(({ name, value, options }) => {
-              // Ensure critical options like path are retained
-              res.cookies.set(name, value, {
-                ...options,
-                httpOnly: true,
-                sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-                secure: process.env.NODE_ENV === "production",
-              });
-            });
-          },
+  // ── 4. Create Supabase client that writes cookies into our response ───────────
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          // Read incoming cookies from the request (needed for PKCE code_verifier)
+          return request.cookies.getAll();
         },
-      }
-    );
+        setAll(cookiesToSet) {
+          // Write session cookies directly into the outgoing redirect response
+          cookiesToSet.forEach(({ name, value, options }) => {
+            response.cookies.set(name, value, options);
+          });
+        },
+      },
+    }
+  );
 
+  // ── 5. Exchange the PKCE code for a session ───────────────────────────────────
+  try {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (error) {
       const loginUrl = new URL("/login", origin);
       loginUrl.searchParams.set(
         "error",
-        error.message.length < 200 ? error.message : "Session exchange failed. Please sign in again."
+        error.message.length < 200
+          ? error.message
+          : "Session exchange failed. Please sign in again."
       );
       return NextResponse.redirect(loginUrl);
     }
 
-    return res;
+    // ✅ Session cookies are now in `response` — redirect the user to the app
+    return response;
   } catch (unexpectedError: unknown) {
-    // ── 4. Safety net: catches network timeouts, env-var misconfigurations, etc.
     console.error("[/auth/callback] Unexpected error:", unexpectedError);
     const loginUrl = new URL("/login", origin);
     loginUrl.searchParams.set("error", "An unexpected error occurred. Please try again.");
