@@ -12,8 +12,6 @@ import { Inter } from 'next/font/google';
 
 const inter = Inter({ subsets: ['latin'], display: 'swap', variable: '--font-inter' });
 const ReticleDev = dynamic(() => import('./reticle-dev').then(m => m.ReticleDev), { ssr: false });
-import { OnboardingProvider } from "@/context/OnboardingContext";
-import OnboardingOverlay from "@/components/onboarding/OnboardingOverlay";
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://exampilot.in'),
@@ -74,29 +72,29 @@ export default async function RootLayout({
     <html lang="en">
       {/* LIGHTHOUSE FIX: Eliminate CLS by applying next/font/google class directly */}
       <body className={`${inter.className} antialiased bg-slate-50 text-slate-900`}>
-        <OnboardingProvider>
           {process.env.NODE_ENV === 'development' ? <ReticleDev /> : null}
-          {/* Fixed Header */}
-          <Header />
+          <div className="flex min-h-screen relative w-full">
+            {/* Sticky Sidebar for md+ */}
+            <Sidebar isAdmin={isAdmin} />
 
-          {/* Fixed Sidebar for md+ */}
-          <Sidebar isAdmin={isAdmin} />
+            <div className="flex-1 flex flex-col min-w-0 w-full">
+              {/* Sticky Header */}
+              <Header />
 
-          {/* Main scrollable content area, padded for header + bottom nav/sidebar */}
-          <main
-            id="main-content"
-            className="mx-auto max-w-lg md:max-w-5xl md:pl-64"
-            style={{
-              paddingTop: "var(--header-height)",
-            }}
-          >
-            <div className="pb-24 md:pb-0 min-h-[100dvh] flex flex-col">
-              <div className="flex-1">
-                {children}
-              </div>
-              <LegalFooter />
+              {/* Main scrollable content area */}
+              <main
+                id="main-content"
+                className="w-full relative"
+              >
+                <div className="pb-24 md:pb-0 min-h-[calc(100vh-var(--header-height))] flex flex-col">
+                  <div className="flex-1 w-full relative">
+                    {children}
+                  </div>
+                  <LegalFooter />
+                </div>
+              </main>
             </div>
-          </main>
+          </div>
 
           {/* Fixed Bottom Navigation for mobile */}
           <div className="flex md:hidden">
@@ -105,8 +103,6 @@ export default async function RootLayout({
           
           {/* Floating AI Tutor */}
           <FloatingAssistant />
-          <OnboardingOverlay />
-        </OnboardingProvider>
       </body>
     </html>
   );

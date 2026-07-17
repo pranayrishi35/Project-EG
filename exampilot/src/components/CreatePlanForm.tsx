@@ -122,8 +122,11 @@ export default function CreatePlanForm({ streak, compact = false }: { streak: nu
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [showCreditModal, setShowCreditModal] = useState(false);
   const [examName, setExamName] = useState("AFCAT");
+  const [examDate, setExamDate] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isPending, startTransition] = useTransition();
+  const [step, setStep] = useState(1);
+  const submitActionRef = useRef("generate");
 
   const acceptFile = useCallback((file: File) => {
     setDragError(null);
@@ -139,10 +142,23 @@ export default function CreatePlanForm({ streak, compact = false }: { streak: nu
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    
+    if (step === 1) {
+      setStep(2);
+      return;
+    }
+
     setSubmitError(null);
     const formData = new FormData(e.currentTarget);
-    if (uploadedFile?.raw) formData.set("syllabusFile", uploadedFile.raw, uploadedFile.name);
-    else formData.delete("syllabusFile");
+    
+    // Explicit guard: if skip is triggered, completely ignore any uploaded file.
+    if (submitActionRef.current === "skip") {
+      formData.delete("syllabusFile");
+    } else if (uploadedFile?.raw) {
+      formData.set("syllabusFile", uploadedFile.raw, uploadedFile.name);
+    } else {
+      formData.delete("syllabusFile");
+    }
 
     startTransition(async () => {
       const result = await generateStudyPlan(formData);
@@ -191,7 +207,10 @@ export default function CreatePlanForm({ streak, compact = false }: { streak: nu
       {/* Form */}
       <form id="create-plan-form" aria-label="Create study plan form" onSubmit={handleSubmit} className="flex flex-col gap-5" noValidate>
 
-        {/* Exam Name */}
+        {/* Step 1: Exam Details */}
+        {step === 1 && (
+          <div className="animate-fade-in flex flex-col gap-5">
+            {/* Exam Name */}
         <div id="exam-name-section" className="flex flex-col gap-3">
           <label className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
             <span className="text-base" aria-hidden="true">🎯</span> Target Exam
@@ -252,13 +271,28 @@ export default function CreatePlanForm({ streak, compact = false }: { streak: nu
             <span className="text-base" aria-hidden="true">📅</span> Exam Date
           </label>
           <div className="relative">
-            <input id="exam-date" name="examDate" type="date" required disabled={isPending} className="ep-input ep-date-input peer disabled:opacity-60 disabled:cursor-not-allowed" aria-required="true" min={new Date().toISOString().split("T")[0]} />
+            <input 
+              id="exam-date" 
+              name="examDate" 
+              type="date" 
+              required 
+              disabled={isPending} 
+              value={examDate}
+              onChange={(e) => setExamDate(e.target.value)}
+              className="ep-input ep-date-input peer disabled:opacity-60 disabled:cursor-not-allowed" 
+              aria-required="true" 
+              min={new Date().toISOString().split("T")[0]} 
+            />
             <div className="pointer-events-none absolute inset-0 rounded-xl ring-0 peer-focus:ring-2 ring-indigo-400 transition-all duration-200" aria-hidden="true" />
           </div>
         </div>
+      </div>
+    )}
 
-        {/* Syllabus Upload */}
-        <div id="syllabus-upload-section" className="flex flex-col gap-1.5">
+        {/* Step 2: Syllabus Upload */}
+        {step === 2 && (
+          <div className="animate-fade-in flex flex-col gap-5">
+            <div id="syllabus-upload-section" className="flex flex-col gap-1.5">
           <label className="text-sm font-semibold text-gray-700 flex items-center gap-1.5" id="upload-label">
             <span className="text-base" aria-hidden="true">📎</span> Upload Syllabus
             <span className="text-xs font-normal text-slate-700 ml-1">(optional)</span>
@@ -289,6 +323,8 @@ export default function CreatePlanForm({ streak, compact = false }: { streak: nu
           </div>
           {uploadedFile && <FilePill file={uploadedFile} onRemove={() => { setUploadedFile(null); setDragError(null); }} disabled={isPending} />}
         </div>
+      </div>
+    )}
 
         {/* Divider */}
         <div className="flex items-center gap-3" aria-hidden="true">
@@ -305,34 +341,69 @@ export default function CreatePlanForm({ streak, compact = false }: { streak: nu
           </div>
         )}
 
-        {/* Generate button */}
-        <button
-          id="generate-plan-btn" type="submit" disabled={isPending}
-          className="ep-btn-primary group"
-          aria-label={isPending ? "Generating your study plan…" : "Generate personalised study plan"}
-          style={isPending ? { opacity: 0.85, cursor: "not-allowed", transform: "none" } : {}}
-        >
-          {!isPending && (
-            <span className="absolute inset-0 rounded-xl overflow-hidden pointer-events-none" aria-hidden="true">
-              <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-            </span>
-          )}
-          {isPending ? (
-            <><Spinner /><span className="font-semibold text-base">Generating your plan…</span></>
-          ) : (
-            <>
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden="true">
-                <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
-                <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
-                <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" /><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
-              </svg>
-              <span className="font-semibold text-base">Generate Study Plan</span>
-            </>
-          )}
-        </button>
+        {/* Submit action buttons depending on step */}
+        {step === 1 ? (
+          <button
+            type="submit"
+            className="ep-btn-primary group mt-2"
+          >
+            <span className="font-semibold text-base">Next Step</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </button>
+        ) : (
+          <div className="flex flex-col gap-3 mt-2 animate-fade-in">
+            <button
+              id="generate-plan-btn" type="submit" disabled={isPending}
+              onClick={() => submitActionRef.current = "generate"}
+              className="ep-btn-primary group"
+              aria-label={isPending ? "Generating your study plan…" : "Generate personalised study plan"}
+              style={isPending ? { opacity: 0.85, cursor: "not-allowed", transform: "none" } : {}}
+            >
+              {!isPending && (
+                <span className="absolute inset-0 rounded-xl overflow-hidden pointer-events-none" aria-hidden="true">
+                  <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                </span>
+              )}
+              {isPending && submitActionRef.current === "generate" ? (
+                <><Spinner /><span className="font-semibold text-base">Analysing syllabus…</span></>
+              ) : (
+                <>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden="true">
+                    <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
+                    <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
+                    <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" /><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
+                  </svg>
+                  <span className="font-semibold text-base">Generate with Syllabus</span>
+                </>
+              )}
+            </button>
+            
+            <button
+              type="submit" disabled={isPending}
+              onClick={() => submitActionRef.current = "skip"}
+              className="h-12 flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white text-gray-700 font-bold hover:bg-gray-50 active:scale-95 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {isPending && submitActionRef.current === "skip" ? (
+                <><Spinner /><span className="font-semibold text-base">Generating…</span></>
+              ) : (
+                <span>Skip for now — use standard {examName} syllabus</span>
+              )}
+            </button>
+            
+            {!isPending && (
+              <button 
+                type="button" 
+                onClick={() => setStep(1)}
+                className="mt-2 text-sm text-gray-500 font-medium hover:text-gray-800 transition-colors self-center"
+              >
+                Back to Exam Details
+              </button>
+            )}
+          </div>
+        )}
 
         {!isPending && <p className="text-center text-xs text-slate-700 -mt-2">AI-powered · Personalised for your exam · Free</p>}
-        {isPending && <p className="text-center text-xs text-indigo-400 -mt-2 animate-fade-in">Analysing syllabus and building your schedule — this takes ~15 seconds…</p>}
+        {isPending && <p className="text-center text-xs text-indigo-400 -mt-2 animate-fade-in">Building your schedule — this takes ~15 seconds…</p>}
 
       </form>
       

@@ -145,6 +145,26 @@ export async function saveMockProgress(payload: any) {
       finalScore = (correctCount * mpc) + (incorrectCount * pip);
     }
   }
+
+  let cohort_key = 'GLOBAL';
+  if (status === 'completed') {
+    const { data: planData } = await supabase
+      .from('study_plans')
+      .select('exam_date')
+      .eq('user_id', user.id)
+      .eq('exam_name', exam_target)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (planData?.exam_date) {
+      const date = new Date(planData.exam_date);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      cohort_key = `${exam_target}_${year}_${month}`;
+    }
+  }
+
         const payloadToSave = {
           id,
           user_id: user.id,
@@ -155,6 +175,7 @@ export async function saveMockProgress(payload: any) {
           time_remaining,
           answers_state,
           subject_stats: subjectStats, // new field
+          cohort_key, // Phase 8: cohort dimension
           updated_at: new Date().toISOString()
         };
         const { data, error } = await supabase.from('mock_attempts').upsert(payloadToSave, { onConflict: 'id' }).select().single();

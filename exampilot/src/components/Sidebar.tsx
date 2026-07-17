@@ -72,7 +72,7 @@ export default function Sidebar({ isAdmin }: { isAdmin?: boolean }) {
   const visibleNavItems = navItems.filter((item) => item.href !== "/admin" || isAdmin);
 
   return (
-    <aside className="hidden md:flex flex-col fixed top-0 left-0 bottom-0 w-64 bg-slate-900 border-r border-slate-800 z-50 pt-20">
+    <aside className="hidden md:flex flex-col sticky top-0 h-screen w-64 shrink-0 bg-slate-900 border-r border-slate-800 z-40 pt-6">
       <div className="flex-1 px-4 py-6 overflow-y-auto hide-scrollbar">
         <ul data-testid="sidebar-nav" className="space-y-2">
           {visibleNavItems.map((item) => {

@@ -1,9 +1,20 @@
 -- ==============================================================================
+-- PHASE 5: ADD STREAK FREEZE COLUMN
+-- ==============================================================================
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS streak_frozen_until TIMESTAMP WITH TIME ZONE;
+
+-- ==============================================================================
 -- PHASE 6: DATABASE INTEGRITY
 -- ==============================================================================
 -- Adds a composite unique constraint to enforce exactly one test_number per exam per user.
-ALTER TABLE mock_attempts
-ADD CONSTRAINT unique_user_exam_test_number UNIQUE (user_id, exam_target, test_number);
+DO $$ 
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'unique_user_exam_test_number'
+  ) THEN
+    ALTER TABLE mock_attempts ADD CONSTRAINT unique_user_exam_test_number UNIQUE (user_id, exam_target, test_number);
+  END IF;
+END $$;
 
 -- ==============================================================================
 -- PHASE 6: ASSET CDN EDGE CACHING
@@ -31,7 +42,7 @@ SELECT
     score,
     RANK() OVER (PARTITION BY exam_target, test_number ORDER BY score DESC) as rank_position
 FROM mock_attempts
-WHERE status = 'completed';
+WHERE status = 'completed' AND test_number > 0;
 
 -- 2. Create Unique & Search Indexes for CONCURRENT refreshes and blazing fast lookups
 CREATE UNIQUE INDEX IF NOT EXISTS idx_mock_leaderboards_unique 
@@ -98,6 +109,13 @@ $$;
 -- Accelerates fetching a user's mock history ordered by date
 CREATE INDEX IF NOT EXISTS idx_mock_attempts_user_created 
 ON mock_attempts (user_id, created_at DESC);
+
+-- ==============================================================================
+-- PHASE 5: STREAK-RISK NUDGES (DEDUPLICATION)
+-- ==============================================================================
+ALTER TABLE profiles
+ADD COLUMN IF NOT EXISTS last_streak_nudge_date DATE;
+
 
 -- Accelerates checking a user's attempt count for a specific exam
 CREATE INDEX IF NOT EXISTS idx_mock_attempts_user_exam 

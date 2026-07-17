@@ -1,5 +1,6 @@
 "use server";
 import { z } from "zod";
+import { getWeakestSubjects } from "@/lib/weakSubjects";
 
 import { createClient } from "@/utils/supabase/server";
 
@@ -20,16 +21,16 @@ export interface ScoringMap {
 }
 
 export type GetTestResult = 
-  | { success: true; questions: Question[]; scoringMap: ScoringMap }
+  | { success: true; questions: Question[]; scoringMap: ScoringMap; focusedSubjects?: string[] }
   | { success: false; error: string; shortage?: boolean };
 
 import { EXAM_CONFIGS } from "@/lib/examConfig"; // centralized config
 
-const GetMockTestSchema = z.object({ examTarget: z.string(), mini: z.boolean().default(false) });
-export async function getMockTest(rawExamTarget: string, rawMini: boolean = false): Promise<GetTestResult> {
-  const parsed = GetMockTestSchema.safeParse({ examTarget: rawExamTarget, mini: rawMini });
+const GetMockTestSchema = z.object({ examTarget: z.string(), mini: z.boolean().default(false), focusMode: z.boolean().default(false) });
+export async function getMockTest(rawExamTarget: string, rawMini: boolean = false, rawFocusMode: boolean = false): Promise<GetTestResult> {
+  const parsed = GetMockTestSchema.safeParse({ examTarget: rawExamTarget, mini: rawMini, focusMode: rawFocusMode });
   if (!parsed.success) throw new Error("BAD_REQUEST");
-  const { examTarget, mini } = parsed.data;
+  const { examTarget, mini, focusMode } = parsed.data;
   const supabase = createClient();
   const config = EXAM_CONFIGS[examTarget as keyof typeof EXAM_CONFIGS];
   
@@ -41,34 +42,90 @@ export async function getMockTest(rawExamTarget: string, rawMini: boolean = fals
   const pyqTarget = Math.floor(totalQuestions * 0.25); // Target ~25% PYQs
 
   try {
-    // 1. Fetch PYQs
-    const { data: pyqData, error: pyqError } = await supabase
+    // 1. Determine Focus Mode Targets
+    let focusedSubjects: string[] = [];
+    if (mini && focusMode) {
+      focusedSubjects = await getWeakestSubjects(examTarget);
+    }
+
+    // 2. Fetch PYQs
+    let pyqQuery = supabase
       .from("question_bank")
       .select("id, question, options, subject, is_pyq, pyq_year")
       .eq("exam_target", examTarget)
       .eq("source_pool", "mock")
       .eq("is_pyq", true)
-      .neq("subject", "Current Affairs")
-      .limit(pyqTarget);
+      .neq("subject", "Current Affairs");
 
-    if (pyqError) throw pyqError;
+    if (focusedSubjects.length > 0) {
+      // 60% of PYQs focused on weak subjects
+      const weakPyqTarget = Math.ceil(pyqTarget * 0.6);
+      const { data: weakPyqs } = await supabase
+        .from("question_bank")
+        .select("id, question, options, subject, is_pyq, pyq_year")
+        .eq("exam_target", examTarget)
+        .eq("source_pool", "mock")
+        .eq("is_pyq", true)
+        .in("subject", focusedSubjects)
+        .limit(weakPyqTarget);
+      
+      const fetchedWeakPyqs = weakPyqs || [];
+      const remainingPyqTarget = pyqTarget - fetchedWeakPyqs.length;
+      
+      if (remainingPyqTarget > 0) {
+        pyqQuery = pyqQuery.limit(remainingPyqTarget);
+      }
+      
+      const { data: pyqData, error: pyqError } = await pyqQuery;
+      if (pyqError) throw pyqError;
+      
+      var fetchedPyqs = [...fetchedWeakPyqs, ...(pyqData || [])];
+    } else {
+      pyqQuery = pyqQuery.limit(pyqTarget);
+      const { data: pyqData, error: pyqError } = await pyqQuery;
+      if (pyqError) throw pyqError;
+      var fetchedPyqs = pyqData || [];
+    }
 
-    const fetchedPyqs = pyqData || [];
-
-    // 2. Fetch standard questions
+    // 3. Fetch standard questions
     const standardLimit = totalQuestions - fetchedPyqs.length;
-    const { data: standardData, error: stdError } = await supabase
+    let stdQuery = supabase
       .from("question_bank")
       .select("id, question, options, subject, is_pyq, pyq_year")
       .eq("exam_target", examTarget)
       .eq("source_pool", "mock")
       .eq("is_pyq", false)
-      .neq("subject", "Current Affairs")
-      .limit(standardLimit);
-      
-    if (stdError) throw stdError;
+      .neq("subject", "Current Affairs");
 
-    const fetchedStandard = standardData || [];
+    if (focusedSubjects.length > 0) {
+      // 60% of Standard focused on weak subjects
+      const weakStdTarget = Math.ceil(standardLimit * 0.6);
+      const { data: weakStd } = await supabase
+        .from("question_bank")
+        .select("id, question, options, subject, is_pyq, pyq_year")
+        .eq("exam_target", examTarget)
+        .eq("source_pool", "mock")
+        .eq("is_pyq", false)
+        .in("subject", focusedSubjects)
+        .limit(weakStdTarget);
+        
+      const fetchedWeakStd = weakStd || [];
+      const remainingStdTarget = standardLimit - fetchedWeakStd.length;
+      
+      if (remainingStdTarget > 0) {
+        stdQuery = stdQuery.limit(remainingStdTarget);
+      }
+      
+      const { data: stdData, error: stdError } = await stdQuery;
+      if (stdError) throw stdError;
+      
+      var fetchedStandard = [...fetchedWeakStd, ...(stdData || [])];
+    } else {
+      stdQuery = stdQuery.limit(standardLimit);
+      const { data: stdData, error: stdError } = await stdQuery;
+      if (stdError) throw stdError;
+      var fetchedStandard = stdData || [];
+    }
     
     // Combine results
     const combined = [...fetchedPyqs, ...fetchedStandard];
@@ -98,8 +155,12 @@ export async function getMockTest(rawExamTarget: string, rawMini: boolean = fals
 
     return { 
       success: true, 
-      questions: mappedQuestions, 
-      scoringMap: { correct: config.marks_per_correct, incorrect: config.negative_marking } 
+      questions: mappedQuestions,
+      scoringMap: {
+        correct: config.marks_per_correct,
+        incorrect: config.negative_marking
+      },
+      focusedSubjects: focusedSubjects.length > 0 ? focusedSubjects : undefined
     };
 
   } catch (e: any) {

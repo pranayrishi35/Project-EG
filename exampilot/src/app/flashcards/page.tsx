@@ -23,17 +23,24 @@ async function FlashcardDataLoader() {
   const result = await generateFlashcards();
 
   if (!result.success) {
+    let errorMessage = result.error;
+    if (result.error === "AI_SERVICE_UNAVAILABLE") {
+      errorMessage = "The AI tutor is currently busy. Please try again in a few moments.";
+    } else if (result.error === "INSUFFICIENT_CREDITS") {
+      errorMessage = "You don't have enough credits to generate flashcards.";
+    }
+
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-slate-50 text-center animate-fade-in">
         <span className="text-4xl mb-4">⚠️</span>
-        <h2 className="text-lg font-bold text-red-600 mb-2">{result.error}</h2>
+        <h2 className="text-lg font-bold text-red-600 mb-2">{errorMessage}</h2>
         <Link href="/" className="ep-btn-primary mt-4">Return Home</Link>
       </div>
     );
   }
 
   // Pass the generated data into the lazy-loaded client component
-  return <FlashcardViewer flashcards={result.flashcards} />;
+  return <FlashcardViewer flashcards={result.flashcards} focusedSubjects={result.focusedSubjects} />;
 }
 
 export default function FlashcardsPage() {

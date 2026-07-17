@@ -125,11 +125,9 @@ test.describe('ExamPilot Comprehensive Test Suite', () => {
     await expect(page.getByTestId('header-title').first()).toBeVisible();
 
     // ── Home page URL confirmed ──
-    // NOTE: /planner navigation is intentionally omitted — that route has a known
-    // SSR crash under mock auth (Sidebar usePathname hook fires server-side),
-    // which would cascade and timeout parallel tests. Mobile nav items above
-    // fully cover the track 5 mobile UX regression goals.
-    await expect(page).toHaveURL(/\//);
+    await page.getByTestId('bottom-nav-planner').first().click();
+    await page.waitForURL('**/planner');
+    await expect(page).toHaveURL(/\/planner/);
   });
 
   test('Admin & Routing Checks', async ({ page, context }) => {

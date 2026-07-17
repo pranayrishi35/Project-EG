@@ -11,7 +11,7 @@ export async function getLeaderboardMetrics(attemptId: string) {
   try {
     const { data: attempt } = await supabase
       .from('mock_attempts')
-      .select('exam_target, test_number, score')
+      .select('exam_target, test_number, score, cohort_key')
       .eq('id', attemptId)
       .eq('user_id', user.id)
       .single();
@@ -21,7 +21,8 @@ export async function getLeaderboardMetrics(attemptId: string) {
     const { data, error } = await supabase.rpc('get_instant_rank', {
       p_exam_target: attempt.exam_target,
       p_test_number: attempt.test_number,
-      p_score: attempt.score
+      p_score: attempt.score,
+      p_cohort_key: attempt.cohort_key || 'GLOBAL'
     });
 
     if (error) {
@@ -32,8 +33,11 @@ export async function getLeaderboardMetrics(attemptId: string) {
     if (data && data.length > 0) {
       return { 
         success: true, 
-        rank: data[0].calculated_rank, 
-        percentile: data[0].percentile 
+        global_rank: data[0].global_rank, 
+        global_percentile: data[0].global_percentile,
+        cohort_rank: data[0].cohort_rank,
+        cohort_percentile: data[0].cohort_percentile,
+        cohort_key: attempt.cohort_key
       };
     }
     

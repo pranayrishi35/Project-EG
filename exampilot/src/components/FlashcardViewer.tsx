@@ -6,9 +6,10 @@ import type { Flashcard } from "@/app/actions/generateFlashcards";
 
 interface FlashcardViewerProps {
   flashcards: Flashcard[];
+  focusedSubjects?: string[];
 }
 
-export default function FlashcardViewer({ flashcards }: FlashcardViewerProps) {
+export default function FlashcardViewer({ flashcards, focusedSubjects }: FlashcardViewerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
@@ -49,13 +50,22 @@ export default function FlashcardViewer({ flashcards }: FlashcardViewerProps) {
     <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 p-4 safe-bottom animate-fade-in">
       
       {/* Header Info */}
-      <div className="w-full max-w-sm flex justify-between items-center mb-8">
-        <Link href="/" className="text-slate-700 hover:text-slate-600 font-medium text-sm transition-colors">
-          ← Back
-        </Link>
-        <div className="text-xs font-bold uppercase tracking-widest text-indigo-500 bg-indigo-50 px-3 py-1 rounded-full">
-          Card {currentIndex + 1} of {flashcards.length}
+      <div className="w-full max-w-sm flex flex-col gap-3 mb-8">
+        <div className="flex justify-between items-center">
+          <Link href="/" className="text-slate-700 hover:text-slate-600 font-medium text-sm transition-colors">
+            ← Back
+          </Link>
+          <div className="text-xs font-bold uppercase tracking-widest text-indigo-500 bg-indigo-50 px-3 py-1 rounded-full">
+            Card {currentIndex + 1} of {flashcards.length}
+          </div>
         </div>
+        
+        {focusedSubjects && focusedSubjects.length > 0 && (
+          <div className="flex items-center gap-2 bg-purple-50 border border-purple-100 px-3 py-1.5 rounded-xl self-center w-full justify-center">
+            <span className="text-sm">🎯</span>
+            <span className="text-xs font-bold text-purple-700">Focused on: {focusedSubjects.join(", ")}</span>
+          </div>
+        )}
       </div>
 
       {/* 3D Flashcard Container */}

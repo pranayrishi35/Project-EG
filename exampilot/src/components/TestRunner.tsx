@@ -458,8 +458,8 @@ const ResultsView = memo(function ResultsView({ type, questions, scoringMap, isR
   const router = useRouter();
   const [archetype, setArchetype] = useState("Analytical & Technical");
   const [showCreditModal, setShowCreditModal] = useState(false);
-  const [rankData, setRankData] = useState<{ rank?: number, percentile?: number, loading: boolean }>({ loading: true });
-
+  const [rankData, setRankData] = useState<{ global_rank?: number; global_percentile?: number; cohort_rank?: number; cohort_percentile?: number; cohort_key?: string; previousRank?: number; loading: boolean }>({ loading: true });
+  
   // Prefetch the dashboard for instantaneous exit
   useEffect(() => {
     router.prefetch('/');
@@ -545,13 +545,29 @@ const ResultsView = memo(function ResultsView({ type, questions, scoringMap, isR
       }
       const res = await getLeaderboardMetrics(attemptId);
       if (res.success) {
-        setRankData({ rank: res.rank, percentile: res.percentile, loading: false });
+        const cacheKey = `exampilot_rank_${type}_${testNumber}`;
+        const previousRankStr = localStorage.getItem(cacheKey);
+        const previousRank = previousRankStr ? parseInt(previousRankStr, 10) : undefined;
+        
+        setRankData({ 
+          global_rank: res.global_rank, 
+          global_percentile: res.global_percentile,
+          cohort_rank: res.cohort_rank,
+          cohort_percentile: res.cohort_percentile,
+          cohort_key: res.cohort_key,
+          previousRank, 
+          loading: false 
+        });
+        
+        if (res.cohort_rank) {
+          localStorage.setItem(cacheKey, res.cohort_rank.toString());
+        }
       } else {
         setRankData({ loading: false });
       }
     }
     fetchRank();
-  }, [attemptId, testNumber, isReviewMode]);
+  }, [attemptId, testNumber, isReviewMode, type]);
 
   const handleAnalyze = async (computedScore: number, computedMaxScore: number) => {
     const incorrectSubjects = new Set<string>();
@@ -593,22 +609,38 @@ const ResultsView = memo(function ResultsView({ type, questions, scoringMap, isR
           <div className="bg-slate-700/50 p-4 rounded-2xl flex flex-col items-center border border-slate-600">
             {rankData.loading ? (
               <span className="text-sm font-bold text-slate-500 mb-1 mt-3 animate-pulse">Calculating...</span>
-            ) : rankData.rank ? (
-              <span className="text-4xl font-black text-amber-400 mb-1">#{rankData.rank}</span>
+            ) : rankData.cohort_rank ? (
+              <div className="flex flex-col items-center mb-1">
+                <span className="text-4xl font-black text-amber-400">#{rankData.cohort_rank}</span>
+                <span className="text-[10px] font-bold mt-1 text-slate-400">Top {rankData.cohort_percentile}%</span>
+                {rankData.previousRank && rankData.previousRank !== rankData.cohort_rank && (
+                  <div className={`text-[10px] font-bold mt-1 ${rankData.cohort_rank < rankData.previousRank ? 'text-emerald-400' : 'text-rose-400'}`}>
+                    {rankData.previousRank} → {rankData.cohort_rank} ({rankData.cohort_rank < rankData.previousRank ? '+' : ''}{rankData.previousRank - rankData.cohort_rank})
+                  </div>
+                )}
+              </div>
             ) : (
               <span className="text-sm font-bold text-slate-500 mb-1 mt-3">N/A</span>
             )}
-            <span className="text-xs text-slate-700 uppercase tracking-wider font-bold mt-auto">Global Rank</span>
+            <span className="text-xs text-slate-700 uppercase tracking-wider font-bold mt-auto text-center">
+              Cohort Rank<br/>
+              {rankData.cohort_key && rankData.cohort_key !== 'GLOBAL' && (
+                 <span className="text-[9px] opacity-60 normal-case tracking-widest">{rankData.cohort_key.replace(/_/g, ' ')}</span>
+              )}
+            </span>
           </div>
           <div className="bg-slate-700/50 p-4 rounded-2xl flex flex-col items-center border border-slate-600">
             {rankData.loading ? (
               <span className="text-sm font-bold text-slate-500 mb-1 mt-3 animate-pulse">Calculating...</span>
-            ) : rankData.percentile ? (
-              <span className="text-4xl font-black text-sky-400 mb-1">{rankData.percentile}<span className="text-2xl">%</span></span>
+            ) : rankData.global_rank ? (
+              <div className="flex flex-col items-center mb-1">
+                <span className="text-4xl font-black text-sky-400">#{rankData.global_rank}</span>
+                <span className="text-[10px] font-bold mt-1 text-slate-400">Top {rankData.global_percentile}%</span>
+              </div>
             ) : (
               <span className="text-sm font-bold text-slate-500 mb-1 mt-3">N/A</span>
             )}
-            <span className="text-xs text-slate-700 uppercase tracking-wider font-bold mt-auto">Percentile</span>
+            <span className="text-xs text-slate-700 uppercase tracking-wider font-bold mt-auto text-center">Global Rank</span>
           </div>
         </div>
 
@@ -774,9 +806,10 @@ interface TestRunnerProps {
   initialState?: any;
   isReviewMode?: boolean;
   candidateName?: string;
+  focusedSubjects?: string[];
 }
 
-export default function TestRunner({ type, questions, scoringMap, onExit, attemptId, initialState, isReviewMode, candidateName }: TestRunnerProps) {
+export default function TestRunner({ type, questions, scoringMap, onExit, attemptId, initialState, isReviewMode, candidateName, focusedSubjects }: TestRunnerProps) {
   const isOnline = useNetworkStatus();
   
   const [isSubmitted, setIsSubmitted] = useState(isReviewMode || false);
@@ -1019,7 +1052,7 @@ export default function TestRunner({ type, questions, scoringMap, onExit, attemp
 
       {/* Top Bar */}
       <div className="bg-white border-b border-slate-300 px-6 py-4 flex items-center justify-between shadow-sm pointer-events-auto">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg">
             <span className="text-xl" aria-hidden="true">{type === "Mini-Test" ? "⚡" : "🎯"}</span>
           </div>
@@ -1027,6 +1060,12 @@ export default function TestRunner({ type, questions, scoringMap, onExit, attemp
             <h1 className="text-slate-900 font-black text-lg leading-tight">{type}</h1>
             <p className="text-slate-500 text-xs font-semibold uppercase tracking-widest">AFCAT CBT Portal</p>
           </div>
+          {focusedSubjects && focusedSubjects.length > 0 && (
+            <div className="hidden md:flex items-center gap-1.5 bg-purple-50 border border-purple-100 px-3 py-1.5 rounded-xl ml-4">
+              <span className="text-sm">🎯</span>
+              <span className="text-xs font-bold text-purple-700">Focused on: {focusedSubjects.join(", ")}</span>
+            </div>
+          )}
         </div>
         
         <div className="flex items-center gap-3 md:gap-6">

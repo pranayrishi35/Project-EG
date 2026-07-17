@@ -7,6 +7,7 @@ import { checkRateLimit } from "@/lib/rateLimit";
 import { sanitizePrompt } from "@/lib/sanitizer";
 import { robustJsonParse } from "@/lib/robustJsonParse";
 import { isGuestUser } from "@/lib/guestShield";
+import { DEFAULT_SYLLABUS, type ExamTarget } from "@/lib/examConfig";
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -213,12 +214,17 @@ export async function generateStudyPlan(
     ),
   });
 
-  // ── 4. Build the parts array (text prompt + optional file) ─────────────────
+  let defaultSyllabusText = "";
+  if (!syllabusFile || syllabusFile.size === 0) {
+    const target = examName as ExamTarget;
+    defaultSyllabusText = DEFAULT_SYLLABUS[target] || DEFAULT_SYLLABUS["AFCAT"] || "";
+  }
+
   const parts: Part[] = [
     {
       text: syllabusFile && syllabusFile.size > 0
         ? "Analyse this syllabus and generate the study plan as instructed."
-        : "No syllabus file was provided. Generate a comprehensive study plan based on the standard syllabus for this exam.",
+        : `No syllabus file was provided. Use this highly detailed standard syllabus for the ${examName} exam instead to build the plan:\n\n${defaultSyllabusText}`,
     },
   ];
 

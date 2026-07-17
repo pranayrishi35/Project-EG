@@ -4,6 +4,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { createClient } from "@/utils/supabase/server";
 import { checkAndDeductCredits } from "@/lib/creditManager";
 import { robustJsonParse } from "@/lib/robustJsonParse";
+import { getWeakestSubjects } from "@/lib/weakSubjects";
 
 export interface Flashcard {
   question: string;
@@ -11,7 +12,7 @@ export interface Flashcard {
 }
 
 export type GenerateFlashcardsResult =
-  | { success: true; flashcards: Flashcard[] }
+  | { success: true; flashcards: Flashcard[]; focusedSubjects?: string[] }
   | { success: false; error: string };
 
 export async function generateFlashcards(): Promise<GenerateFlashcardsResult> {
@@ -73,17 +74,22 @@ export async function generateFlashcards(): Promise<GenerateFlashcardsResult> {
   }
 
   try {
-    // 2. Strict prompt forcing single-line strings
-    const prompt = `Act as an expert examiner for ${plan.exam_name}. Based on this syllabus: ${plan.generated_plan}, generate 5 highly probable, quick-fire flashcards.
+    const weakSubjects = await getWeakestSubjects(plan.exam_name);
+
+    let prompt = `Act as an expert examiner for ${plan.exam_name}. Based on this syllabus: ${plan.generated_plan}, generate 5 highly probable, quick-fire flashcards.
     
     CRITICAL INSTRUCTIONS:
     1. Return STRICTLY a JSON array of objects.
     2. Each object must have exactly two keys: "question" and "answer".
     3. NEVER use unescaped double quotes inside your text.
     4. NEVER use raw newlines (Line breaks) inside your text. Keep answers to a single paragraph.
-    5. Do NOT wrap the response in markdown blocks.
-    
-    CRITICAL: You must return valid JSON only. You must properly escape all internal double quotes using a backslash (\\"). Do not use markdown wrappers.`;
+    5. Do NOT wrap the response in markdown blocks.`;
+
+    if (weakSubjects.length > 0) {
+      prompt += `\n\n6. The user is currently weakest in these subjects: ${weakSubjects.join(", ")}. Bias the selection so roughly 60% of the flashcards target these specific weak subjects, while the remaining 40% are general review.`;
+    }
+
+    prompt += `\n\nCRITICAL: You must return valid JSON only. You must properly escape all internal double quotes using a backslash (\\"). Do not use markdown wrappers.`;
 
     const result = await model.generateContent(prompt);
     let rawText = result.response.text();
@@ -102,14 +108,14 @@ export async function generateFlashcards(): Promise<GenerateFlashcardsResult> {
       user_id: user.id,
       plan_id: plan.id,
       generated_date: currentDate,
-      flashcards: finalFlashcards
+      flashcards: finalFlashcards,
+      focused_subjects: weakSubjects
     });
 
-    return { success: true, flashcards: finalFlashcards };
+    return { success: true, flashcards: finalFlashcards, focusedSubjects: weakSubjects };
 
-  } catch (error: unknown) {
+  } catch (error: any) {
     console.error("[generateFlashcards] Error:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return { success: false, error: `Failed to generate flashcards: ${message}` };
+    return { success: false, error: "AI_SERVICE_UNAVAILABLE" };
   }
 }
