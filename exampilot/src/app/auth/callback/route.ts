@@ -82,8 +82,30 @@ export async function GET(request: NextRequest) {
     }
 
     // ✅ Success — session cookies set by @supabase/ssr, send user to the app
+    // Fix for Safari/iOS ITP dropping cookies on 30x cross-site redirects: return a 200 OK HTML bouncer
     const successUrl = new URL(next, origin);
-    return NextResponse.redirect(successUrl);
+    
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta http-equiv="refresh" content="0;url=${successUrl.toString()}">
+          <title>Authenticating...</title>
+          <script>
+            window.location.replace("${successUrl.toString()}");
+          </script>
+        </head>
+        <body>
+          <p>Redirecting you to the app...</p>
+        </body>
+      </html>
+    `;
+
+    return new NextResponse(html, {
+      status: 200,
+      headers: { "Content-Type": "text/html" }
+    });
   } catch (unexpectedError: unknown) {
     // ── 4. Safety net: catches network timeouts, env-var misconfigurations, etc.
     console.error("[/auth/callback] Unexpected error:", unexpectedError);
