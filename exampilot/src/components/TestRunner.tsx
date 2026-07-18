@@ -1019,7 +1019,7 @@ export default function TestRunner({ type, questions, scoringMap, onExit, attemp
 
   // Active Test UI - AFCAT CBT Style
   return (
-    <div className="fixed inset-0 z-[100] bg-slate-100 flex flex-col print:static print:bg-white print:text-black print:h-auto print:overflow-visible text-slate-900 pointer-events-none">
+    <div className="fixed inset-0 z-[100] bg-slate-100 flex flex-col print:static print:bg-white print:text-black print:h-auto print:overflow-visible text-slate-900 select-none">
       
       {/* Anti-Cheat Warning Modal */}
       {warningStrike !== null && (
