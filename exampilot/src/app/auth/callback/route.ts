@@ -38,9 +38,26 @@ export async function GET(request: NextRequest) {
 
 
 
-  // ── 3. Build success redirect and create Supabase client ─────────────────────
-  const successUrl = new URL(next, origin);
-  const response = NextResponse.redirect(successUrl);
+  // ── 3. Build success HTML bouncer and create Supabase client ───────────────
+  const html = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta http-equiv="refresh" content="0;url=${origin}${next}" />
+        <title>Authenticating...</title>
+      </head>
+      <body style="background-color: #f3f4f6; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif;">
+        <p>Verifying secure session...</p>
+      </body>
+    </html>
+  `;
+
+  const response = new NextResponse(html, {
+    status: 200,
+    headers: {
+      'Content-Type': 'text/html; charset=utf-8',
+    },
+  });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
