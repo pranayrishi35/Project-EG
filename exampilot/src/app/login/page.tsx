@@ -86,10 +86,6 @@ function LoginForm() {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [agreedToAge, setAgreedToAge] = useState(false);
 
-  // Google OAuth state
-  const [isGooglePending, startGoogleTransition] = useTransition();
-  const [googleError, setGoogleError] = useState<string | null>(null);
-
   // OTP / Magic link state
   const [isOtpPending, startOtpTransition] = useTransition();
   const [otpState, setOtpState] = useState<FormState>(null);
@@ -99,38 +95,9 @@ function LoginForm() {
   const [passwordState, setPasswordState] = useState<FormState>(null);
   const [passwordInput, setPasswordInput] = useState("");
 
-  const isAnyLoading = isGooglePending || isOtpPending || isPasswordPending;
+  const isAnyLoading = isOtpPending || isPasswordPending;
 
-  // ── Google handler (browser-client) ─────────────────────────────────────────
-  function handleGoogleSignIn() {
-    setGoogleError(null);
-    startGoogleTransition(async () => {
-      const supabase = createClient();
-      const origin = window.location.origin;
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${origin}/auth/callback`,
-          queryParams: {
-            access_type: "offline",
-            prompt: "consent",
-          },
-          skipBrowserRedirect: true,
-        },
-      });
-      if (error) {
-        setGoogleError(error.message);
-        return;
-      }
-      if (data?.url) {
-        // Set a short-lived cookie to signal that user agreed to terms on this device.
-        // The callback reads this cookie and auto-records consent, eliminating the
-        // post-login /consent redirect that was causing the Android loop.
 
-        window.location.href = data.url;
-      }
-    });
-  }
 
 
   // ── OTP handler ────────────────────────────────────────────────────────────
@@ -192,20 +159,26 @@ function LoginForm() {
 
       {/* ── Google OAuth button ──────────────────────────────────── */}
       <div className="flex flex-col gap-3">
-        <button
-          id="google-sign-in-btn"
-          type="button"
-          onClick={handleGoogleSignIn}
-          disabled={isAnyLoading || !agreedToTerms || !agreedToAge}
-          aria-label="Continue with Google"
-          className="w-full flex items-center justify-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3.5 text-sm font-semibold text-gray-700 shadow-sm transition-all duration-150 hover:border-gray-300 hover:bg-gray-50 hover:shadow-md active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
-          style={{ minHeight: "52px" }}
-        >
-          {isGooglePending ? <Spinner /> : <GoogleIcon />}
-          <span>{isGooglePending ? "Redirecting to Google…" : "Continue with Google"}</span>
-        </button>
-
-        {googleError && <Toast type="error" message={googleError} />}
+        {(!agreedToTerms || !agreedToAge || isAnyLoading) ? (
+          <button
+            type="button"
+            disabled
+            className="w-full flex items-center justify-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3.5 text-sm font-semibold text-gray-700 shadow-sm opacity-60 cursor-not-allowed z-20 relative"
+            style={{ minHeight: "52px" }}
+          >
+            <GoogleIcon />
+            <span>Continue with Google</span>
+          </button>
+        ) : (
+          <a
+            href="/auth/login"
+            className="w-full flex items-center justify-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3.5 text-sm font-semibold text-gray-700 shadow-sm transition-all duration-150 hover:border-gray-300 hover:bg-gray-50 hover:shadow-md active:scale-[0.98] z-20 relative"
+            style={{ minHeight: "52px" }}
+          >
+            <GoogleIcon />
+            <span>Continue with Google</span>
+          </a>
+        )}
       </div>
 
       {/* ── Divider ──────────────────────────────────────────────── */}
@@ -250,7 +223,7 @@ function LoginForm() {
               id="send-magic-link-btn"
               type="submit"
               disabled={isOtpPending || !agreedToTerms || !agreedToAge}
-              className="ep-btn-primary"
+              className="ep-btn-primary relative z-20"
               style={isOtpPending ? { opacity: 0.7, transform: "none", boxShadow: "none", cursor: "not-allowed" } : {}}
               aria-label="Send magic link to your email"
             >
@@ -346,7 +319,7 @@ function LoginForm() {
             <button
               type="submit"
               disabled={isPasswordPending || !agreedToTerms || !agreedToAge || (passwordInput.length > 0 && passwordInput.length < 12)}
-              className="ep-btn-primary bg-slate-800 hover:bg-slate-900 focus:ring-slate-500"
+              className="ep-btn-primary bg-slate-800 hover:bg-slate-900 focus:ring-slate-500 relative z-20"
               style={isPasswordPending ? { opacity: 0.7, transform: "none", boxShadow: "none", cursor: "not-allowed" } : {}}
             >
               {isPasswordPending ? (
@@ -385,7 +358,7 @@ export default function LoginPage() {
       </Suspense>
 
       {/* Auth form card */}
-      <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex flex-col gap-5">
+      <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex flex-col gap-5 relative z-20">
         <LoginForm />
       </div>
 
