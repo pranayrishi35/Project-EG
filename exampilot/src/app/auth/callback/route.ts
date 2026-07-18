@@ -43,8 +43,15 @@ export async function GET(request: NextRequest) {
     <!DOCTYPE html>
     <html>
       <head>
-        <meta http-equiv="refresh" content="0;url=${origin}${next}" />
+        <meta charset="utf-8" />
         <title>Authenticating...</title>
+        <script>
+          // Force a 500ms delay to ensure iOS/Android writes the session cookie to disk
+          // and visually renders the bouncer screen before navigating.
+          setTimeout(function() {
+            window.location.replace("${origin}${next}");
+          }, 500);
+        </script>
       </head>
       <body style="background-color: #f3f4f6; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif;">
         <p>Verifying secure session...</p>
