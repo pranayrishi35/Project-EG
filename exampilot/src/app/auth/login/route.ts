@@ -4,9 +4,7 @@ import { createServerClient } from '@supabase/ssr'
 export const runtime = "nodejs";
 
 export async function GET(request: NextRequest) {
-  const requestUrl = new URL(request.url)
-  const forwardedHost = request.headers.get("x-forwarded-host");
-  const origin = forwardedHost ? `https://${forwardedHost}` : requestUrl.origin;
+  const origin = request.nextUrl.origin;
   
   // We need an empty response to pass into createServerClient 
   // so that setAll can function, even though we won't return this response.

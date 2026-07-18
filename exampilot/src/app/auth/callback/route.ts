@@ -9,10 +9,8 @@ function sanitiseNext(raw: string | null): string {
 }
 
 export async function GET(request: NextRequest) {
-  const requestUrl = new URL(request.url);
-  const forwardedHost = request.headers.get("x-forwarded-host");
-  const origin = forwardedHost ? `https://${forwardedHost}` : requestUrl.origin;
-  const searchParams = requestUrl.searchParams;
+  const origin = request.nextUrl.origin;
+  const searchParams = request.nextUrl.searchParams;
 
   // ── 1. Provider-level errors ─────────────────────────────────────────────────
   const providerError = searchParams.get("error");
