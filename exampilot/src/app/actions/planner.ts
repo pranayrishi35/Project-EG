@@ -200,7 +200,7 @@ export async function generateStudyPlan(
 
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({
-    model: "gemini-3.1-flash-lite",
+    model: "gemini-1.5-flash",
     generationConfig: {
       // Force strict JSON output — no markdown wrapping
       responseMimeType: "application/json",

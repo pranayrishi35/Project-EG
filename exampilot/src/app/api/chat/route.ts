@@ -44,7 +44,7 @@ export async function POST(req: Request) {
     }));
 
     const result = await streamText({
-      model: google('gemini-3.1-flash-lite'),
+      model: google('gemini-1.5-flash'),
       system: systemInstruction,
       messages: sanitizedMessages,
       temperature: 0.5,

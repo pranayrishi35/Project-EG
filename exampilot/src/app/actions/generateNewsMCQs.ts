@@ -37,7 +37,7 @@ export async function generateNewsMCQs() {
   const genAI = new GoogleGenerativeAI(apiKey);
   
   const model = genAI.getGenerativeModel({
-    model: "gemini-3.1-flash-lite",
+    model: "gemini-1.5-flash",
     generationConfig: { 
       responseMimeType: "application/json", 
       temperature: 0.7, 

@@ -48,7 +48,7 @@ export async function POST(req: Request) {
     Keep the tone focused, tactical, and encouraging.`;
 
     const result = await streamText({
-      model: google('gemini-3.1-flash-lite'),
+      model: google('gemini-1.5-flash'),
       system: systemInstruction,
       prompt: sanitizedPrompt,
       temperature: 0.7,
