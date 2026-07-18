@@ -5,6 +5,8 @@ export const runtime = "nodejs";
 
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url)
+  const forwardedHost = request.headers.get("x-forwarded-host");
+  const origin = forwardedHost ? `https://${forwardedHost}` : requestUrl.origin;
   
   // We need an empty response to pass into createServerClient 
   // so that setAll can function, even though we won't return this response.
@@ -31,7 +33,7 @@ export async function GET(request: NextRequest) {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${requestUrl.origin}/auth/callback`, 
+      redirectTo: `${origin}/auth/callback`, 
       queryParams: {
         access_type: "offline",
         prompt: "consent",
@@ -85,5 +87,5 @@ export async function GET(request: NextRequest) {
     return bouncerResponse;
   }
 
-  return NextResponse.redirect(`${requestUrl.origin}/login?error=outbound-failed`)
+  return NextResponse.redirect(`${origin}/login?error=outbound-failed`)
 }
