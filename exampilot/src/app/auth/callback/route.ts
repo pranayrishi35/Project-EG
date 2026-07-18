@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
       cookieOptions: {
         domain: request.headers.get('host')?.split(':')[0] ?? undefined,
         path: '/',
-        sameSite: 'Lax',
+        sameSite: 'lax',
         secure: false,
       },
     }
