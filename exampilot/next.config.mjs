@@ -11,6 +11,20 @@ const withPWA = withPWAInit({
   workboxOptions: {
     runtimeCaching: [
       {
+        // MUST BE NETWORK FIRST: Ensure HTML documents always hit the server
+        // so that middleware.ts runs and verifies the httpOnly cookie.
+        urlPattern: ({ request, url }) => request.mode === 'navigate' || url.pathname === '/',
+        handler: 'NetworkFirst',
+        options: {
+          cacheName: 'pages-cache',
+          expiration: {
+            maxEntries: 50,
+            maxAgeSeconds: 24 * 60 * 60,
+          },
+          networkTimeoutSeconds: 5,
+        },
+      },
+      {
         // Cache Supabase API Routes (Network First for mutable data like stats/credits)
         urlPattern: /^https:\/\/[a-z0-9-]+\.supabase\.co\/rest\/v1\/(?!question_bank).*/i,
         handler: 'NetworkFirst',
