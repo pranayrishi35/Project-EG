@@ -41,20 +41,74 @@ export async function GET(request: NextRequest) {
   // ── 3. Build success HTML bouncer and create Supabase client ───────────────
   const html = `
     <!DOCTYPE html>
-    <html>
+    <html lang="en">
       <head>
         <meta charset="utf-8" />
-        <title>Authenticating...</title>
-        <script>
-          // Force a 500ms delay to ensure iOS/Android writes the session cookie to disk
-          // and visually renders the bouncer screen before navigating.
-          setTimeout(function() {
-            window.location.replace("${origin}${next}");
-          }, 500);
-        </script>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Login Successful</title>
+        <style>
+          body {
+            background-color: #f8fafc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+          }
+          .card {
+            background: white;
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            text-align: center;
+            border: 1px solid #f1f5f9;
+            max-width: 90%;
+            width: 320px;
+          }
+          .icon {
+            font-size: 48px;
+            margin-bottom: 24px;
+            display: block;
+          }
+          .title {
+            color: #0f172a;
+            font-size: 20px;
+            font-weight: 800;
+            margin-top: 0;
+            margin-bottom: 8px;
+          }
+          .subtitle {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 32px;
+          }
+          .btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 16px;
+            transition: opacity 0.2s;
+            width: 100%;
+            box-sizing: border-box;
+          }
+          .btn:active {
+            opacity: 0.8;
+          }
+        </style>
       </head>
-      <body style="background-color: #f3f4f6; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif;">
-        <p>Verifying secure session...</p>
+      <body>
+        <div class="card">
+          <span class="icon" aria-hidden="true">👋</span>
+          <h1 class="title">Secure Session Verified</h1>
+          <p class="subtitle">Your identity has been confirmed.</p>
+          <!-- MANUAL TAP BRIDGE: Defeats ITP by forcing a top-level user interaction -->
+          <a href="${origin}${next}" class="btn">Enter ExamPilot</a>
+        </div>
       </body>
     </html>
   `;
