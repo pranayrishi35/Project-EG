@@ -102,9 +102,25 @@ export async function middleware(request: NextRequest) {
   }
 
 
-  if (user) {
-    const pathname = request.nextUrl.pathname;
+
+  const isProtected = pathname.startsWith('/planner') || 
+                      pathname.startsWith('/practice') || 
+                      pathname.startsWith('/settings') || 
+                      pathname.startsWith('/admin');
+
+  if (!user && isProtected) {
+    const redirectUrl = new URL(`/login?next=${pathname}`, request.url);
+    const response = NextResponse.redirect(redirectUrl);
     
+    // THE FIX: Nuke the mobile redirect cache
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+    
+    return response;
+  }
+
+  if (user) {
     const isConsentRoute = pathname === '/consent';
     const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/auth');
     const isLegalRoute = ['/terms', '/privacy', '/cookies', '/aup', '/refund-policy'].includes(pathname);
@@ -117,7 +133,14 @@ export async function middleware(request: NextRequest) {
       if (!request.cookies.has("consent_granted")) {
         const url = request.nextUrl.clone();
         url.pathname = '/consent';
-        return NextResponse.redirect(url);
+        const response = NextResponse.redirect(url);
+        
+        // Nuke the mobile redirect cache for consent too
+        response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+        response.headers.set('Pragma', 'no-cache');
+        response.headers.set('Expires', '0');
+        
+        return response;
       }
     }
   }
