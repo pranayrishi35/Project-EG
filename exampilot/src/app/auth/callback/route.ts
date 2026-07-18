@@ -57,10 +57,10 @@ export async function GET(request: NextRequest) {
         },
       },
       cookieOptions: {
-        domain: request.headers.get('host')?.split(':')[0] ?? undefined,
         path: '/',
         sameSite: 'lax',
-        secure: false,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 60 * 60 * 24 * 7,
       },
     }
   );

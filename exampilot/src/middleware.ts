@@ -78,11 +78,10 @@ export async function middleware(request: NextRequest) {
         },
       },
       cookieOptions: {
-        // Remove port if present (e.g., "10.0.2.2:3000")
-        domain: request.headers.get('host')?.split(':')[0] ?? undefined,
         path: '/',
         sameSite: 'lax',
-        secure: false,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 60 * 60 * 24 * 7,
       },
     }
   );
@@ -106,34 +105,6 @@ export async function middleware(request: NextRequest) {
   if (user) {
     const pathname = request.nextUrl.pathname;
     
-    // Check deletion status
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('is_deleted, deletion_deadline, legal_consent_version')
-      .eq('user_id', user.id)
-      .single();
-
-    if (profile?.is_deleted) {
-      if (profile.deletion_deadline) {
-        const deadline = new Date(profile.deletion_deadline);
-        if (Date.now() < deadline.getTime()) {
-          // In grace window -> force to /settings/recover
-          if (pathname !== '/settings/recover' && !pathname.startsWith('/api')) {
-            const url = request.nextUrl.clone();
-            url.pathname = '/settings/recover';
-            return NextResponse.redirect(url);
-          }
-        } else {
-          // Past deadline -> deny all access
-          await supabase.auth.signOut();
-          const url = request.nextUrl.clone();
-          url.pathname = '/login';
-          url.searchParams.set('account', 'permanently-deleted');
-          return NextResponse.redirect(url);
-        }
-      }
-    }
-
     const isConsentRoute = pathname === '/consent';
     const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/auth');
     const isLegalRoute = ['/terms', '/privacy', '/cookies', '/aup', '/refund-policy'].includes(pathname);
@@ -141,18 +112,12 @@ export async function middleware(request: NextRequest) {
     // Home page is public (shows either guest or user content) — never force consent redirect from /
     const isHomePage = pathname === '/';
 
-    if (!isConsentRoute && !isAuthRoute && !isLegalRoute && !isApiRoute && !isHomePage && !profile?.is_deleted) {
-      // FAST PATH: Check if the cookie exists to avoid a 150ms+ database query on every page load
+    if (!isConsentRoute && !isAuthRoute && !isLegalRoute && !isApiRoute && !isHomePage) {
+      // Only rely on the fast-path client cookie. No heavy database 'select' in middleware.
       if (!request.cookies.has("consent_granted")) {
-        // SLOW PATH: Use the profile fetched above
-        if (!profile?.legal_consent_version) {
-          const url = request.nextUrl.clone();
-          url.pathname = '/consent';
-          return NextResponse.redirect(url);
-        } else {
-          // User has consent in DB, but was missing the cookie. Set it now to speed up future requests!
-          supabaseResponse.cookies.set("consent_granted", "true", { maxAge: 60 * 60 * 24 * 365, path: "/" });
-        }
+        const url = request.nextUrl.clone();
+        url.pathname = '/consent';
+        return NextResponse.redirect(url);
       }
     }
   }
