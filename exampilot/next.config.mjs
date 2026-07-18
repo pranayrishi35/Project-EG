@@ -11,6 +11,12 @@ const withPWA = withPWAInit({
   workboxOptions: {
     runtimeCaching: [
       {
+        // BYPASS SERVICE WORKER FOR AUTH: Ensure OAuth redirects never touch the PWA cache
+        // or get aborted by aggressive timeouts.
+        urlPattern: /\/auth\/.*/i,
+        handler: 'NetworkOnly',
+      },
+      {
         // MUST BE NETWORK FIRST: Ensure HTML documents always hit the server
         // so that middleware.ts runs and verifies the httpOnly cookie.
         urlPattern: ({ request, url }) => request.mode === 'navigate' || url.pathname === '/',
@@ -21,7 +27,7 @@ const withPWA = withPWAInit({
             maxEntries: 50,
             maxAgeSeconds: 24 * 60 * 60,
           },
-          networkTimeoutSeconds: 5,
+          networkTimeoutSeconds: 15,
         },
       },
       {
