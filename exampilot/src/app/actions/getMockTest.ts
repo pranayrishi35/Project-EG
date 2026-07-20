@@ -179,6 +179,10 @@ export async function getMockTest(rawExamTarget: string, rawMini: boolean = fals
     const { data: created, error: createError } = await supabase
       .from("mock_attempts")
       .insert({
+        // Server owns the attempt id. The mock_attempts.id column has no DB-side
+        // default, so we must supply it here — otherwise the insert fails with a
+        // not-null violation and the UI shows "Could not start the test".
+        id: crypto.randomUUID(),
         user_id: user.id,
         exam_target: examTarget,
         test_number: (count || 0) + 1,

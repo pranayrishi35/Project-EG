@@ -52,9 +52,14 @@ graph TD
   * `useAntiCheat.ts`: Registers tab visibility, right-click, and copy listeners during active exams.
   * `useNetworkStatus.ts`: Custom hook checking live connectivity status.
 * **`exampilot/src/lib`**: Decoupled utilities governing business rules.
-  * `creditManager.ts`: Handles database credit deduction using the service role client.
+  * `creditManager.ts`: Handles credit deduction/refund via the `deduct_credits`/`refund_credits` RPCs (atomic, no read-check-write race) using the service role client. Admins are bypassed (never charged, never refunded).
+  * `credits.ts`: Holds `BETA_STARTING_CREDITS` and shared credit constants (single source for the beta grant).
+  * `aiRateLimit.ts`: Per-user sliding-window limiter (20 req/min) for the AI endpoints, layered on top of the credit meter. **Fails open when Vercel KV is not configured** (local dev), so absence of KV silently disables the cap.
+  * `cronAuth.ts`: Shared bearer-token guard for cron route handlers (validates `CRON_SECRET`).
   * `examConfig.ts`: Holds questions and marks configurations for exam targets.
   * `sanitizer.ts`: Filters emails and phone numbers from inputs before invoking LLMs.
+
+  **AI Study Wingman — "Tejas":** The floating chat assistant (`FloatingAssistant.tsx`) is branded **Tejas** (after the indigenous fighter jet). Identity is enforced server-side in `/api/chat` via a white-label system prompt (never leaks the underlying provider). Uses Vercel AI SDK v7 — messages carry text in `parts[]` (NOT a `content` string); the client uses `sendMessage({ text })` and the server uses `convertToModelMessages(...)`. Logged-out visitors get a canned "create an account" reply streamed as a v7 UI-message stream; authenticated users hit the live metered Gemini path. `TejasSpotlight.tsx` on the guest landing page boasts the feature with a scripted demo and a "Talk to Tejas" CTA that opens the panel via a `tejas:open` custom event.
 * **`exampilot/src/utils`**: Standard loaders (e.g., Supabase client and server declarations).
 * **`exampilot/tests`**: Playwright E2E integration tests.
 * **`exampilot/docs/legal`**: Raw markdown documents for legal pages.
@@ -63,7 +68,7 @@ graph TD
 * **Framework:** Next.js `14.2.35` (App Router, Node.js Serverless runtime)
 * **Styling:** Tailwind CSS `3.4.1` (Strictly native utility classes; no component UI libraries like Shadcn/MUI)
 * **Database & Auth:** Supabase PostgreSQL with `@supabase/ssr` `0.12.0` and `@supabase/supabase-js` `2.110.1`
-* **AI Engine:** Google Gemini API via `@google/generative-ai` `0.24.1` (calling `gemini-3.1-flash-lite` and `gemini-1.5-flash`) and Vercel AI SDK (`ai` `7.0.26` / `@ai-sdk/google` `4.0.14`)
+* **AI Engine:** Google Gemini API via `@google/generative-ai` `0.24.1` and Vercel AI SDK (`ai` `7.0.26` / `@ai-sdk/google` `4.0.14`). **All endpoints use the `gemini-2.5-flash` model string** — the `gemini-1.5-flash` alias was retired by Google on 2025-09-24 and `gemini-3.1-flash-lite` was a hallucinated/non-existent id; using either surfaces to users as an "overloaded"/"AI service unavailable" error. When bumping the model, change every call site (chat, coach, planner, flashcards, cheatsheet, test-strategy, news-MCQs, admin-seed, cron fetch-news).
 * **PWA Engine:** `@ducanh2912/next-pwa` `10.2.9` (Service worker handling caching/routing offline fallbacks)
 * **State Management:** Zustand `5.0.14` (Managing active CBT test state)
 * **Caching & Rate Limits:** `@upstash/ratelimit` `2.0.8` & `@vercel/kv` `3.0.0`
@@ -127,7 +132,7 @@ graph TD
    * It recalculates correct/incorrect marks using bounds defined in `EXAM_CONFIGS`.
    * It computes subject-wise scores and updates the database row.
    * Materialized view leaderboards are refreshed.
-6. **Analytics Delivery:** The user is redirected to the Results dashboard. They can select their learning style and request an "AI Tactical Coach" summary. This action calls `/api/coach` (deducting 1 credit) to generate strengths, weaknesses, and a 3-step action plan using `gemini-3.1-flash-lite`.
+6. **Analytics Delivery:** The user is redirected to the Results dashboard. They can select their learning style and request an "AI Tactical Coach" summary. This action calls `/api/coach` (deducting 1 credit) to generate strengths, weaknesses, and a 3-step action plan using `gemini-2.5-flash`.
 
 ---
 
@@ -211,7 +216,7 @@ All route handlers require authentication and session checks.
 #### Route Handlers
 * **POST `/api/chat`**:
   * **Payload:** `{ messages: Array<{ role: string, content: string }> }`
-  * **Response:** Text stream (`gemini-3.1-flash-lite` wrapper) of conversational academic guidance.
+  * **Response:** Text stream (`gemini-2.5-flash` wrapper) of conversational academic guidance.
 * **POST `/api/coach`**:
   * **Payload:** `{ prompt: string }`
   * **Response:** Text stream describing test performance insights. Deducts 1 credit.
@@ -337,8 +342,19 @@ SUPABASE_SERVICE_ROLE_KEY=<set in Vercel env>
 
 ## 7. Status & Technical Debt
 
+### ⚠️ Pending DB Migrations (CRITICAL — code depends on these)
+Several `.sql` files in `exampilot/` define schema/functions the application code **already calls**. They are NOT auto-applied — they must be run manually in the Supabase SQL editor (there is no `supabase/migrations` link, no DB connection string in env, and the REST API cannot run DDL). If a migration is not applied, the dependent feature fails at runtime with a schema-cache error that surfaces to users as a generic failure:
+
+| Migration file | Adds | Symptom if unapplied |
+|---|---|---|
+| `atomic_credit_deduction.sql` | `deduct_credits` / `refund_credits` RPCs | Signed-in AI calls return `SYSTEM_ERROR` (402) → chat shows "lost signal" |
+| `server_authoritative_attempts.sql` | `mock_attempts.served_question_ids`, `started_at` | **Starting ANY mock test fails** with `PGRST204` → "Could not start the test" |
+| `rls_credit_privilege_lockdown.sql` | RLS revoking client writes to credits/tier | Client could self-grant credits |
+
+**Deployment rule:** any new `.sql` file added to the repo MUST be run against every Supabase environment before the code that depends on it ships. Verify with: `select proname from pg_proc where proname in (...)` for functions, or a probe insert for columns.
+
 ### Known Limitations
-1. **Schema Mismatch:** Streaks and user metadata are split across `profiles` and `user_profiles` tables, which increases database request complexity.
+1. **Schema Mismatch:** Streaks and user metadata are split across `profiles` and `user_profiles` tables, which increases database request complexity. The Settings page reads `full_name`/`avatar_url` from `user_profiles` where they may not live — verify against the live schema before relying on it.
 2. **SSR Router Crash:** `/planner` has a known SSR crash under mock auth due to `usePathname` in the Sidebar firing server-side. Playwright E2E tests bypass this route because of this issue.
 3. **Incomplete Configurations:** `NDA_MATH` and `NDA_GAT` are defined in `ExamTarget` types, but missing in `EXAM_CONFIGS`.
 4. **Flashcards UI:** The dashboard flashcards feature is currently marked as "Coming Soon", although the backend logic is implemented.
