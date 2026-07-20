@@ -59,7 +59,7 @@ export default function NewsFeed({ initialNews, initialHasMore }: NewsFeedProps)
       <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 md:p-6 flex flex-col md:flex-row gap-4 items-end md:items-center justify-between shadow-xl">
         <div className="w-full flex flex-wrap gap-4 items-center">
           <div className="flex flex-col gap-1.5 w-full sm:w-auto flex-1 min-w-[140px]">
-            <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Category</label>
+            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Category</label>
             <select 
               value={filterCategory} 
               onChange={(e) => setFilterCategory(e.target.value)}
@@ -75,7 +75,7 @@ export default function NewsFeed({ initialNews, initialHasMore }: NewsFeedProps)
           </div>
           
           <div className="flex flex-col gap-1.5 w-full sm:w-auto flex-1 min-w-[140px]">
-            <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Timeframe</label>
+            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Timeframe</label>
             <select 
               value={filterDate} 
               onChange={(e) => setFilterDate(e.target.value)}
@@ -88,7 +88,7 @@ export default function NewsFeed({ initialNews, initialHasMore }: NewsFeedProps)
           </div>
 
           <div className="flex flex-col gap-1.5 w-full sm:w-auto flex-1 min-w-[140px]">
-            <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Min Relevance Score</label>
+            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Min Relevance Score</label>
             <select 
               value={filterScore} 
               onChange={(e) => setFilterScore(Number(e.target.value))}
@@ -129,7 +129,7 @@ export default function NewsFeed({ initialNews, initialHasMore }: NewsFeedProps)
           {newsItems.map((item, index) => (
             <article
               key={`${item.id}-${index}`}
-              className="w-full flex flex-col md:flex-row relative rounded-3xl overflow-hidden bg-slate-950 shadow-[0_0_15px_rgba(99,102,241,0.1)] group ring-1 ring-indigo-500/20 animate-in fade-in slide-in-from-bottom-8 duration-700 fill-mode-both"
+              className="w-full flex flex-col md:flex-row relative rounded-3xl overflow-hidden bg-slate-950 shadow-[0_0_15px_rgba(99,102,241,0.1)] group ring-1 ring-indigo-500/20 animate-fade-in"
               style={{ animationDelay: `${(index % 20) * 100}ms` }}
             >
               {/* Image Section */}

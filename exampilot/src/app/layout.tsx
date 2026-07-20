@@ -23,9 +23,15 @@ export const metadata: Metadata = {
     statusBarStyle: "default",
     title: "ExamPilot",
   },
+  // Standard, non-deprecated PWA install hint. Next injects the legacy
+  // apple-mobile-web-app-capable tag via appleWebApp above; this adds the
+  // spec'd equivalent that Chrome/Android expect.
+  other: {
+    "mobile-web-app-capable": "yes",
+  },
   icons: {
-    icon: "/icon-192x192.png",
-    apple: "/icon-192x192.png",
+    icon: "/icons/icon-192x192.png",
+    apple: "/icons/icon-192x192.png",
   },
   openGraph: {
     title: "ExamPilot — Smart Study Planner",
@@ -35,7 +41,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/icon-512x512.png",
+        url: "/icons/icon-512x512.png",
         width: 512,
         height: 512,
         alt: "ExamPilot Logo",
@@ -46,7 +52,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "ExamPilot — Smart Study Planner",
     description: "Elite AI Defense Exam Preparation",
-    images: ["/icon-512x512.png"],
+    images: ["/icons/icon-512x512.png"],
   },
 };
 
@@ -100,7 +106,7 @@ export default async function RootLayout({
             <BottomNav isAdmin={isAdmin} />
           </div>
           
-          {/* Floating AI Tutor */}
+          {/* Floating AI study wingman — Tejas */}
           <FloatingAssistant />
       </body>
     </html>

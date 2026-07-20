@@ -100,8 +100,13 @@ export const fetchDefenseNews = async (
         if (secret) {
           let host = process.env.VERCEL_URL || "localhost:3000";
           let protocol = process.env.NODE_ENV === "development" ? "http" : "https";
-          const url = `${protocol}://${host}/api/cron/fetch-news?secret=${secret}`;
-          fetch(url, { method: 'GET', cache: 'no-store' }).catch(() => {});
+          const url = `${protocol}://${host}/api/cron/fetch-news`;
+          // Secret goes in the Authorization header, not the query string.
+          fetch(url, {
+            method: 'GET',
+            cache: 'no-store',
+            headers: { Authorization: `Bearer ${secret}` },
+          }).catch(() => {});
         }
       }
     }

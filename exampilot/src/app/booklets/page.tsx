@@ -22,7 +22,7 @@ async function DirectoryContent() {
     <div className="flex flex-col gap-12">
       {Object.entries(booklets).map(([examTarget, subjects]) => (
         <div key={examTarget} className="flex flex-col gap-6">
-          <h2 className="text-3xl font-bold border-b border-slate-700 pb-2 text-gray-900 tracking-tight">{examTarget} Booklets</h2>
+          <h2 className="text-3xl font-bold border-b border-gray-200 pb-2 text-gray-900 tracking-tight">{examTarget} Booklets</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {Object.entries(subjects).map(([subject, count]) => (
               <Link
@@ -104,7 +104,7 @@ export default function BookletsPage() {
                 <h2 className="text-2xl font-black text-white tracking-tight mb-1">
                   Current Affairs Bulletins
                 </h2>
-                <p className="text-sm text-slate-700 font-medium max-w-md">
+                <p className="text-sm text-slate-300 font-medium max-w-md">
                   High-yield defense, tech, and sports news compiled into a printable revision booklet.
                 </p>
               </div>

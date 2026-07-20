@@ -83,7 +83,7 @@ export async function adminSeedQuestions(examTarget: string, isPyq: boolean = fa
   
   // Strict model usage as per critical directive - budget increased to 8192
   const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash",
+    model: "gemini-2.5-flash",
     generationConfig: { 
       responseMimeType: "application/json", 
       temperature: 0.7, 
@@ -136,7 +136,7 @@ export async function generateFullMockTest(examTarget: string) {
   const genAI = new GoogleGenerativeAI(apiKey);
   
   const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash",
+    model: "gemini-2.5-flash",
     generationConfig: { 
       responseMimeType: "application/json", 
       temperature: 0.7, 

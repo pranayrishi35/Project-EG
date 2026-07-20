@@ -8,6 +8,7 @@ import { Suspense } from "react";
 import { getDemoMockQuestions } from "@/app/actions/getDemoMock";
 import GuestAttemptBridge from "@/components/GuestAttemptBridge";
 import DemoTestRunner from "@/components/DemoTestRunner";
+import TejasSpotlight from "@/components/TejasSpotlight";
 
 const CreatePlanForm = dynamic(() => import("@/components/CreatePlanForm"), {
   ssr: false,
@@ -24,36 +25,48 @@ export const metadata: Metadata = {
 
 async function FlashcardStatusLoader() {
   const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
 
-  // Check if they have an active plan
-  const { data: plan } = await supabase
-    .from("study_plans")
-    .select("id")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  // These run during SSR inside a <Suspense> boundary. If any Supabase call
+  // rejects (e.g. a transient network/DNS failure to the DB), an unhandled
+  // throw here aborts the boundary with "The server could not finish this
+  // Suspense boundary". We degrade to rendering nothing instead — the daily
+  // flashcards CTA is non-critical, so a blip should never crash the page.
+  let isCompleted = false;
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
 
-  if (!plan) return null; // No plan, no flashcards
+    // Check if they have an active plan
+    const { data: plan } = await supabase
+      .from("study_plans")
+      .select("id")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
-  // IST Date calculation matching getStreak
-  const getISTDateString = (date: Date) => {
-    const istDate = new Date(date.getTime() + 330 * 60 * 1000);
-    return istDate.toISOString().split("T")[0];
-  };
-  const todayIST = getISTDateString(new Date());
+    if (!plan) return null; // No plan, no flashcards
 
-  const { data: cached } = await supabase
-    .from("daily_flashcards")
-    .select("id")
-    .eq("user_id", user.id)
-    .eq("plan_id", plan.id)
-    .eq("generated_date", todayIST)
-    .maybeSingle();
+    // IST Date calculation matching getStreak
+    const getISTDateString = (date: Date) => {
+      const istDate = new Date(date.getTime() + 330 * 60 * 1000);
+      return istDate.toISOString().split("T")[0];
+    };
+    const todayIST = getISTDateString(new Date());
 
-  const isCompleted = !!cached;
+    const { data: cached } = await supabase
+      .from("daily_flashcards")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("plan_id", plan.id)
+      .eq("generated_date", todayIST)
+      .maybeSingle();
+
+    isCompleted = !!cached;
+  } catch (err) {
+    console.error("[FlashcardStatusLoader] Supabase call failed during SSR:", err);
+    return null; // Fail soft: hide the CTA rather than crash the Suspense boundary.
+  }
 
   if (isCompleted) {
     return (
@@ -97,13 +110,22 @@ async function FlashcardStatusLoader() {
 
 async function RecentPlansLoader() {
   const supabase = createClient();
-  const { data: recentPlans } = await supabase
-    .from("study_plans")
-    .select("id, exam_name, exam_date, generated_plan")
-    .order("created_at", { ascending: false })
-    .limit(2);
 
-  const plans = recentPlans || [];
+  // Guarded for the same reason as FlashcardStatusLoader: a transient Supabase
+  // failure during SSR must not abort the Suspense boundary. On error we treat
+  // it as "no plans" and render the existing empty state.
+  let plans: any[] = [];
+  try {
+    const { data: recentPlans } = await supabase
+      .from("study_plans")
+      .select("id, exam_name, exam_date, generated_plan")
+      .order("created_at", { ascending: false })
+      .limit(2);
+    plans = recentPlans || [];
+  } catch (err) {
+    console.error("[RecentPlansLoader] Supabase call failed during SSR:", err);
+    plans = [];
+  }
 
   if (plans.length === 0) {
     return (
@@ -170,8 +192,15 @@ function PlanCardSkeleton() {
 
 export default async function HomePage() {
   // We still await user auth here to get the firstName, but this is fast.
+  // Guarded so a transient auth/network failure renders the signed-out view
+  // instead of crashing the whole page render.
   const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  let user = null;
+  try {
+    ({ data: { user } } = await supabase.auth.getUser());
+  } catch (err) {
+    console.error("[HomePage] auth.getUser failed during SSR:", err);
+  }
   const firstName = user?.user_metadata?.full_name?.split(" ")[0] || "Pilot";
 
   return (
@@ -275,9 +304,12 @@ export default async function HomePage() {
 
         </div>
       ) : (
-        <Suspense fallback={<div className="h-[600px] bg-white border border-gray-200 rounded-3xl animate-pulse" />}>
-          <GuestDemoSection />
-        </Suspense>
+        <div className="flex flex-col gap-8">
+          <TejasSpotlight />
+          <Suspense fallback={<div className="h-[600px] bg-white border border-gray-200 rounded-3xl animate-pulse" />}>
+            <GuestDemoSection />
+          </Suspense>
+        </div>
       )}
     </div>
   );
@@ -311,7 +343,7 @@ async function GuestDemoSection() {
         <span className="hidden md:inline text-slate-300">•</span>
         <span className="flex items-center gap-2"><span className="text-lg" aria-hidden="true">⚡</span> Daily Flashcards</span>
         <span className="hidden md:inline text-slate-300">•</span>
-        <span className="flex items-center gap-2"><span className="text-lg" aria-hidden="true">🤖</span> AI Coach</span>
+        <span className="flex items-center gap-2"><span className="text-lg" aria-hidden="true">🛩️</span> Tejas AI Wingman</span>
       </div>
       
       <DemoTestRunner questions={questions} />

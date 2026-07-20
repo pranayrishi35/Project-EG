@@ -29,15 +29,16 @@ USING (auth.jwt() ->> 'email' = email);
 -- 2. user_profiles
 -- ------------------------------------------------------------------------------
 -- Users can only read and update their own profile.
-CREATE POLICY "Users can view own profile" 
-ON user_profiles FOR SELECT 
-TO authenticated 
-USING (auth.uid() = id);
+CREATE POLICY "Users can view own profile"
+ON user_profiles FOR SELECT
+TO authenticated
+USING (auth.uid() = user_id);
 
-CREATE POLICY "Users can update own profile" 
-ON user_profiles FOR UPDATE 
-TO authenticated 
-USING (auth.uid() = id);
+CREATE POLICY "Users can update own profile"
+ON user_profiles FOR UPDATE
+TO authenticated
+USING (auth.uid() = user_id)
+WITH CHECK (auth.uid() = user_id);
 
 -- ------------------------------------------------------------------------------
 -- 3. mock_attempts
@@ -136,3 +137,14 @@ USING (true);
 -- Hide the correct answer from standard API queries to prevent answer extraction
 REVOKE SELECT (correct_index) ON question_bank FROM authenticated;
 REVOKE SELECT (correct_index) ON question_bank FROM anon;
+
+-- ------------------------------------------------------------------------------
+-- user_profiles: lock the monetized / privilege / lifecycle columns.
+-- The row-level UPDATE policy above (auth.uid() = user_id) alone let any signed-in
+-- user self-grant credits/tier from the browser anon client. These columns must
+-- only ever be written via the service role (creditManager + deduct_credits RPC;
+-- deleteAccount/recoverAccount admin client). See rls_credit_privilege_lockdown.sql.
+REVOKE UPDATE (credits, tier, is_deleted, deletion_deadline) ON user_profiles FROM authenticated;
+REVOKE UPDATE (credits, tier, is_deleted, deletion_deadline) ON user_profiles FROM anon;
+REVOKE INSERT (credits, tier, is_deleted, deletion_deadline) ON user_profiles FROM authenticated;
+REVOKE INSERT (credits, tier, is_deleted, deletion_deadline) ON user_profiles FROM anon;

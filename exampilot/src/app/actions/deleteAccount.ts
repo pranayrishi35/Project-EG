@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
+import { getAdminClient } from "@/lib/adminClient";
 import { redirect } from "next/navigation";
 
 export async function deleteAccount() {
@@ -14,20 +15,30 @@ export async function deleteAccount() {
     throw new Error("You must be logged in to delete your account.");
   }
 
-  // Set the user profile to deleted and schedule deletion
+  // Set the user profile to deleted and schedule deletion.
   const deadline = new Date();
   deadline.setHours(deadline.getHours() + 48);
 
-  const { error } = await supabase
+  // is_deleted / deletion_deadline are REVOKEd from the client-facing role (they
+  // gate the account lifecycle), so the write MUST go through the service role.
+  // Ownership is still enforced server-side via the authenticated session above.
+  const admin = getAdminClient();
+  const { data: updated, error } = await admin
     .from("user_profiles")
     .update({
       is_deleted: true,
       deletion_deadline: deadline.toISOString(),
     })
-    .eq("id", user.id);
+    .eq("user_id", user.id)
+    .select("user_id");
 
   if (error) {
     console.error("Failed to mark account for deletion:", error);
+    throw new Error("Failed to delete account");
+  }
+
+  if (!updated || updated.length !== 1) {
+    console.error("Account deletion affected an unexpected number of rows:", updated?.length ?? 0);
     throw new Error("Failed to delete account");
   }
 

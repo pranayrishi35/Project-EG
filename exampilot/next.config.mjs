@@ -91,17 +91,32 @@ const withPWA = withPWAInit({
   },
 });
 
+const isDev = process.env.NODE_ENV === 'development';
+
+// The Reticle dev overlay (presenter.js/transport.js) pulls Google Fonts and
+// connects to a local WebSocket. Those origins are allowed in development only;
+// production stays strict and self-hosts its fonts via next/font.
+const styleSrc = isDev
+  ? "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;"
+  : "style-src 'self' 'unsafe-inline';";
+const fontSrc = isDev
+  ? "font-src 'self' https://fonts.gstatic.com;"
+  : "font-src 'self';";
+const connectSrc = isDev
+  ? "connect-src 'self' https://*.supabase.co wss://*.supabase.co ws://localhost:* https://fonts.googleapis.com https://fonts.gstatic.com;"
+  : "connect-src 'self' https://*.supabase.co wss://*.supabase.co;";
+
 const cspHeader = `
     default-src 'self';
     script-src 'self' 'unsafe-eval' 'unsafe-inline';
-    style-src 'self' 'unsafe-inline';
+    ${styleSrc}
     img-src 'self' blob: data: https: http:;
-    font-src 'self';
+    ${fontSrc}
     object-src 'none';
     base-uri 'self';
     form-action 'self';
     frame-ancestors 'none';
-    connect-src 'self' https://*.supabase.co wss://*.supabase.co;
+    ${connectSrc}
 `;
 
 /** @type {import('next').NextConfig} */

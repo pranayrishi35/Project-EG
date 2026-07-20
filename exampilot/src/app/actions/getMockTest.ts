@@ -20,8 +20,8 @@ export interface ScoringMap {
   incorrect: number;
 }
 
-export type GetTestResult = 
-  | { success: true; questions: Question[]; scoringMap: ScoringMap; focusedSubjects?: string[] }
+export type GetTestResult =
+  | { success: true; questions: Question[]; scoringMap: ScoringMap; focusedSubjects?: string[]; attemptId?: string; testNumber?: number }
   | { success: false; error: string; shortage?: boolean };
 
 import { EXAM_CONFIGS } from "@/lib/examConfig"; // centralized config
@@ -153,14 +153,65 @@ export async function getMockTest(rawExamTarget: string, rawMini: boolean = fals
       pyqYear: q.pyq_year
     }));
 
-    return { 
-      success: true, 
+    // Server-authoritative attempt: the SERVER decides which question ids make up
+    // this attempt and records them (served_question_ids). Grading on submit is
+    // restricted to exactly this set, so a client cannot enlarge, swap, or inject
+    // questions to inflate its score. The server also owns the attempt id and the
+    // exam_target — the client can no longer forge either.
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return { success: false, error: "You must be signed in to start a mock test." };
+    }
+
+    // Compute the next test_number for this (user, exam_target) up front so the
+    // row is complete and ranked deterministically from creation.
+    const { count } = await supabase
+      .from("mock_attempts")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .eq("exam_target", examTarget);
+
+    const servedIds = mappedQuestions.map(q => q.id);
+    const scoringMap = {
+      correct: config.marks_per_correct,
+      incorrect: config.negative_marking,
+    };
+    const { data: created, error: createError } = await supabase
+      .from("mock_attempts")
+      .insert({
+        user_id: user.id,
+        exam_target: examTarget,
+        test_number: (count || 0) + 1,
+        status: "in_progress",
+        served_question_ids: servedIds,
+        started_at: new Date().toISOString(),
+        // Seed answers_state so the attempt is resumable immediately — before the
+        // first 60s background sync. The resume page reads questions/scoringMap
+        // from here; without this an abandoned-early attempt errors on resume.
+        answers_state: {
+          currentQuestionIndex: 0,
+          selectedAnswers: {},
+          statuses: {},
+          questions: mappedQuestions,
+          scoringMap,
+          testNumber: (count || 0) + 1,
+        },
+      })
+      .select("id, test_number")
+      .single();
+
+    if (createError || !created) {
+      console.error("Failed to create server-owned attempt:", createError);
+      return { success: false, error: "Could not start the test. Please try again." };
+    }
+
+    return {
+      success: true,
       questions: mappedQuestions,
-      scoringMap: {
-        correct: config.marks_per_correct,
-        incorrect: config.negative_marking
-      },
-      focusedSubjects: focusedSubjects.length > 0 ? focusedSubjects : undefined
+      scoringMap,
+      focusedSubjects: focusedSubjects.length > 0 ? focusedSubjects : undefined,
+      attemptId: created.id,
+      testNumber: created.test_number,
     };
 
   } catch (e: any) {

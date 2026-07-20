@@ -195,6 +195,7 @@ export default function PlanViewer({
   const [isCheatSheetOpen, setIsCheatSheetOpen] = useState(false);
   const [activeTest, setActiveTest] = useState<"Mini-Test" | "Full Mock" | null>(null);
   const [activeAttemptId, setActiveAttemptId] = useState<string | null>(null);
+  const [activeTestNumber, setActiveTestNumber] = useState<number | undefined>(undefined);
   const [activeTab, setActiveTab] = useState<"schedule" | "mocks">("schedule");
   
   // Test Engine State
@@ -224,10 +225,18 @@ export default function PlanViewer({
     setTestLoading(null);
 
     if (result.success) {
+      // The attempt id is now issued by the server (getMockTest creates the
+      // authoritative row and records the served question set). Never mint it
+      // client-side — a client-chosen id would not map to a server-owned row.
+      if (!result.attemptId) {
+        setTestError("Could not start the test session. Please try again.");
+        return;
+      }
       setTestQuestions(result.questions);
       setTestScoringMap(result.scoringMap);
       setTestFocusedSubjects(result.focusedSubjects || null);
-      setActiveAttemptId(crypto.randomUUID());
+      setActiveAttemptId(result.attemptId);
+      setActiveTestNumber(result.testNumber);
       setActiveTest(type);
       setPendingNDATest(null);
     } else {
@@ -345,7 +354,7 @@ export default function PlanViewer({
         <div className="print:hidden bg-slate-800 text-white p-5 rounded-3xl mb-4 border border-slate-700 shadow-xl relative overflow-hidden animate-fade-in">
           <div className="relative z-10">
             <h3 className="font-bold text-lg mb-1">Select NDA Paper</h3>
-            <p className="text-slate-700 text-xs mb-4">The NDA exam has two separate papers with distinct scoring algorithms.</p>
+            <p className="text-slate-300 text-xs mb-4">The NDA exam has two separate papers with distinct scoring algorithms.</p>
             <div className="grid grid-cols-2 gap-3">
               <button onClick={() => handleLaunchTest(pendingNDATest, "NDA_MATH")} className="bg-indigo-600 hover:bg-indigo-500 py-3 rounded-xl font-bold text-sm transition-all active:scale-95 shadow-md">
                 Mathematics (Paper I)
@@ -354,7 +363,7 @@ export default function PlanViewer({
                 GAT (Paper II)
               </button>
             </div>
-            <button onClick={() => setPendingNDATest(null)} className="mt-4 w-full text-xs font-semibold text-slate-700 hover:text-slate-200 transition-colors uppercase tracking-widest py-2">
+            <button onClick={() => setPendingNDATest(null)} className="mt-4 w-full text-xs font-semibold text-slate-400 hover:text-slate-200 transition-colors uppercase tracking-widest py-2">
               Cancel
             </button>
           </div>
@@ -541,7 +550,7 @@ export default function PlanViewer({
           )}
 
           {activeTest && testQuestions && testScoringMap && activeAttemptId && (
-            <TestRunner type={activeTest} questions={testQuestions} scoringMap={testScoringMap} attemptId={activeAttemptId} focusedSubjects={testFocusedSubjects || undefined} onExit={() => setActiveTest(null)} />
+            <TestRunner type={activeTest} questions={testQuestions} scoringMap={testScoringMap} attemptId={activeAttemptId} initialState={activeTestNumber != null ? { testNumber: activeTestNumber } : undefined} focusedSubjects={testFocusedSubjects || undefined} onExit={() => setActiveTest(null)} />
           )}
         </>
       )}

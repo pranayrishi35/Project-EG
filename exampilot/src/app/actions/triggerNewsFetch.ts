@@ -22,10 +22,15 @@ export async function triggerNewsFetch() {
   // Construct the absolute URL to hit the API route
   const host = headers().get("host");
   const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
-  const url = `${protocol}://${host}/api/cron/fetch-news?secret=${secret}`;
+  const url = `${protocol}://${host}/api/cron/fetch-news`;
 
   try {
-    const res = await fetch(url, { method: 'GET', cache: 'no-store' });
+    // Send the secret via the Authorization header — never in the URL (logs/history leak).
+    const res = await fetch(url, {
+      method: 'GET',
+      cache: 'no-store',
+      headers: { Authorization: `Bearer ${secret}` },
+    });
     const data = await res.json();
     return data;
   } catch (error: any) {

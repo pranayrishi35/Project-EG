@@ -84,7 +84,7 @@ export default function Sidebar({ isAdmin }: { isAdmin?: boolean }) {
                   className={`flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 ${
                     isActive
                       ? "bg-indigo-600 text-white shadow-md shadow-indigo-500/20"
-                      : "text-slate-700 hover:text-slate-200 hover:bg-slate-800"
+                      : "text-slate-400 hover:text-white hover:bg-slate-800"
                   }`}
                 >
                   <span

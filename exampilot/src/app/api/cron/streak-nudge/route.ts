@@ -2,20 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminClient } from "@/lib/adminClient";
 import { resend } from "@/lib/resend";
 import { StreakNudgeEmail } from "@/emails/StreakNudgeEmail";
+import { isAuthorizedCron } from "@/lib/cronAuth";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60; // Max allowed for Vercel Hobby
 
 export async function GET(req: NextRequest) {
-  // 1. Validate CRON_SECRET for access control
-  const authHeader = req.headers.get("authorization");
-  const cronSecret = process.env.CRON_SECRET;
-  
-  const isAuthorized = 
-    (cronSecret && authHeader === `Bearer ${cronSecret}`) ||
-    req.nextUrl.searchParams.get("secret") === cronSecret;
-
-  if (cronSecret && !isAuthorized) {
+  // 1. Validate CRON_SECRET for access control (fails closed, header-only)
+  if (!isAuthorizedCron(req)) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
   }
 

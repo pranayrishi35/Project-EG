@@ -5,8 +5,8 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import type { ExtendedPlan } from "@/app/actions/toggleTopic";
 import DeletePlanButton from "@/components/DeletePlanButton";
-import StudyPlanWizard from "@/app/planner/StudyPlanWizard";
-import PrimaryButton from "@/components/PrimaryButton";
+import CreatePlanForm from "@/components/CreatePlanForm";
+import { getStreak } from "@/app/actions/getStreak";
 import { isGuestUser } from "@/lib/guestShield";
 
 export const metadata: Metadata = {
@@ -43,8 +43,14 @@ function daysUntil(dateStr: string): number {
 
 // ─── Empty state ───────────────────────────────────────────────────────────────
 
-function EmptyState() {
-  return <StudyPlanWizard />;
+async function EmptyState() {
+  // Guests have no streak/profile; only fetch for a real session.
+  const streak = isGuestUser() ? 0 : await getStreak();
+  return (
+    <div id="create-plan">
+      <CreatePlanForm streak={streak} />
+    </div>
+  );
 }
 
 
@@ -146,8 +152,9 @@ export default async function PlannerPage() {
           </p>
           <h1 className="text-xl font-bold text-gray-900">Study Planner</h1>
         </div>
-        <PrimaryButton
-          className="flex items-center gap-2 px-5 py-3 shadow-md hover:shadow-lg"
+        <a
+          href="#create-plan"
+          className="ep-btn-primary flex items-center gap-2 px-5 py-3 shadow-md hover:shadow-lg"
           aria-label="Create a new mission plan"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -156,7 +163,7 @@ export default async function PlannerPage() {
           </svg>
           <span className="hidden sm:inline">Create New Mission</span>
           <span className="sm:hidden">New Mission</span>
-        </PrimaryButton>
+        </a>
       </div>
 
       {/* Content */}
@@ -184,11 +191,20 @@ async function PlansLoader() {
     return <EmptyState />;
   }
 
+  const streak = await getStreak();
+
   return (
-    <div className="flex flex-col gap-3">
-      {(plans as PlanSummary[]).map((plan) => (
-        <PlanCard key={plan.id} plan={plan} />
-      ))}
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-3">
+        {(plans as PlanSummary[]).map((plan) => (
+          <PlanCard key={plan.id} plan={plan} />
+        ))}
+      </div>
+
+      {/* Create-new target for the "Create New Mission" header button. */}
+      <div id="create-plan" className="scroll-mt-24">
+        <CreatePlanForm streak={streak} />
+      </div>
     </div>
   );
 }

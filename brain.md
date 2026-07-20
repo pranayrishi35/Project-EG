@@ -254,16 +254,16 @@ All route handlers require authentication and session checks.
 
 ### Environment Variables
 ```ini
-# Supabase variables
-NEXT_PUBLIC_SUPABASE_URL=https://vdcmwlkbcisnidtubmnb.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6...
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_u1dPTr2...
+# Supabase variables (public by design — protected by RLS)
+NEXT_PUBLIC_SUPABASE_URL=<set in Vercel env>
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<set in Vercel env>
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<set in Vercel env>
 
-# API keys and secrets
-GEMINI_API_KEY=AQ.Ab8RN6L8Kmk_7ivU...
-GNEWS_API_KEY=236e75d81f1d4a94c9a...
-CRON_SECRET=236e75d81f1d4a94c9a...
-SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6...
+# API keys and secrets — NEVER commit real values; source from Vercel/`.env.local`
+GEMINI_API_KEY=<set in Vercel env>
+GNEWS_API_KEY=<set in Vercel env>
+CRON_SECRET=<set in Vercel env>
+SUPABASE_SERVICE_ROLE_KEY=<set in Vercel env>
 ```
 
 ### Coding Standards

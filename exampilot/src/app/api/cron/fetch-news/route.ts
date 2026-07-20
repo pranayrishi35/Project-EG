@@ -1,22 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { isAuthorizedCron } from "@/lib/cronAuth";
 
 // Ensure this runs dynamically
 export const dynamic = "force-dynamic";
 export const maxDuration = 60; // Extend Vercel Hobby timeout to maximum allowed
 
 export async function GET(req: NextRequest) {
-  // 1. Validate CRON_SECRET for access control
-  const authHeader = req.headers.get("authorization");
-  const cronSecret = process.env.CRON_SECRET;
-  
-  // If CRON_SECRET is set in env, enforce it. Otherwise, fallback to a query param check (for easy manual admin triggering during dev)
-  const isAuthorized = 
-    (cronSecret && authHeader === `Bearer ${cronSecret}`) ||
-    req.nextUrl.searchParams.get("secret") === cronSecret;
-
-  if (cronSecret && !isAuthorized) {
+  // 1. Validate CRON_SECRET for access control.
+  // Fails closed and only accepts the secret via the Authorization: Bearer header.
+  if (!isAuthorizedCron(req)) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
   }
 
@@ -67,7 +61,7 @@ export async function GET(req: NextRequest) {
   }
 
   const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
   const fetchedAt = new Date().toISOString();
 

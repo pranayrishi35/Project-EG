@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
+import { getAdminClient } from "@/lib/adminClient";
 import { redirect } from "next/navigation";
 
 export async function recoverAccount() {
@@ -14,18 +15,28 @@ export async function recoverAccount() {
     throw new Error("You must be logged in to recover your account.");
   }
 
-  const { error } = await supabase
+  // is_deleted / deletion_deadline are REVOKEd from the client-facing role, so
+  // clearing the deletion flags must run through the service role. Ownership is
+  // enforced via the authenticated session above.
+  const admin = getAdminClient();
+  const { data: updated, error } = await admin
     .from("user_profiles")
     .update({
       is_deleted: false,
       deletion_deadline: null,
     })
-    .eq("id", user.id);
+    .eq("user_id", user.id)
+    .select("user_id");
 
   if (error) {
     console.error("Failed to recover account:", error);
     throw new Error("Failed to recover account");
   }
 
-  redirect("/dashboard");
+  if (!updated || updated.length !== 1) {
+    console.error("Account recovery affected an unexpected number of rows:", updated?.length ?? 0);
+    throw new Error("Failed to recover account");
+  }
+
+  redirect("/");
 }

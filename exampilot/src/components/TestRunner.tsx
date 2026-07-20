@@ -462,7 +462,7 @@ const ActiveQuestionView = memo(function ActiveQuestionView({ questions, isRevie
 });
 
 // --- Results View (Isolated) ---
-const ResultsView = memo(function ResultsView({ type, questions, scoringMap, isReviewMode, onExit, testNumber, attemptId }: any) {
+const ResultsView = memo(function ResultsView({ type, questions, scoringMap, isReviewMode, onExit, testNumber, attemptId, submitFailed }: any) {
   const router = useRouter();
   const [archetype, setArchetype] = useState("Analytical & Technical");
   const [showCreditModal, setShowCreditModal] = useState(false);
@@ -477,6 +477,9 @@ const ResultsView = memo(function ResultsView({ type, questions, scoringMap, isR
 
   const { completion, complete, isLoading: isAnalyzing, error: analysisError } = useCompletion({
     api: '/api/coach',
+    // The route streams raw text (toTextStreamResponse); useCompletion defaults
+    // to the "data" protocol, which would fail to parse plain-text chunks.
+    streamProtocol: 'text',
     onError: (err) => {
       if (err.message.includes('INSUFFICIENT_CREDITS')) {
         setShowCreditModal(true);
@@ -603,16 +606,27 @@ const ResultsView = memo(function ResultsView({ type, questions, scoringMap, isR
     <div className="fixed inset-0 z-[100] bg-slate-900 flex flex-col items-center justify-start pt-12 pb-24 px-6 text-white overflow-y-auto animate-fade-in print:static print:bg-white print:text-black print:h-auto print:overflow-visible print:p-0">
       <div className="w-full max-w-2xl bg-slate-800 rounded-3xl p-8 shadow-2xl border border-slate-700 print:bg-transparent print:border-none print:shadow-none print:p-0 print:max-w-none">
         <h2 className="text-3xl font-black text-center mb-2 print:text-black">{isReviewMode ? "Review Mode" : "Results Summary"}</h2>
-        <p className="text-slate-700 text-center mb-8 font-medium uppercase tracking-widest text-sm print:text-black">{type}</p>
+        <p className="text-slate-400 text-center mb-8 font-medium uppercase tracking-widest text-sm print:text-black">{type}</p>
+
+        {submitFailed && (
+          <div role="alert" className="mb-8 rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4 text-center print:hidden">
+            <p className="text-sm font-bold text-amber-300">
+              We couldn&apos;t confirm your submission was saved.
+            </p>
+            <p className="mt-1 text-xs font-medium text-amber-200/80">
+              Your answers are stored on this device and will be retried automatically when you reconnect. Keep this tab open until the warning clears.
+            </p>
+          </div>
+        )}
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-slate-700/50 p-4 rounded-2xl flex flex-col items-center border border-slate-600">
             <span className="text-4xl font-black text-indigo-400 mb-1">{score}</span>
-            <span className="text-xs text-slate-700 uppercase tracking-wider font-bold mt-auto">Score / {maxScore}</span>
+            <span className="text-xs text-slate-400 uppercase tracking-wider font-bold mt-auto">Score / {maxScore}</span>
           </div>
           <div className="bg-slate-700/50 p-4 rounded-2xl flex flex-col items-center border border-slate-600">
             <span className="text-4xl font-black text-emerald-400 mb-1">{accuracy}%</span>
-            <span className="text-xs text-slate-700 uppercase tracking-wider font-bold mt-auto">Accuracy</span>
+            <span className="text-xs text-slate-400 uppercase tracking-wider font-bold mt-auto">Accuracy</span>
           </div>
           <div className="bg-slate-700/50 p-4 rounded-2xl flex flex-col items-center border border-slate-600">
             {rankData.loading ? (
@@ -630,7 +644,7 @@ const ResultsView = memo(function ResultsView({ type, questions, scoringMap, isR
             ) : (
               <span className="text-sm font-bold text-slate-500 mb-1 mt-3">N/A</span>
             )}
-            <span className="text-xs text-slate-700 uppercase tracking-wider font-bold mt-auto text-center">
+            <span className="text-xs text-slate-400 uppercase tracking-wider font-bold mt-auto text-center">
               Cohort Rank<br/>
               {rankData.cohort_key && rankData.cohort_key !== 'GLOBAL' && (
                  <span className="text-[9px] opacity-60 normal-case tracking-widest">{rankData.cohort_key.replace(/_/g, ' ')}</span>
@@ -648,7 +662,7 @@ const ResultsView = memo(function ResultsView({ type, questions, scoringMap, isR
             ) : (
               <span className="text-sm font-bold text-slate-500 mb-1 mt-3">N/A</span>
             )}
-            <span className="text-xs text-slate-700 uppercase tracking-wider font-bold mt-auto text-center">Global Rank</span>
+            <span className="text-xs text-slate-400 uppercase tracking-wider font-bold mt-auto text-center">Global Rank</span>
           </div>
         </div>
 
@@ -661,7 +675,7 @@ const ResultsView = memo(function ResultsView({ type, questions, scoringMap, isR
             <span>Incorrect ({finalMarksIncorrect})</span>
             <span className="font-bold text-lg">{incorrect}</span>
           </div>
-          <div className="flex justify-between items-center text-sm font-medium bg-slate-700/30 border border-slate-700/50 p-3 rounded-xl text-slate-700">
+          <div className="flex justify-between items-center text-sm font-medium bg-slate-700/30 border border-slate-700/50 p-3 rounded-xl text-slate-300">
             <span>Skipped / Unmarked</span>
             <span className="font-bold text-lg">{unattempted}</span>
           </div>
@@ -670,7 +684,7 @@ const ResultsView = memo(function ResultsView({ type, questions, scoringMap, isR
         {/* Subject-Wise Breakdown */}
         {Object.keys(subjectStats).length > 0 && (
           <div className="mb-8 w-full print:break-inside-avoid">
-            <h3 className="text-sm font-bold text-slate-700 uppercase tracking-widest mb-4 flex items-center gap-2">
+            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2 print:text-black">
               Subject Accuracy
             </h3>
             <div className="space-y-4">
@@ -708,7 +722,7 @@ const ResultsView = memo(function ResultsView({ type, questions, scoringMap, isR
                 </div>
               )}
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-bold text-slate-700 uppercase tracking-widest">Learning Archetype</label>
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Learning Archetype</label>
                 <select 
                   value={archetype}
                   onChange={(e) => setArchetype(e.target.value)}
@@ -761,7 +775,7 @@ const ResultsView = memo(function ResultsView({ type, questions, scoringMap, isR
               return (
                 <div key={q.id} className={`p-5 rounded-2xl border transition-colors ${isCorrect ? 'bg-emerald-900/10 border-emerald-900/30 print:border-gray-300' : isUnattempted ? 'bg-slate-800/50 border-slate-700 print:border-gray-300' : 'bg-rose-900/10 border-rose-900/30 print:border-gray-300'}`}>
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-bold text-slate-700 uppercase tracking-widest print:text-black">Q{idx + 1} • {q.subject}</span>
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest print:text-black">Q{idx + 1} • {q.subject}</span>
                     <span className={`text-xs font-bold px-2 py-1 rounded-md ${isCorrect ? 'bg-emerald-500/20 text-emerald-400 print:text-emerald-700' : isUnattempted ? 'bg-slate-700 text-slate-300 print:text-gray-600' : 'bg-rose-500/20 text-rose-400 print:text-rose-700'}`}>
                       {isCorrect ? 'Correct' : isUnattempted ? 'Skipped/Unmarked' : 'Incorrect'}
                     </span>
@@ -832,6 +846,18 @@ export default function TestRunner({ type, questions, scoringMap, onExit, attemp
   const [warningStrike, setWarningStrike] = useState<number | null>(null);
   const [showExitWarning, setShowExitWarning] = useState(false);
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
+  // Guard against an accidental tap on "Submit Exam" ending the test. A manual
+  // submit opens this confirmation first; auto-submit (timer / anti-cheat) still
+  // calls handleSubmit directly and bypasses the dialog.
+  const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
+  // Questions carrying the server-injected correctIndex, returned by the grading
+  // action on submit. In live mode the questions prop has correctIndex stripped
+  // (anti-cheat), so the debrief/review must use this hydrated set instead.
+  const [gradedQuestions, setGradedQuestions] = useState<Question[] | null>(null);
+  // Set when a completed submission failed to persist, so the UI can warn the
+  // user instead of silently discarding their attempt. The local mirror is kept
+  // and retried on reconnect.
+  const [submitFailed, setSubmitFailed] = useState(false);
 
   // Navigation Guard Effect
   useEffect(() => {
@@ -900,8 +926,10 @@ export default function TestRunner({ type, questions, scoringMap, onExit, attemp
           syncBlockedUntilRef.current = Date.now() + 30000;
         }
       }
+      return res;
     } catch (err) {
       syncBlockedUntilRef.current = Date.now() + 30000;
+      return { success: false, error: 'NETWORK_ERROR' } as const;
     }
   }, []);
 
@@ -966,44 +994,59 @@ export default function TestRunner({ type, questions, scoringMap, onExit, attemp
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Attempt to persist the completed attempt. Returns true only when the server
+  // confirms the write. On failure the local mirror is preserved so the attempt
+  // can be flushed on reconnect instead of being silently lost.
+  const flushCompletion = useCallback(async () => {
+    if (!attemptId) return false;
+    if (!navigator.onLine) {
+      setSubmitFailed(true);
+      return false;
+    }
+
+    const { statuses, selectedAnswers, currentQuestionIndex } = useTestStore.getState();
+
+    // The client no longer computes the authoritative score — the server
+    // recomputes it from the answer key (correctIndex is stripped from the
+    // live `questions` prop for anti-cheat). We only submit the raw response
+    // set; the server returns the graded questions with correctIndex injected.
+    const res = await performSync({
+      id: attemptId,
+      exam_target: type,
+      status: 'completed',
+      time_remaining: timeRemainingRef.current,
+      answers_state: { currentQuestionIndex, selectedAnswers, statuses, questions, scoringMap }
+    }, true);
+
+    if (res?.success) {
+      const graded = res.data?.answers_state?.questions;
+      if (Array.isArray(graded) && graded.length > 0) {
+        setGradedQuestions(graded);
+      }
+      localStorage.removeItem(`mock_attempt_${attemptId}`);
+      setSubmitFailed(false);
+      return true;
+    }
+
+    setSubmitFailed(true);
+    return false;
+  }, [attemptId, questions, type, scoringMap, performSync]);
+
   const handleSubmit = useCallback(async () => {
     setIsSubmitted(true);
     isSubmittedRef.current = true;
     setWarningStrike(null); // Clear any pending warnings
-    
-    const state = useTestStore.getState();
-    const { statuses, selectedAnswers, currentQuestionIndex } = state;
-    
-    let correct = 0;
-    let incorrect = 0;
-    questions.forEach((q) => {
-      const status = statuses[q.id] || "unvisited";
-      const isConsidered = status === "answered" || status === "answered_and_marked";
-      if (isConsidered) {
-        if (selectedAnswers[q.id] === q.correctIndex) {
-          correct++;
-        } else {
-          incorrect++;
-        }
-      }
-    });
-    
-    const finalMarksCorrect = scoringMap?.correct || 3;
-    const finalMarksIncorrect = scoringMap?.incorrect || -1;
-    const rawScore = (correct * finalMarksCorrect) + (incorrect * finalMarksIncorrect);
+    await flushCompletion();
+  }, [flushCompletion]);
 
-    if (attemptId && navigator.onLine) {
-       await performSync({
-        id: attemptId,
-        exam_target: type,
-        status: 'completed',
-        score: rawScore,
-        time_remaining: timeRemainingRef.current,
-        answers_state: { currentQuestionIndex, selectedAnswers, statuses, questions, scoringMap }
-      }, true);
-      localStorage.removeItem(`mock_attempt_${attemptId}`);
+  // Retry a failed completion when connectivity returns, so a submission made
+  // while offline (or during a transient server error) is not silently dropped.
+  useEffect(() => {
+    if (!submitFailed) return;
+    if (isOnline) {
+      flushCompletion();
     }
-  }, [attemptId, questions, type, scoringMap, performSync]);
+  }, [isOnline, submitFailed, flushCompletion]);
 
   useAntiCheat({
     onForceSubmit: handleSubmit,
@@ -1013,8 +1056,26 @@ export default function TestRunner({ type, questions, scoringMap, onExit, attemp
 
   const handleTick = useCallback((s: number) => { timeRemainingRef.current = s; }, []);
 
+  // A manual "Submit Exam" tap is irreversible (the attempt is graded and locked
+  // server-side), so gate it behind a confirmation. Auto-submit paths (timer,
+  // 3-strike anti-cheat) still call handleSubmit directly and are not gated.
+  const requestSubmit = useCallback(() => {
+    if (isReviewMode) return;
+    setShowSubmitConfirm(true);
+  }, [isReviewMode]);
+
+  const confirmSubmit = useCallback(() => {
+    setShowSubmitConfirm(false);
+    void handleSubmit();
+  }, [handleSubmit]);
+
   if (isSubmitted) {
-    return <ResultsView type={type} questions={questions} scoringMap={scoringMap} isReviewMode={isReviewMode} onExit={onExit} testNumber={testNumberRef.current} attemptId={attemptId} />;
+    // In review mode the page-level loader already hydrates `questions` from the
+    // stored answers_state (which carries correctIndex). In live mode we prefer
+    // the server-graded set returned on submit; falling back to the prop only
+    // when the sync failed (offline), where scoring is best-effort.
+    const debriefQuestions = gradedQuestions ?? questions;
+    return <ResultsView type={type} questions={debriefQuestions} scoringMap={scoringMap} isReviewMode={isReviewMode} onExit={onExit} testNumber={testNumberRef.current} attemptId={attemptId} submitFailed={submitFailed} />;
   }
 
   // Active Test UI - AFCAT CBT Style
@@ -1036,6 +1097,26 @@ export default function TestRunner({ type, questions, scoringMap, onExit, attemp
             <button onClick={() => setWarningStrike(null)} className="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-all shadow-md active:scale-95">
               I Understand
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Submit Confirmation Modal — a manual submit is final (attempt is graded
+          and locked), so require an explicit confirm to avoid an accidental tap
+          ending the test. */}
+      {showSubmitConfirm && (
+        <div className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in pointer-events-auto">
+          <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl text-center border-t-4 border-indigo-500">
+            <h3 className="text-2xl font-black text-slate-900 mb-2">Submit Exam?</h3>
+            <p className="text-slate-600 mb-6 font-medium">Once submitted, this attempt is graded and locked — you cannot change your answers. Make sure you have reviewed your responses.</p>
+            <div className="flex flex-col gap-3">
+              <button onClick={confirmSubmit} className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-all shadow-md active:scale-95 min-h-[44px]">
+                Yes, Submit Now
+              </button>
+              <button onClick={() => setShowSubmitConfirm(false)} className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-all active:scale-95 min-h-[44px]">
+                Keep Working
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -1105,7 +1186,7 @@ export default function TestRunner({ type, questions, scoringMap, onExit, attemp
         
         {/* Left Column - Active Question */}
         <div className="flex-1 flex flex-col min-h-0 bg-white relative z-10 w-full">
-          <ActiveQuestionView questions={questions} isReviewMode={isReviewMode || false} onSubmit={handleSubmit} />
+          <ActiveQuestionView questions={questions} isReviewMode={isReviewMode || false} onSubmit={requestSubmit} />
         </div>
 
         {/* Right Column - Question Palette */}
@@ -1145,8 +1226,8 @@ export default function TestRunner({ type, questions, scoringMap, onExit, attemp
           </div>
 
           <div className="p-4 bg-white border-t border-slate-300 safe-bottom">
-            <button 
-              onClick={handleSubmit} 
+            <button
+              onClick={requestSubmit}
               className="w-full py-3 bg-slate-800 hover:bg-slate-900 text-white font-black rounded-lg transition-all shadow-md active:scale-95 flex items-center justify-center gap-2"
             >
               Submit Exam

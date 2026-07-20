@@ -2,7 +2,7 @@
 
 import { GoogleGenerativeAI, Part } from "@google/generative-ai";
 import { createClient } from "@/utils/supabase/server";
-import { checkAndDeductCredits } from "@/lib/creditManager";
+import { checkAndDeductCredits, refundCredits } from "@/lib/creditManager";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { sanitizePrompt } from "@/lib/sanitizer";
 import { robustJsonParse } from "@/lib/robustJsonParse";
@@ -189,9 +189,15 @@ export async function generateStudyPlan(
     return { success: false, error: creditCheck.error || "INSUFFICIENT_CREDITS" };
   }
 
+  // Admins are never charged (bypassed), so they must never be refunded. Track
+  // whether this request actually spent a credit so failure branches below can
+  // return it. CHARGED is 1 when a real deduction happened, 0 otherwise.
+  const CHARGED = creditCheck.bypassed ? 0 : 1;
+
   // ── 3. Prepare Gemini client ────────────────────────────────────────────────
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
+    await refundCredits(user.id, CHARGED);
     return {
       success: false,
       error: "Gemini API key is not configured. Add GEMINI_API_KEY to .env.local.",
@@ -200,7 +206,7 @@ export async function generateStudyPlan(
 
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash",
+    model: "gemini-2.5-flash",
     generationConfig: {
       // Force strict JSON output — no markdown wrapping
       responseMimeType: "application/json",
@@ -260,6 +266,7 @@ export async function generateStudyPlan(
   } catch (geminiError: unknown) {
     // White-Label Protocol: Log raw error server-side only — never expose provider names.
     console.error("[ExamPilot Planner] AI engine error:", geminiError);
+    await refundCredits(user.id, CHARGED);
     return {
       success: false,
       error: 'AI_SERVICE_UNAVAILABLE',
@@ -284,6 +291,7 @@ export async function generateStudyPlan(
 
     if (dbError) {
       console.error("[generateStudyPlan] Supabase insert error:", dbError);
+      await refundCredits(user.id, CHARGED);
       return {
         success: false,
         error: `Failed to save your plan: ${dbError.message}`,
@@ -293,6 +301,7 @@ export async function generateStudyPlan(
     return { success: true, planId: data.id as string };
   } catch (dbError: unknown) {
     console.error("[generateStudyPlan] Unexpected DB error:", dbError);
+    await refundCredits(user.id, CHARGED);
     return {
       success: false,
       error: "A database error occurred. Please try again.",

@@ -5,6 +5,7 @@ import { getUserCredits } from "@/lib/creditManager";
 import { createClient as createSupabaseAdmin } from "@supabase/supabase-js";
 import { initializeCreditsAction } from "@/app/actions/credits";
 import { getStreak } from "@/app/actions/getStreak";
+import { BETA_STARTING_CREDITS, LOW_CREDIT_THRESHOLD } from "@/lib/credits";
 
 export const dynamic = 'force-dynamic';
 
@@ -36,33 +37,40 @@ export default async function Header() {
       
       if (adminUrl && adminKey) {
         const adminClient = createSupabaseAdmin(adminUrl, adminKey);
-        
-        // 1. Fetch Credits
-        const { data: profileData } = await adminClient
-          .from("user_profiles")
-          .select("credits")
-          .eq("user_id", user.id)
-          .maybeSingle();
-          
+
+        // Fetch credits, upcoming exam, and streak concurrently — these are
+        // independent reads and were previously awaited one after another,
+        // serializing three round-trips into the header's render path.
+        const todayStr = new Date().toISOString().split('T')[0];
+        const [profileRes, plansRes, streakVal] = await Promise.all([
+          adminClient
+            .from("user_profiles")
+            .select("credits")
+            .eq("user_id", user.id)
+            .maybeSingle(),
+          adminClient
+            .from("study_plans")
+            .select("exam_name, exam_date")
+            .eq("user_id", user.id)
+            .gte("exam_date", todayStr)
+            .order("exam_date", { ascending: true })
+            .limit(1)
+            .maybeSingle(),
+          getStreak(),
+        ]);
+
+        // 1. Credits
+        const profileData = profileRes.data;
         if (!profileData) {
-          userCredits = 500;
+          userCredits = BETA_STARTING_CREDITS;
           // Fire asynchronously without blocking the server render
-          void initializeCreditsAction(user.id);
+          void initializeCreditsAction();
         } else {
           userCredits = profileData.credits;
         }
 
-        // 2. Fetch nearest upcoming exam from active study_plans
-        const todayStr = new Date().toISOString().split('T')[0];
-        const { data: plansData } = await adminClient
-          .from("study_plans")
-          .select("exam_name, exam_date")
-          .eq("user_id", user.id)
-          .gte("exam_date", todayStr)
-          .order("exam_date", { ascending: true })
-          .limit(1)
-          .maybeSingle();
-
+        // 2. Nearest upcoming exam from active study_plans
+        const plansData = plansRes.data;
         if (plansData && plansData.exam_date) {
           const examDateObj = new Date(plansData.exam_date);
           const todayObj = new Date();
@@ -73,8 +81,8 @@ export default async function Header() {
           upcomingExam = { name: plansData.exam_name, daysLeft: diffDays };
         }
 
-        // 3. Fetch Streak
-        streak = await getStreak();
+        // 3. Streak (resolved above)
+        streak = streakVal;
       } else {
         userCredits = 0; // Build-time fallback
       }
@@ -141,12 +149,12 @@ export default async function Header() {
             
             {userCredits !== null && (
               <div className={`flex items-center gap-1.5 h-9 px-3.5 border-[0.5px] rounded-full text-xs font-bold shadow-sm transition-colors whitespace-nowrap shrink-0 ${
-                userCredits < 5 
-                  ? "bg-rose-50 border-rose-200 text-rose-700" 
+                userCredits < LOW_CREDIT_THRESHOLD
+                  ? "bg-rose-50 border-rose-200 text-rose-700"
                   : "bg-indigo-50 border-indigo-100 text-indigo-600"
               }`}>
                 <span aria-hidden="true" className="text-sm leading-none flex-shrink-0">
-                  {userCredits < 5 ? "⚠️" : "⚡"}
+                  {userCredits < LOW_CREDIT_THRESHOLD ? "⚠️" : "⚡"}
                 </span> 
                 {userCredits} <span className="hidden sm:inline">Credits</span>
               </div>
