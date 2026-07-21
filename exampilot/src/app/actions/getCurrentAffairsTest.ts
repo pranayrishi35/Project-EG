@@ -12,6 +12,7 @@ export async function getCurrentAffairsTest(): Promise<GetTestResult> {
       .from("question_bank")
       .select("id, question, options, subject, is_pyq, pyq_year")
       .eq("subject", "Current Affairs")
+      .eq("review_status", "approved")
       .order("created_at", { ascending: false })
       .limit(limit);
 

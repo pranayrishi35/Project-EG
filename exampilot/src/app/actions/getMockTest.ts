@@ -55,6 +55,7 @@ export async function getMockTest(rawExamTarget: string, rawMini: boolean = fals
       .eq("exam_target", examTarget)
       .eq("source_pool", "mock")
       .eq("is_pyq", true)
+      .eq("review_status", "approved")
       .neq("subject", "Current Affairs");
 
     if (focusedSubjects.length > 0) {
@@ -66,6 +67,7 @@ export async function getMockTest(rawExamTarget: string, rawMini: boolean = fals
         .eq("exam_target", examTarget)
         .eq("source_pool", "mock")
         .eq("is_pyq", true)
+        .eq("review_status", "approved")
         .in("subject", focusedSubjects)
         .limit(weakPyqTarget);
       
@@ -95,6 +97,7 @@ export async function getMockTest(rawExamTarget: string, rawMini: boolean = fals
       .eq("exam_target", examTarget)
       .eq("source_pool", "mock")
       .eq("is_pyq", false)
+      .eq("review_status", "approved")
       .neq("subject", "Current Affairs");
 
     if (focusedSubjects.length > 0) {
@@ -106,6 +109,7 @@ export async function getMockTest(rawExamTarget: string, rawMini: boolean = fals
         .eq("exam_target", examTarget)
         .eq("source_pool", "mock")
         .eq("is_pyq", false)
+        .eq("review_status", "approved")
         .in("subject", focusedSubjects)
         .limit(weakStdTarget);
         

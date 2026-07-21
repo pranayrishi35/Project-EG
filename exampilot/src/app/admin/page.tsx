@@ -7,7 +7,8 @@ import { adminSeedQuestions, generateFullMockTest } from "@/app/actions/adminSee
 import { generateNewsMCQs } from "@/app/actions/generateNewsMCQs";
 import { triggerNewsFetch } from "@/app/actions/triggerNewsFetch";
 import { getMockAttempts, deleteMockAttempt } from "@/app/actions/mockAttemptsAdmin";
-import { fetchRecentUsers, fetchQuestions, deleteQuestion, addManualQuestion } from "@/app/actions/adminManagement";
+import { fetchRecentUsers, fetchQuestions, deleteQuestion, addManualQuestion, getPendingReviewSummary, fetchPendingQuestions, approveQuestions, rejectQuestions } from "@/app/actions/adminManagement";
+import { exportMockPdf } from "@/app/actions/exportMockPdf";
 
 const subjectsByExam: Record<string, string[]> = {
   AFCAT: ["English", "General Awareness", "Numerical Ability", "Reasoning"],
@@ -17,8 +18,8 @@ const subjectsByExam: Record<string, string[]> = {
 };
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<"Config" | "Questions" | "Users">("Config");
-  
+  const [activeTab, setActiveTab] = useState<"Config" | "Questions" | "Review" | "Export" | "Users">("Config");
+
   const [config, setConfig] = useState<AppConfig[]>([]);
   const [insights, setInsights] = useState<SystemInsights | null>(null);
   
@@ -61,6 +62,19 @@ export default function AdminDashboard() {
   const [loadingQuestions, setLoadingQuestions] = useState(false);
   const [questionExam, setQuestionExam] = useState("AFCAT");
   const [questionSubject, setQuestionSubject] = useState("English");
+
+  // Review State (pending AI questions)
+  const [reviewSummary, setReviewSummary] = useState<{ total: number; byExam: Record<string, number> } | null>(null);
+  const [pendingQuestions, setPendingQuestions] = useState<any[]>([]);
+  const [reviewExam, setReviewExam] = useState<string>("");
+  const [loadingReview, setLoadingReview] = useState(false);
+  const [reviewBusy, setReviewBusy] = useState(false);
+
+  // Export State (PDF)
+  const [exportExam, setExportExam] = useState("AFCAT");
+  const [exportCount, setExportCount] = useState(50);
+  const [exportAnswers, setExportAnswers] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
   
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newQuestion, setNewQuestion] = useState({
@@ -102,6 +116,13 @@ export default function AdminDashboard() {
     }
   }, [activeTab, questionExam, questionSubject]);
 
+  // Load the AI review queue when the Review tab is active
+  useEffect(() => {
+    if (activeTab === "Review") {
+      loadReview();
+    }
+  }, [activeTab, reviewExam]);
+
   useEffect(() => {
     if (subjectsByExam[questionExam] && !subjectsByExam[questionExam].includes(questionSubject)) {
       setQuestionSubject(subjectsByExam[questionExam][0]);
@@ -134,6 +155,63 @@ export default function AdminDashboard() {
       showToast(`Failed to load questions: ${res.error}`, "error");
     }
     setLoadingQuestions(false);
+  };
+
+  const loadReview = async () => {
+    setLoadingReview(true);
+    const [summaryRes, pendingRes] = await Promise.all([
+      getPendingReviewSummary(),
+      fetchPendingQuestions(reviewExam || undefined),
+    ]);
+    if (summaryRes.success) {
+      setReviewSummary({ total: summaryRes.total || 0, byExam: summaryRes.byExam || {} });
+    }
+    if (pendingRes.success && pendingRes.data) {
+      setPendingQuestions(pendingRes.data);
+    } else if (!pendingRes.success) {
+      showToast(`Failed to load review queue: ${pendingRes.error}`, "error");
+    }
+    setLoadingReview(false);
+  };
+
+  const handleReview = async (ids: string[], decision: "approve" | "reject") => {
+    if (ids.length === 0) return;
+    setReviewBusy(true);
+    const res = decision === "approve"
+      ? await approveQuestions({ ids })
+      : await rejectQuestions({ ids });
+    if (res.success) {
+      showToast(`${decision === "approve" ? "Approved" : "Rejected"} ${res.count} question(s)`, "success");
+      // Drop the handled rows locally, then refresh the summary counts.
+      setPendingQuestions(prev => prev.filter(q => !ids.includes(q.id)));
+      getPendingReviewSummary().then(s => {
+        if (s.success) setReviewSummary({ total: s.total || 0, byExam: s.byExam || {} });
+      });
+    } else {
+      showToast(`Action failed: ${res.error}`, "error");
+    }
+    setReviewBusy(false);
+  };
+
+  const handleExportPdf = async () => {
+    setIsExporting(true);
+    try {
+      const res = await exportMockPdf(exportExam);
+      if (res.success && res.base64) {
+        const a = document.createElement("a");
+        a.href = `data:application/pdf;base64,${res.base64}`;
+        a.download = res.filename || `${exportExam}-mock.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        showToast(`Exported ${res.count} questions to PDF`, "success");
+      } else {
+        showToast(`Export failed: ${res.error}`, "error");
+      }
+    } catch (e: any) {
+      showToast(`Export failed: ${e.message}`, "error");
+    }
+    setIsExporting(false);
   };
 
   const showToast = (message: string, type: "success" | "error") => {
@@ -318,17 +396,22 @@ export default function AdminDashboard() {
             <span aria-hidden="true">🛠️</span> Command Center
           </h1>
           <div className="flex bg-slate-900 rounded-lg p-1 border border-slate-800">
-            {(["Config", "Questions", "Users"] as const).map(tab => (
+            {(["Config", "Questions", "Review", "Export", "Users"] as const).map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-6 py-2 rounded-md font-bold text-sm transition-all ${
-                  activeTab === tab 
-                    ? "bg-indigo-600 text-white shadow-md" 
+                className={`relative px-5 py-2 rounded-md font-bold text-sm transition-all ${
+                  activeTab === tab
+                    ? "bg-indigo-600 text-white shadow-md"
                     : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/50"
                 }`}
               >
                 {tab}
+                {tab === "Review" && (reviewSummary?.total ?? 0) > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-amber-500 text-slate-950 text-[10px] font-black flex items-center justify-center">
+                    {(reviewSummary?.total ?? 0) > 99 ? "99+" : reviewSummary?.total}
+                  </span>
+                )}
               </button>
             ))}
           </div>
@@ -888,6 +971,172 @@ export default function AdminDashboard() {
                 </div>
               )}
             </div>
+          </div>
+        )}
+
+        {/* TAB 4: AI REVIEW QUEUE */}
+        {activeTab === "Review" && (
+          <div className="space-y-8">
+            <section>
+              <h2 className="text-xl font-black text-slate-100 mb-2 flex items-center gap-3">
+                <span className="bg-amber-500/10 text-amber-400 p-2 rounded-lg">🧐</span>
+                AI Question Review
+              </h2>
+              <p className="text-sm text-slate-400 mb-6 max-w-2xl">
+                AI-generated questions (from the auto-generator and the &ldquo;Generate&rdquo; buttons)
+                land here as <span className="text-amber-400 font-bold">pending</span> and are invisible
+                to live tests until you approve them. Reject to delete permanently.
+              </p>
+
+              {/* Exam filter + bulk actions */}
+              <div className="flex flex-wrap gap-3 items-center mb-6">
+                <select
+                  value={reviewExam}
+                  onChange={(e) => setReviewExam(e.target.value)}
+                  className="bg-slate-900 border border-slate-800 text-slate-200 text-sm rounded-xl px-4 py-2 focus:outline-none focus:border-indigo-500"
+                >
+                  <option value="">All Exams</option>
+                  {Object.keys(subjectsByExam).map((ex) => (
+                    <option key={ex} value={ex}>{ex}{reviewSummary?.byExam[ex] ? ` (${reviewSummary.byExam[ex]})` : ""}</option>
+                  ))}
+                </select>
+                <button
+                  onClick={loadReview}
+                  disabled={loadingReview}
+                  className="px-4 py-2 rounded-xl text-sm font-bold bg-slate-800 text-slate-200 hover:bg-slate-700 transition-colors disabled:opacity-50"
+                >
+                  {loadingReview ? "Loading..." : "↻ Refresh"}
+                </button>
+                <div className="flex-1" />
+                <button
+                  onClick={() => handleReview(pendingQuestions.map((q) => q.id), "approve")}
+                  disabled={reviewBusy || pendingQuestions.length === 0}
+                  className="px-4 py-2 rounded-xl text-sm font-bold bg-emerald-600 text-white hover:bg-emerald-500 transition-colors disabled:opacity-40"
+                >
+                  ✓ Approve All Shown
+                </button>
+                <button
+                  onClick={() => handleReview(pendingQuestions.map((q) => q.id), "reject")}
+                  disabled={reviewBusy || pendingQuestions.length === 0}
+                  className="px-4 py-2 rounded-xl text-sm font-bold bg-rose-600/80 text-white hover:bg-rose-600 transition-colors disabled:opacity-40"
+                >
+                  ✕ Reject All Shown
+                </button>
+              </div>
+
+              {loadingReview ? (
+                <div className="p-8 text-center text-slate-400 font-medium">Loading review queue...</div>
+              ) : pendingQuestions.length === 0 ? (
+                <div className="p-12 text-center bg-slate-900/50 border border-slate-800 rounded-3xl">
+                  <div className="text-4xl mb-3 opacity-60">✨</div>
+                  <p className="text-slate-300 font-bold">Queue is clear</p>
+                  <p className="text-slate-500 text-sm mt-1">No AI questions are awaiting review{reviewExam ? ` for ${reviewExam}` : ""}.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {pendingQuestions.map((q) => (
+                    <div key={q.id} className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+                      <div className="flex items-start justify-between gap-4 mb-3">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-[10px] font-bold uppercase tracking-widest bg-indigo-500/15 text-indigo-300 px-2 py-1 rounded-md">{q.exam_target}</span>
+                          <span className="text-[10px] font-bold uppercase tracking-widest bg-slate-800 text-slate-300 px-2 py-1 rounded-md">{q.subject}</span>
+                        </div>
+                        <div className="flex gap-2 shrink-0">
+                          <button
+                            onClick={() => handleReview([q.id], "approve")}
+                            disabled={reviewBusy}
+                            className="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-500 transition-colors disabled:opacity-40"
+                          >
+                            ✓ Approve
+                          </button>
+                          <button
+                            onClick={() => handleReview([q.id], "reject")}
+                            disabled={reviewBusy}
+                            className="px-3 py-1.5 rounded-lg text-xs font-bold bg-rose-600/80 text-white hover:bg-rose-600 transition-colors disabled:opacity-40"
+                          >
+                            ✕ Reject
+                          </button>
+                        </div>
+                      </div>
+                      <p className="text-sm font-medium text-slate-100 mb-3">{q.question}</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {(q.options || []).map((opt: string, idx: number) => (
+                          <div
+                            key={idx}
+                            className={`px-3 py-2 rounded-lg text-sm border ${
+                              idx === q.correct_index
+                                ? "bg-emerald-900/30 border-emerald-500/50 text-emerald-200"
+                                : "bg-slate-950 border-slate-800 text-slate-300"
+                            }`}
+                          >
+                            {String.fromCharCode(65 + idx)}. {opt}
+                            {idx === q.correct_index && <span className="ml-2 text-[10px] font-bold uppercase">✓ Key</span>}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+          </div>
+        )}
+
+        {/* TAB 5: PDF EXPORT */}
+        {activeTab === "Export" && (
+          <div className="space-y-8 max-w-2xl">
+            <section>
+              <h2 className="text-xl font-black text-slate-100 mb-2 flex items-center gap-3">
+                <span className="bg-sky-500/10 text-sky-400 p-2 rounded-lg">📄</span>
+                Download Full Mock PDF
+              </h2>
+              <p className="text-sm text-slate-400 mb-6 max-w-2xl">
+                Generates a printable PDF from the <span className="text-emerald-400 font-bold">approved</span> question
+                bank. The answer key is rendered server-side, so correct answers never touch the browser until the file is built.
+              </p>
+
+              <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-5">
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Exam</label>
+                  <select
+                    value={exportExam}
+                    onChange={(e) => setExportExam(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 text-slate-200 text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500"
+                  >
+                    {Object.keys(subjectsByExam).map((ex) => (
+                      <option key={ex} value={ex}>{ex}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Question Count</label>
+                  <input
+                    type="number"
+                    min={5}
+                    max={200}
+                    value={exportCount}
+                    onChange={(e) => setExportCount(Math.max(5, Math.min(200, parseInt(e.target.value) || 0)))}
+                    className="w-full bg-slate-950 border border-slate-800 text-slate-200 text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500"
+                  />
+                </div>
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={exportAnswers}
+                    onChange={(e) => setExportAnswers(e.target.checked)}
+                    className="w-4 h-4 accent-indigo-600"
+                  />
+                  <span className="text-sm font-medium text-slate-300">Include answer key (appended at the end)</span>
+                </label>
+                <button
+                  onClick={handleExportPdf}
+                  disabled={isExporting}
+                  className="w-full py-3 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-500 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {isExporting ? "Generating PDF..." : "⬇ Download PDF"}
+                </button>
+              </div>
+            </section>
           </div>
         )}
       </div>

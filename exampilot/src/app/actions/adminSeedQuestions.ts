@@ -105,7 +105,8 @@ export async function adminSeedQuestions(examTarget: string, isPyq: boolean = fa
       exam_target: examTarget,
       subject: subject,
       is_pyq: !!isPyq,
-      source_pool: sourcePool
+      source_pool: sourcePool,
+      review_status: "pending"
     }));
 
     // Bulk Insert
@@ -189,7 +190,8 @@ export async function generateFullMockTest(examTarget: string) {
         exam_target: examTarget,
         subject: item.subject,
         is_pyq: false,
-        source_pool: "mock"
+        source_pool: "mock",
+        review_status: "pending"
       }));
 
       allQuestions = allQuestions.concat(structuredPayload);

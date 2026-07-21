@@ -99,7 +99,8 @@ CRITICAL: You must return valid JSON only. You must properly escape all internal
     exam_target: "CDS", // Defaulting to CDS (Current Affairs heavy)
     subject: "Current Affairs",
     is_pyq: false,
-    source_pool: "mock" // Routing to dynamic pool
+    source_pool: "mock", // Routing to dynamic pool
+    review_status: "pending" // AI-generated → must be approved before serving
   }));
 
   // Bulk Insert

@@ -20,6 +20,7 @@
     "@vercel/kv": "^3.0.0",
     "ai": "^7.0.26",
     "next": "14.2.35",
+    "pdf-lib": "1.17.1",
     "react": "^18",
     "react-dom": "^18",
     "react-markdown": "^10.1.0",

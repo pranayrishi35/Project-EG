@@ -135,12 +135,122 @@ export async function addManualQuestion(payload: {
         is_pyq: payload.is_pyq,
         pyq_year: payload.pyq_year || null,
         source_pool: 'booklet',
-        explanation: 'Manually added by Admin'
+        explanation: 'Manually added by Admin',
+        // Human-authored → trusted, goes live immediately (unlike AI-generated
+        // questions which land as 'pending' for review).
+        review_status: 'approved'
       });
-      
+
     if (error) throw error;
-    
+
     return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+// ─── AI Question Review Queue ───────────────────────────────────────────────
+// AI-generated questions (cron + admin "Generate" buttons) land as
+// review_status='pending' and are invisible to live tests until an admin
+// approves them here. This is the uniform human gate over all machine output.
+
+/** Counts of pending AI questions grouped by exam_target (review dashboard). */
+export async function getPendingReviewSummary() {
+  try {
+    await verifyAdminCaller();
+    const admin = getAdminClient();
+
+    const { data, error } = await admin
+      .from("question_bank")
+      .select("exam_target")
+      .eq("review_status", "pending");
+
+    if (error) throw error;
+
+    const byExam: Record<string, number> = {};
+    for (const row of data || []) {
+      const key = (row as any).exam_target || "Unknown";
+      byExam[key] = (byExam[key] || 0) + 1;
+    }
+    return { success: true, total: (data || []).length, byExam };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+/** Fetches a page of pending questions for review, optionally filtered by exam. */
+export async function fetchPendingQuestions(examTarget?: string) {
+  try {
+    await verifyAdminCaller();
+    const admin = getAdminClient();
+
+    let query = admin
+      .from("question_bank")
+      .select("*")
+      .eq("review_status", "pending")
+      .order("created_at", { ascending: true })
+      .limit(100);
+
+    if (examTarget) query = query.eq("exam_target", examTarget);
+
+    const { data, error } = await query;
+    if (error) throw error;
+    return { success: true, data };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+/** Approve specific pending questions (they go live in tests) or all for an exam. */
+export async function approveQuestions(opts: { ids?: string[]; examTarget?: string }) {
+  try {
+    await verifyAdminCaller();
+    const admin = getAdminClient();
+
+    let query = admin
+      .from("question_bank")
+      .update({ review_status: "approved" })
+      .eq("review_status", "pending");
+
+    if (opts.ids && opts.ids.length > 0) {
+      query = query.in("id", opts.ids);
+    } else if (opts.examTarget) {
+      query = query.eq("exam_target", opts.examTarget);
+    } else {
+      return { success: false, error: "Provide ids or examTarget to approve." };
+    }
+
+    const { data, error } = await query.select("id");
+    if (error) throw error;
+    return { success: true, count: (data || []).length };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+/** Reject (delete) pending questions — by ids, or all pending for an exam. */
+export async function rejectQuestions(opts: { ids?: string[]; examTarget?: string }) {
+  try {
+    await verifyAdminCaller();
+    const admin = getAdminClient();
+
+    // Only ever deletes rows still pending — never touches approved/live questions.
+    let query = admin
+      .from("question_bank")
+      .delete()
+      .eq("review_status", "pending");
+
+    if (opts.ids && opts.ids.length > 0) {
+      query = query.in("id", opts.ids);
+    } else if (opts.examTarget) {
+      query = query.eq("exam_target", opts.examTarget);
+    } else {
+      return { success: false, error: "Provide ids or examTarget to reject." };
+    }
+
+    const { data, error } = await query.select("id");
+    if (error) throw error;
+    return { success: true, count: (data || []).length };
   } catch (error: any) {
     return { success: false, error: error.message };
   }
