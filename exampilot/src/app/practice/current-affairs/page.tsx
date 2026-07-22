@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getCurrentAffairsTest } from "@/app/actions/getCurrentAffairsTest";
+import { gradeCurrentAffairs } from "@/app/actions/gradeCurrentAffairs";
 import type { Question, ScoringMap } from "@/app/actions/getMockTest";
 import dynamic from "next/dynamic";
 
@@ -61,10 +62,11 @@ export default function CurrentAffairsPracticePage() {
   }
 
   return (
-    <TestRunner 
+    <TestRunner
       type="Mini-Test" // Acts like a Mini-Test UI-wise
       questions={questions}
       scoringMap={scoringMap}
+      onGrade={gradeCurrentAffairs}
       onExit={() => router.push("/practice")}
     />
   );

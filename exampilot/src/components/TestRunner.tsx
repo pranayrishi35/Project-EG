@@ -829,9 +829,22 @@ interface TestRunnerProps {
   isReviewMode?: boolean;
   candidateName?: string;
   focusedSubjects?: string[];
+  // Opt-in grader for attempt-less tests (the Daily Current Affairs drill). When
+  // provided and there is no attemptId, submission is graded through this action
+  // instead of the mock_attempts path — so a daily drill is scored correctly
+  // server-side without being recorded as a ranked mock. Existing mock callers
+  // omit it and are completely unaffected.
+  onGrade?: (payload: {
+    questionIds: string[];
+    selectedAnswers: Record<string, number>;
+    statuses: Record<string, QStatus>;
+  }) => Promise<
+    | { success: true; gradedQuestions: Question[] }
+    | { success: false; error: string }
+  >;
 }
 
-export default function TestRunner({ type, questions, scoringMap, onExit, attemptId, initialState, isReviewMode, candidateName, focusedSubjects }: TestRunnerProps) {
+export default function TestRunner({ type, questions, scoringMap, onExit, attemptId, initialState, isReviewMode, candidateName, focusedSubjects, onGrade }: TestRunnerProps) {
   const isOnline = useNetworkStatus();
   
   const [isSubmitted, setIsSubmitted] = useState(isReviewMode || false);
@@ -998,6 +1011,30 @@ export default function TestRunner({ type, questions, scoringMap, onExit, attemp
   // confirms the write. On failure the local mirror is preserved so the attempt
   // can be flushed on reconnect instead of being silently lost.
   const flushCompletion = useCallback(async () => {
+    // Attempt-less grading path (Daily Current Affairs drill). No mock_attempts
+    // row exists for this test, so the ranked-attempt sync below is skipped;
+    // instead we grade through onGrade, which returns the questions with the
+    // authoritative correctIndex injected so the debrief scores correctly.
+    if (!attemptId && onGrade) {
+      if (!navigator.onLine) {
+        setSubmitFailed(true);
+        return false;
+      }
+      const { statuses, selectedAnswers } = useTestStore.getState();
+      const res = await onGrade({
+        questionIds: questions.map((q) => q.id),
+        selectedAnswers,
+        statuses,
+      });
+      if (res?.success) {
+        setGradedQuestions(res.gradedQuestions);
+        setSubmitFailed(false);
+        return true;
+      }
+      setSubmitFailed(true);
+      return false;
+    }
+
     if (!attemptId) return false;
     if (!navigator.onLine) {
       setSubmitFailed(true);
@@ -1030,7 +1067,7 @@ export default function TestRunner({ type, questions, scoringMap, onExit, attemp
 
     setSubmitFailed(true);
     return false;
-  }, [attemptId, questions, type, scoringMap, performSync]);
+  }, [attemptId, questions, type, scoringMap, performSync, onGrade]);
 
   const handleSubmit = useCallback(async () => {
     setIsSubmitted(true);
