@@ -23,6 +23,10 @@ interface PlanViewerProps {
   examName: string;
   examDate: string;
   plan: ExtendedPlan;
+  // Weakest subjects from the user's recent completed mocks (empty when there
+  // is not enough history). Displayed alongside the focus-mode toggle so the
+  // adaptive targeting is transparent to the candidate.
+  weakSubjects?: string[];
 }
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
@@ -184,6 +188,7 @@ export default function PlanViewer({
   examName,
   examDate,
   plan,
+  weakSubjects = [],
 }: PlanViewerProps) {
   // Initialise from server-fetched data
   const [completedSet, setCompletedSet] = useState<Set<string>>(
@@ -372,8 +377,29 @@ export default function PlanViewer({
 
       {/* ── Test Engine Quick Actions ── */}
       <div className="print:hidden flex flex-col gap-2">
-        <div className="flex items-center justify-end mb-1">
-          <label className="flex items-center gap-2 cursor-pointer group">
+        <div className="flex items-center justify-between gap-3 mb-1 flex-wrap">
+          {/* Weak-subject readout — makes the focus toggle transparent by naming
+              the subjects the adaptive engine will prioritise. Only shown once
+              the user has enough mock history for the intelligence to exist. */}
+          {weakSubjects.length > 0 ? (
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-xs font-bold text-slate-500 flex-shrink-0">Your focus areas:</span>
+              <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+                {weakSubjects.map((subject) => (
+                  <span
+                    key={subject}
+                    className="text-[11px] font-bold text-purple-700 bg-purple-50 border border-purple-100 px-2 py-0.5 rounded-full truncate max-w-[160px]"
+                    title={subject}
+                  >
+                    {subject}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <span className="text-xs text-slate-400 font-medium">Take a mock to unlock weak-subject targeting</span>
+          )}
+          <label className="flex items-center gap-2 cursor-pointer group flex-shrink-0">
             <span className="text-xs font-bold text-slate-500 group-hover:text-indigo-600 transition-colors">Target Weak Subjects</span>
             <div className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${useFocusMode ? 'bg-indigo-600' : 'bg-slate-300'}`}>
               <input type="checkbox" className="sr-only" checked={useFocusMode} onChange={(e) => setUseFocusMode(e.target.checked)} />

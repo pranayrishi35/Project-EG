@@ -262,6 +262,27 @@ All route handlers require authentication and session checks.
 * **CBT Score Recalculation:** Standard exam rules are verified server-side:
   * AFCAT / CDS: `+3` for correct answers, `-1` for incorrect answers.
   * Current Affairs / Mini-Tests: `+1` for correct answers, `-0.33` for incorrect answers.
+
+> **[VERIFY] — Official 2026 marking & duration values (DO NOT GUESS).** The
+> per-exam marking scheme, negative-marking, question count, and duration in
+> `src/lib/examConfig.ts` (`EXAM_CONFIGS`) drive server-side grading, the CBT
+> timer, and the leaderboard. They must be confirmed against the **official
+> 2026 AFCAT / CDS / NDA notifications** before this app is relied on for
+> exam-accurate scoring — do NOT edit them from memory or "recollection." The
+> values currently in code, pending official confirmation, are:
+>
+> | Exam | Questions | Duration | +Correct | −Wrong |
+> |---|---|---|---|---|
+> | AFCAT | 100 | 7200s (120 min) | +3 | −1 |
+> | CDS (per paper) | 120 | 7200s (120 min) | +3 | −1 |
+> | NDA_MATH | 120 | 9000s (150 min) | +2.5 | −0.833 |
+> | NDA_GAT | 150 | 9000s (150 min) | +4 | −1.33 |
+>
+> Each row above is a candidate value awaiting a human check against the source
+> notification. If any official value differs, update `EXAM_CONFIGS` (the single
+> source of truth — the timer, grader, and leaderboard all read from it) and
+> remove the corresponding row from this [VERIFY] list. Leave the values as-is
+> until verified rather than substituting a guess.
 * **AI Question Review Gate:** `question_bank.review_status` gates whether a question is servable. `approved` → eligible for live mocks/tests; `pending` → visible only in the admin Review tab; `rejected` → deleted. **Every AI-generated question is stamped `pending`** (both admin "Seed"/"Full Mock" buttons via `adminSeedQuestions.ts`, news MCQs via `generateNewsMCQs.ts`, and the auto-cron via `mockGenerator.ts`). Human-authored questions (`addManualQuestion`) are `approved` immediately. The live-serving queries (`getMockTest` ×4, `getCurrentAffairsTest`) all filter `.eq("review_status", "approved")`, so unreviewed AI output can never reach a student. Existing rows were backfilled to `approved` by the migration, so the gate added zero disruption. This is the uniform human-in-the-loop control over all machine-generated content.
 * **Automated Mock Top-Up (cost-controlled):** `/api/cron/generate-mocks` drip-feeds the bank instead of regenerating everything. Per run it tops up **only the single neediest exam** whose APPROVED mock pool is below `APPROVED_FLOOR` (120), skips any exam with a pending backlog ≥ `MAX_PENDING_BACKLOG` (300), and inserts into `pending` for admin review. This bounds Gemini spend to at most one full mock's generation per invocation. Shared generation logic lives in `src/lib/mockGenerator.ts` so the manual admin button and the cron produce identical output (same prompt, batching, and `pending` stamp).
 

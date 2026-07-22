@@ -593,11 +593,25 @@ const ResultsView = memo(function ResultsView({ type, questions, scoringMap, isR
       }
     });
 
-    const subjectsContext = Array.from(incorrectSubjects).length > 0 
+    const subjectsContext = Array.from(incorrectSubjects).length > 0
       ? `They missed questions in the following subjects: ${Array.from(incorrectSubjects).join(", ")}.`
       : `They scored a perfect test!`;
 
-    const prompt = `Analyze this test result. The student scored ${computedScore} out of ${computedMaxScore}. ${subjectsContext}\nThe student learns best via the "${archetype}" archetype.`;
+    // Per-subject accuracy breakdown for this attempt — gives the coach concrete,
+    // candidate-specific signal (which subjects are weakest by ratio, not just
+    // which had any miss) so the debrief is tailored rather than generic.
+    const subjectBreakdown = Object.entries(subjectStats)
+      .filter(([, s]) => s.total > 0)
+      .map(([subject, s]) => `${subject}: ${s.correct}/${s.total}`)
+      .join("; ");
+
+    // Unattempted count is a time-management signal the coach should address
+    // separately from wrong answers (pacing vs. knowledge gap).
+    const pacingContext = unattempted > 0
+      ? ` They left ${unattempted} question(s) unattempted, which may indicate a time-management issue.`
+      : ``;
+
+    const prompt = `Analyze this ${type} result for a ${type === "Mini-Test" ? "practice drill" : "full mock"}. The student scored ${computedScore} out of ${computedMaxScore} (${accuracy}% accuracy). ${subjectsContext}${pacingContext}${subjectBreakdown ? `\nPer-subject performance — ${subjectBreakdown}.` : ""}\nThe student learns best via the "${archetype}" archetype. Tailor the weaknesses and action plan to their weakest subjects by ratio.`;
 
     await complete(prompt);
   };
@@ -849,7 +863,15 @@ export default function TestRunner({ type, questions, scoringMap, onExit, attemp
   
   const [isSubmitted, setIsSubmitted] = useState(isReviewMode || false);
   
-  const timeRemainingRef = useRef<number>(initialState?.timeRemaining || (type === "Mini-Test" ? 15 * 60 : 120 * 60));
+  // Timer seed priority: (1) a resumed attempt's remaining time, (2) the
+  // server-provided authoritative duration for this exam (scoringMap.durationSeconds
+  // — e.g. NDA is 150 min, not 120), (3) a legacy per-type fallback for attempts
+  // persisted before durationSeconds existed.
+  const timeRemainingRef = useRef<number>(
+    initialState?.timeRemaining ??
+    scoringMap?.durationSeconds ??
+    (type === "Mini-Test" ? 15 * 60 : 120 * 60)
+  );
   const testNumberRef = useRef<number | undefined>(initialState?.testNumber);
   const syncBlockedUntilRef = useRef<number>(0);
   
@@ -1186,6 +1208,21 @@ export default function TestRunner({ type, questions, scoringMap, onExit, attemp
             <h1 className="text-slate-900 font-black text-lg leading-tight">{type}</h1>
             <p className="text-slate-500 text-xs font-semibold uppercase tracking-widest">AFCAT CBT Portal</p>
           </div>
+          {/* Marking-scheme cue — kept visible DURING the test (not just on the
+              results screen) so the negative-marking risk is present while the
+              candidate decides whether to guess under time pressure. Values are
+              authoritative (from scoringMap); incorrect is stored negative. */}
+          {scoringMap && (
+            <div
+              className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-2.5 py-1.5 rounded-xl"
+              title={`Marking scheme: +${scoringMap.correct} per correct answer, ${scoringMap.incorrect} per wrong answer`}
+            >
+              <span className="text-xs font-black text-emerald-600">+{scoringMap.correct}</span>
+              <span className="text-slate-300 text-xs" aria-hidden="true">·</span>
+              <span className="text-xs font-black text-red-600">{scoringMap.incorrect}</span>
+              <span className="hidden sm:inline text-[10px] font-bold text-slate-400 uppercase tracking-wide ml-0.5">marking</span>
+            </div>
+          )}
           {focusedSubjects && focusedSubjects.length > 0 && (
             <div className="hidden md:flex items-center gap-1.5 bg-purple-50 border border-purple-100 px-3 py-1.5 rounded-xl ml-4">
               <span className="text-sm">🎯</span>

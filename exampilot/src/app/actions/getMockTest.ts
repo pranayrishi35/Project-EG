@@ -18,6 +18,11 @@ export interface Question {
 export interface ScoringMap {
   correct: number;
   incorrect: number;
+  // Authoritative test duration in seconds, derived from EXAM_CONFIGS per exam
+  // target (mini drills use a fixed 15-minute product window). Plumbed through
+  // so the CBT timer reflects the real exam length — e.g. NDA is 150 min, not
+  // the old hardcoded 120. Optional for backward-compatible persisted attempts.
+  durationSeconds?: number;
 }
 
 export type GetTestResult =
@@ -35,7 +40,7 @@ export async function getMockTest(rawExamTarget: string, rawMini: boolean = fals
   const config = EXAM_CONFIGS[examTarget as keyof typeof EXAM_CONFIGS];
   
   if (!config) {
-    return { success: false, error: "Invalid exam target for test generation." };
+    return { success: false, error: `Unsupported exam target "${examTarget}". Supported: ${Object.keys(EXAM_CONFIGS).join(", ")}.` };
   }
 
   const totalQuestions = mini ? 15 : config.total_questions;
@@ -179,6 +184,9 @@ export async function getMockTest(rawExamTarget: string, rawMini: boolean = fals
     const scoringMap = {
       correct: config.marks_per_correct,
       incorrect: config.negative_marking,
+      // Mini drills are a fixed 15-minute product window regardless of exam;
+      // full mocks use the official per-exam duration from config.
+      durationSeconds: mini ? 15 * 60 : config.duration_seconds,
     };
     const { data: created, error: createError } = await supabase
       .from("mock_attempts")

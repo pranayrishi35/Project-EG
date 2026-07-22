@@ -26,7 +26,11 @@ const AnswerStateSchema = z.object({
   questions: z.array(QuestionSchema).optional(),
   scoringMap: z.object({
     correct: z.number(),
-    incorrect: z.number()
+    incorrect: z.number(),
+    // Preserve the authoritative test duration through sync/resume. Without
+    // this key Zod would strip it, and a resumed attempt would fall back to
+    // the legacy 120-min default instead of the real per-exam length.
+    durationSeconds: z.number().optional()
   }).optional(),
   testNumber: z.number().optional()
 });
@@ -129,7 +133,15 @@ export async function saveMockProgress(payload: any) {
 
   // Phase 2: Server-Side Score Recalculation (Security Audit Fix)
   if (status === 'completed' && answers_state?.questions) {
-    const config = EXAM_CONFIGS[authoritativeExamTarget as keyof typeof EXAM_CONFIGS] || EXAM_CONFIGS["AFCAT"]!;
+    // Grade with the exact config for this exam target. Never silently fall back
+    // to AFCAT's +3/-1 for an unknown target — that would mis-grade (e.g.) an NDA
+    // attempt on the wrong marking scheme and corrupt the score/leaderboard.
+    // Fail loudly instead so the bad attempt is surfaced, not ranked on bad math.
+    const config = EXAM_CONFIGS[authoritativeExamTarget as keyof typeof EXAM_CONFIGS];
+    if (!config) {
+      console.error("[Mock Sync] Unknown exam_target for grading:", authoritativeExamTarget);
+      return { success: false, error: `Cannot grade attempt: unknown exam target "${authoritativeExamTarget}".` };
+    }
     const mpc = config.marks_per_correct;
     const pip = config.negative_marking;
 

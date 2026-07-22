@@ -188,6 +188,57 @@ function PlanCardSkeleton() {
   );
 }
 
+// Surfaces an in-progress mock so the candidate can resume without hunting
+// through the Practice archive. SSR-guarded like the other home loaders: a
+// transient Supabase failure hides the banner rather than crashing the page.
+// The resume link matches Practice's exact route (/practice/mock/{id}).
+async function ResumeMockLoader() {
+  const supabase = createClient();
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
+
+    const { data: attempt } = await supabase
+      .from("mock_attempts")
+      .select("id, exam_target, test_number, updated_at")
+      .eq("user_id", user.id)
+      .eq("status", "in_progress")
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (!attempt) return null;
+
+    return (
+      <Link
+        href={`/practice/mock/${attempt.id}`}
+        className="group flex items-center justify-between gap-4 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-3xl p-5 shadow-sm hover:shadow-md hover:border-amber-300 transition-all active:scale-[0.99] animate-fade-in"
+      >
+        <div className="flex items-center gap-4 min-w-0">
+          <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center text-2xl shadow-sm flex-shrink-0" aria-hidden="true">
+            ⏳
+          </div>
+          <div className="min-w-0">
+            <h3 className="text-base font-black text-amber-900 truncate">
+              Resume {attempt.exam_target} Mock Test {attempt.test_number}
+            </h3>
+            <p className="text-xs text-amber-700 font-medium">
+              You have a test in progress — pick up right where you left off.
+            </p>
+          </div>
+        </div>
+        <span className="flex-shrink-0 inline-flex items-center gap-2 px-5 py-2.5 bg-amber-500 group-hover:bg-amber-600 text-white font-black rounded-xl transition-colors text-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+          Resume
+        </span>
+      </Link>
+    );
+  } catch (err) {
+    console.error("[ResumeMockLoader] Supabase call failed during SSR:", err);
+    return null;
+  }
+}
+
 // --- Main Page Component ---
 
 export default async function HomePage() {
@@ -283,6 +334,11 @@ export default async function HomePage() {
         <div className="flex flex-col gap-8 mt-2">
           
           <GuestAttemptBridge />
+
+          {/* Resume-in-progress mock (renders nothing if none is open) */}
+          <Suspense fallback={null}>
+            <ResumeMockLoader />
+          </Suspense>
 
           {/* Top Section: Daily Flashcards CTA */}
           <Suspense fallback={<div className="h-[100px] bg-gray-50 rounded-3xl animate-pulse" />}>
