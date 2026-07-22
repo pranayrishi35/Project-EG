@@ -206,23 +206,35 @@ export default async function HomePage() {
   return (
     <div className="flex flex-col gap-6 p-4 pt-6 pb-24 max-w-5xl mx-auto">
       {/* ── Top Header ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between min-h-[60px] gap-4">
-        <div>
-          <h1 className="text-2xl font-black text-gray-900 tracking-tight">
-            Welcome {user ? "Back, " + firstName : "to ExamPilot"}
-          </h1>
-          {/* LIGHTHOUSE FIX: WCAG Contrast Ratio */}
-          <p className="text-sm text-slate-700 font-medium mt-1">
-            {user ? "Ready to crush your next exam?" : "Experience the future of AI-powered defense exam preparation."}
-          </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between min-h-[60px] gap-6 sm:gap-4 mb-2">
+        <div className="max-w-2xl">
+          {user ? (
+            <>
+              <h1 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight">
+                Welcome Back, {firstName}
+              </h1>
+              <p className="text-base text-slate-700 font-medium mt-1">
+                Ready to crush your next exam?
+              </p>
+            </>
+          ) : (
+            <>
+              <h1 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight leading-tight">
+                Ace Your Defense Exams with an <span className="text-indigo-600">AI Study Planner</span>
+              </h1>
+              <p className="text-base text-slate-700 font-medium mt-2">
+                Upload your syllabus and get a personalized, day-by-day study schedule and mock tests powered by Gemini AI.
+              </p>
+            </>
+          )}
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-shrink-0">
           {!user && (
             <Link
               href="#demo-mock"
-              className="inline-flex items-center justify-center px-5 py-2.5 border border-transparent text-sm font-black rounded-xl text-indigo-700 bg-indigo-100 hover:bg-indigo-200 transition-colors active:scale-95 shadow-sm"
+              className="inline-flex items-center justify-center px-6 py-3 text-base font-black rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 transition-colors active:scale-95 shadow-md shadow-indigo-200"
             >
-              Try for Free
+              Take a Free Mock Test
             </Link>
           )}
         </div>

@@ -1,4 +1,4 @@
-import { recoverAccount } from "@/app/actions/recoverAccount";
+import RecoverAccountForm from "@/components/RecoverAccountForm";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 
@@ -57,14 +57,7 @@ export default async function RecoverAccountPage() {
           <span>{formattedDeadline}</span>
         </div>
 
-        <form action={recoverAccount} className="space-y-4">
-          <button
-            type="submit"
-            className="w-full flex items-center justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
-          >
-            Recover My Account
-          </button>
-        </form>
+        <RecoverAccountForm />
         
         <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-700">
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">

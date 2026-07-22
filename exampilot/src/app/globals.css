@@ -44,7 +44,7 @@ body {
   /* Shared input style */
   .ep-input {
     @apply w-full rounded-xl border border-gray-200 bg-white px-4 py-3
-           text-sm text-gray-900 placeholder-gray-400
+           text-sm text-gray-900 placeholder-gray-600
            outline-none transition-all duration-200
            focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100
            hover:border-gray-300;

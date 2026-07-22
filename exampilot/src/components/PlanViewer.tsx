@@ -134,7 +134,7 @@ function DayCard({
             <li
               key={key}
               className={[
-                "flex items-start gap-3 rounded-xl px-1 -mx-1",
+                "group flex items-start gap-3 rounded-xl px-1 -mx-1",
                 isBumping ? "animate-topic-flash" : "",
               ].join(" ")}
             >

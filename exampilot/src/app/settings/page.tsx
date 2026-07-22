@@ -177,6 +177,11 @@ export default async function SettingsPage() {
 
       {/* ── Danger zone ───────────────────────────────────────────────── */}
       <Section title="Danger Zone">
+        <div className="p-4 pb-2 border-b border-gray-50">
+          <p className="text-sm text-gray-500 leading-relaxed">
+            We believe your data is yours. You can schedule your account and all associated data for permanent deletion at any time.
+          </p>
+        </div>
         <DeleteAccountForm />
       </Section>
 

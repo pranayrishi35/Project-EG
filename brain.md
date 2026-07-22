@@ -39,7 +39,7 @@ graph TD
 * **`exampilot/src/app`**: Contains routing, pages, Next.js API route handlers, and Server Actions.
   * `(legal)`: Static document layouts (ToS, Privacy Policy, Cookies).
   * `actions/`: Encapsulates server-side transactions (Planner, Mock Attempts, Streak calculations, Booklets, News).
-  * `api/`: Chat (AI Assistant), coach (AI Coach), and cron (News fetching and deleted users purging).
+  * `api/`: Tejas chat (`/api/chat`), coach (AI Coach), and cron routes (`fetch-news`, `purge`, `streak-nudge`, and `generate-mocks` — the auto mock-question generator).
 * **`exampilot/src/components`**: Core React components.
   * `TestRunner.tsx`: The primary CBT mock testing engine.
   * `MockTestAnalyzer.tsx`: Form for logging manual scores and visualizing accuracy trends.
@@ -55,7 +55,8 @@ graph TD
   * `creditManager.ts`: Handles credit deduction/refund via the `deduct_credits`/`refund_credits` RPCs (atomic, no read-check-write race) using the service role client. Admins are bypassed (never charged, never refunded).
   * `credits.ts`: Holds `BETA_STARTING_CREDITS` and shared credit constants (single source for the beta grant).
   * `aiRateLimit.ts`: Per-user sliding-window limiter (20 req/min) for the AI endpoints, layered on top of the credit meter. **Fails open when Vercel KV is not configured** (local dev), so absence of KV silently disables the cap.
-  * `cronAuth.ts`: Shared bearer-token guard for cron route handlers (validates `CRON_SECRET`).
+  * `cronAuth.ts`: Shared bearer-token guard for cron route handlers (validates `CRON_SECRET`, constant-time compare, fails closed, Bearer-header only).
+  * `mockGenerator.ts`: **Shared** full-mock question generation used by BOTH the admin "Generate Full Mock" button and the auto-generation cron. Centralizes prompt/batching/parsing and — critically — stamps every row `review_status: 'pending'` so manual and automated paths are identical and no AI question can reach a live test unreviewed. Exports `MOCK_SUBJECT_MAP`, `SUPPORTED_EXAMS`, `generateFullMockRows(examTarget)`.
   * `examConfig.ts`: Holds questions and marks configurations for exam targets.
   * `sanitizer.ts`: Filters emails and phone numbers from inputs before invoking LLMs.
 
@@ -96,6 +97,11 @@ graph TD
 2. **Grace-Period Account Recovery check:** If a user's profile is flagged as `is_deleted` and the 48-hour deadline has not expired, they are redirected to `/settings/recover`. If the deadline has expired, they are signed out and redirected to `/login?account=permanently-deleted`.
 3. **Legal Interstitial Guard:** Middleware checks for a `consent_granted` cookie. If missing, it checks the database profile. If the user has not accepted the current version of the Terms of Service, they are redirected to `/consent` before accessing any application routes.
 4. **PWA Activation:** The browser registers the PWA service worker (`sw.js`). Cached assets (static assets and the CBT page shell) load instantly.
+
+### Authentication (Login Page)
+The `/login` page (`src/app/login/page.tsx`) uses a **two-step flow**: (1) enter email → (2) enter password, with Google OAuth and a "send a magic link instead" fallback available. Legal/age consent is shown inline as a disclosure ("By continuing, you agree to…"); the enforced consent gate remains the post-auth `/consent` interstitial (see Execution Flow #3), which records `legal_consent_version`/`legal_consent_timestamp`.
+* **Password action (`signUpWithPassword` in `login/actions.ts`) is sign-in-first, sign-up-fallback:** it calls `signInWithPassword` first (returning users get a real session via the SSR cookie writer); only on `invalid_credentials` does it fall back to `signUp`. Supabase's "email already registered" obfuscation (a user object with an **empty `identities` array** and no session) is detected and surfaced as "Incorrect password". New-account creation returns `{ success: true, pending: true }` → the UI shows "verify your email"; a returning-user sign-in returns `{ success: true }` → the client does a **full-page navigation** (`window.location.assign`) to `next` (or `/`) so middleware re-reads the fresh session cookie. `signUp` alone can NOT log an existing user in, which is why the sign-in attempt must come first.
+* **Password minimum length (8 chars) is enforced server-side** in the action (not just client-side), because the client check is bypassable. Keep the two thresholds in sync.
 
 ### Request Lifecycle
 #### A. Study Plan Generation
@@ -221,11 +227,15 @@ All route handlers require authentication and session checks.
   * **Payload:** `{ prompt: string }`
   * **Response:** Text stream describing test performance insights. Deducts 1 credit.
 * **GET `/api/cron/fetch-news`**:
-  * **Auth:** Header `Authorization: Bearer <CRON_SECRET>` or parameter `?secret=<CRON_SECRET>`.
-  * **Behavior:** Queries GNews, runs Gemini summarization and relevance scoring, and inserts new articles into the database.
+  * **Auth:** Header `Authorization: Bearer <CRON_SECRET>` ONLY (via `isAuthorizedCron` — the secret is never accepted via query string, so it cannot leak through logs/Referer).
+  * **Behavior:** Queries GNews, runs Gemini summarization and relevance scoring, and inserts new articles into the database. News MCQs generated from these are inserted as `review_status='pending'`.
 * **GET `/api/cron/purge`**:
   * **Auth:** Header `Authorization: Bearer <CRON_SECRET>`.
   * **Behavior:** Force-deletes accounts and profile records where the 48-hour deletion grace window has expired.
+* **GET `/api/cron/generate-mocks`**:
+  * **Auth:** Header `Authorization: Bearer <CRON_SECRET>` (via `isAuthorizedCron`; fails closed).
+  * **Behavior:** Auto-tops-up the mock question bank on an every-2-days cadence. **Cost-controlled:** each run refills at most ONE exam — the neediest whose APPROVED mock pool is below `APPROVED_FLOOR` (120) — and skips any exam whose PENDING backlog is ≥ `MAX_PENDING_BACKLOG` (300). Generated questions are inserted as `review_status='pending'` (never live until an admin approves). Returns a per-exam `{approved, pending}` report.
+* **POST `/api/coach`** and **POST `/api/chat`** are the AI (Gemini) endpoints — see the Tejas note in Folder Responsibilities for the chat contract (v7 `parts[]`, `convertToModelMessages`, guest vs authed paths).
 
 #### Core Server Actions
 * `generateStudyPlan(formData)`: Reads exam data and uploads. Runs Gemini planner. Deducts 1 credit.
@@ -252,10 +262,18 @@ All route handlers require authentication and session checks.
 * **CBT Score Recalculation:** Standard exam rules are verified server-side:
   * AFCAT / CDS: `+3` for correct answers, `-1` for incorrect answers.
   * Current Affairs / Mini-Tests: `+1` for correct answers, `-0.33` for incorrect answers.
+* **AI Question Review Gate:** `question_bank.review_status` gates whether a question is servable. `approved` → eligible for live mocks/tests; `pending` → visible only in the admin Review tab; `rejected` → deleted. **Every AI-generated question is stamped `pending`** (both admin "Seed"/"Full Mock" buttons via `adminSeedQuestions.ts`, news MCQs via `generateNewsMCQs.ts`, and the auto-cron via `mockGenerator.ts`). Human-authored questions (`addManualQuestion`) are `approved` immediately. The live-serving queries (`getMockTest` ×4, `getCurrentAffairsTest`) all filter `.eq("review_status", "approved")`, so unreviewed AI output can never reach a student. Existing rows were backfilled to `approved` by the migration, so the gate added zero disruption. This is the uniform human-in-the-loop control over all machine-generated content.
+* **Automated Mock Top-Up (cost-controlled):** `/api/cron/generate-mocks` drip-feeds the bank instead of regenerating everything. Per run it tops up **only the single neediest exam** whose APPROVED mock pool is below `APPROVED_FLOOR` (120), skips any exam with a pending backlog ≥ `MAX_PENDING_BACKLOG` (300), and inserts into `pending` for admin review. This bounds Gemini spend to at most one full mock's generation per invocation. Shared generation logic lives in `src/lib/mockGenerator.ts` so the manual admin button and the cron produce identical output (same prompt, batching, and `pending` stamp).
 
 ### Configuration Files
 * **`next.config.mjs`**: Custom caching rules for Supabase requests, Next.js image configurations, static files, and Content Security Policy (CSP) headers.
 * **`playwright.config.ts`**: Runs testing projects across chromium, webkit, firefox, and Mobile Chrome (Pixel 5 with `slowMo: 100` simulation). Sets dev server commands to `npm run dev`.
+
+### SEO & Canonical Domain
+* **Production domain is `https://exampilot-delta.vercel.app`.** This is the canonical origin used by `metadataBase`, the `alternates.canonical` tag, Open Graph URLs (`layout.tsx`), and the generated `robots.txt` / `sitemap.xml`.
+* **`src/app/robots.ts`**: emits `/robots.txt` — allows `/`, disallows `/admin/`, `/api/`, `/settings/`; points at the sitemap.
+* **`src/app/sitemap.ts`**: emits `/sitemap.xml` for the public routes (`/`, `/login`, `/planner`, `/practice`, `/news`, `/booklets`).
+* ⚠️ **Known domain inconsistency (pre-existing, not blocking):** transactional email code still references `exampilot.in` (`api/cron/streak-nudge/route.ts` `from:`, `components/Header.tsx` support mailto, `emails/StreakNudgeEmail.tsx`). Reconcile these with the Vercel domain when the custom domain is finalized.
 
 ### Environment Variables
 ```ini
@@ -313,17 +331,19 @@ SUPABASE_SERVICE_ROLE_KEY=<set in Vercel env>
 ## 6. Integrations, Delivery & Maintenance
 
 ### External Integrations
-* **Google Gemini API:** Powering study plan generation, flashcard creation, cheat sheet summaries, and AI Coach analysis.
+* **Google Gemini API:** Powering study plan generation, flashcard creation, cheat sheet summaries, AI Coach analysis, Tejas chat, news-MCQ extraction, and automated mock-question generation. All calls use `gemini-2.5-flash`.
 * **GNews API:** Country-targeted current affairs articles.
-* **Upstash Redis:** Rate-limiting database for auth protection.
+* **Upstash Redis / Vercel KV:** Rate-limiting database for auth protection and per-user AI rate limiting (`aiRateLimit.ts`).
+* **`pdf-lib` (`1.17.x`):** Pure-JS PDF generation for server-side mock-test export (`exportMockPdf.ts`). Chosen over headless-browser/native approaches because it runs in the serverless runtime with no binary dependency, and keeps the answer key server-side.
 
 ### Testing Strategy
 * **E2E Integration Testing:** Playwright tests authenticate users by writing a mock session cookie (`sb-vdcmwlkbcisnidtubmnb-auth-token`) to bypass auth flows during test runs.
 * **Mobile UX Validation:** Checks mobile layout styling on mock devices (Pixel 5).
+* **Account-deletion & backend-regression specs:** `tests/account-deletion.spec.ts` exercises the full deletion lifecycle against a real Supabase test user; `tests/backend-regression.spec.ts` verifies the `user_profiles` schema actually supports the deletion update (guards against `PGRST204` column-not-found). Both **self-skip** when Supabase env vars are absent. ⚠️ `account-deletion.spec.ts` sets `NODE_TLS_REJECT_UNAUTHORIZED='0'` at module scope for the test process — acceptable for local/CI test runs only.
 
 ### CI/CD Pipeline & Deployment
 * **Hosting:** Vercel serverless environment.
-* **CI Build Triggers:** Automatic production deployments trigger on pushes to the `main` branch.
+* **CI Build Triggers:** Automatic production deployments trigger on pushes to the production branch. ⚠️ This doc historically said `main`, but the repo's default/production branch is **`master`** — confirm the Vercel "Production Branch" setting matches before relying on push-to-deploy.
 * **Linter Passes:** Linters are bypassed during production builds (`eslint.ignoreDuringBuilds: true`).
 
 ### Common Commands
@@ -349,15 +369,21 @@ Several `.sql` files in `exampilot/` define schema/functions the application cod
 |---|---|---|
 | `atomic_credit_deduction.sql` | `deduct_credits` / `refund_credits` RPCs | Signed-in AI calls return `SYSTEM_ERROR` (402) → chat shows "lost signal" |
 | `server_authoritative_attempts.sql` | `mock_attempts.served_question_ids`, `started_at` | **Starting ANY mock test fails** with `PGRST204` → "Could not start the test" |
+| `question_review_status.sql` | `question_bank.review_status` (default `'approved'`) + check constraint + serve/review indexes | Live test serving filters `review_status='approved'`; if the column is missing, **starting any test fails** (`PGRST` column-not-found). Backfills existing rows to `approved` so applying it is zero-disruption. |
 | `rls_credit_privilege_lockdown.sql` | RLS revoking client writes to credits/tier | Client could self-grant credits |
+| `account_deletion_migration.sql` | `user_profiles.is_deleted` / `deletion_deadline` columns; **REVOKEs** client UPDATE on those columns and **DROPs** the legacy "Users can update their own deletion flags" policy | Deletion flags could be tampered with client-side if the REVOKE/DROP is unapplied. **Re-run-safe:** uses `ADD COLUMN IF NOT EXISTS` + `DROP POLICY IF EXISTS`, so it is idempotent against environments where the columns/policy already exist. |
+
+**Deletion lifecycle hardening (this session):** `account_deletion_migration.sql` was rewritten from a client-facing `CREATE POLICY` (which granted the authenticated role UPDATE on the deletion flags) to a service-role-only model: it now `DROP POLICY IF EXISTS`es the old grant and `REVOKE`s UPDATE on `is_deleted`/`deletion_deadline` from `authenticated` and `anon`. The lifecycle is driven exclusively through the service role in `deleteAccount.ts`/`recoverAccount.ts`. **Action required before deploy:** re-run this migration against every Supabase environment — it is idempotent, so re-running where the columns already exist is safe, but the `DROP POLICY`/`REVOKE` MUST execute to actually close the client write surface.
+
+**Status (as of this session): all four migrations above have been applied to the live Supabase instance and verified** (credit RPCs return balances; `served_question_ids`/`started_at` present; `review_status` present with all 744 legacy rows backfilled to `approved`).
 
 **Deployment rule:** any new `.sql` file added to the repo MUST be run against every Supabase environment before the code that depends on it ships. Verify with: `select proname from pg_proc where proname in (...)` for functions, or a probe insert for columns.
 
 ### Known Limitations
 1. **Schema Mismatch:** Streaks and user metadata are split across `profiles` and `user_profiles` tables, which increases database request complexity. The Settings page reads `full_name`/`avatar_url` from `user_profiles` where they may not live — verify against the live schema before relying on it.
 2. **SSR Router Crash:** `/planner` has a known SSR crash under mock auth due to `usePathname` in the Sidebar firing server-side. Playwright E2E tests bypass this route because of this issue.
-3. **Incomplete Configurations:** `NDA_MATH` and `NDA_GAT` are defined in `ExamTarget` types, but missing in `EXAM_CONFIGS`.
-4. **Flashcards UI:** The dashboard flashcards feature is currently marked as "Coming Soon", although the backend logic is implemented.
+3. **Flashcards UI:** The dashboard flashcards feature is currently marked as "Coming Soon", although the backend logic is implemented.
+4. **Cron-slot constraint (unresolved):** The app now has FOUR cron needs — `fetch-news`, `purge`, `streak-nudge`, and the new `generate-mocks` — but Vercel Hobby allows only 2 cron jobs at once-daily granularity. There is no `vercel.json`, so the existing crons are triggered by an external scheduler hitting the bearer-authed endpoints. **Recommended fix (not yet built):** a single `/api/cron/dispatch` endpoint invoked once daily that fans out by date logic (daily → news + streak-nudge; `dayOfYear % 2 === 0` → generate-mocks; weekly → purge). Collapses 4 schedules into 1 free slot, no new dependency. The individual endpoints remain for manual triggering.
 
 ### Assumptions & Unknowns
 * **Leaderboard Cron Frequency:** Calculated via pg_cron, but the exact refresh frequency is "Unknown" (managed at the database level).

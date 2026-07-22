@@ -14,9 +14,12 @@ const inter = Inter({ subsets: ['latin'], display: 'swap', variable: '--font-int
 const ReticleDev = dynamic(() => import('./reticle-dev').then(m => m.ReticleDev), { ssr: false });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://exampilot.in'),
-  title: "ExamPilot — Smart Study Planner",
-  description: "ExamPilot helps Indian students plan, track, and ace competitive exams with an intelligent study planner.",
+  metadataBase: new URL('https://exampilot-delta.vercel.app'),
+  title: "ExamPilot | Smart AI Study Planner for Competitive Exams",
+  description: "ExamPilot helps students plan, track, and ace competitive defense exams with an intelligent, personalized AI study planner and mock tests.",
+  alternates: {
+    canonical: '/',
+  },
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -34,10 +37,10 @@ export const metadata: Metadata = {
     apple: "/icons/icon-192x192.png",
   },
   openGraph: {
-    title: "ExamPilot — Smart Study Planner",
-    description: "Elite AI Defense Exam Preparation",
+    title: "ExamPilot | Smart AI Study Planner for Competitive Exams",
+    description: "Elite AI Defense Exam Preparation and Mock Tests",
     siteName: "ExamPilot",
-    url: "https://exampilot.in",
+    url: "https://exampilot-delta.vercel.app",
     type: "website",
     images: [
       {
