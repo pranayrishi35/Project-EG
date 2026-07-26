@@ -43,7 +43,7 @@ export default function MockTestLoading() {
             <div className="w-24 h-12 bg-slate-200 rounded-xl animate-pulse" />
             <div className="w-36 h-12 bg-slate-200 rounded-xl animate-pulse" />
           </div>
-          <div className="w-32 h-12 bg-indigo-200 rounded-xl animate-pulse" />
+          <div className="w-32 h-12 bg-amber-200 rounded-xl animate-pulse" />
         </div>
       </div>
 

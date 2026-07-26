@@ -3,6 +3,8 @@ import dynamic from "next/dynamic";
 import { redirect } from "next/navigation";
 const TestRunner = dynamic(() => import("@/components/TestRunner"), { ssr: false });
 import { createClient } from "@/utils/supabase/server";
+import { cookies } from "next/headers";
+import { isMockAuthAllowed } from "@/lib/testAuthGuard";
 
 export const metadata = {
   title: "Mock Test Environment | ExamPilot",
@@ -10,7 +12,18 @@ export const metadata = {
 
 export default async function MockTestPage({ params }: { params: { id: string } }) {
   const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  let user = null;
+  const testCookie = cookies().getAll().find(c => c.value.includes('mock-access-token'));
+  if (testCookie && isMockAuthAllowed()) {
+    user = { 
+      id: '12345678-1234-1234-1234-123456789012', 
+      email: 'pilot@exampilot.com',
+      user_metadata: { full_name: 'Squadron Leader' }
+    } as any;
+  } else {
+    const { data } = await supabase.auth.getUser();
+    user = data.user;
+  }
 
   if (!user) {
     redirect("/login?next=/practice");

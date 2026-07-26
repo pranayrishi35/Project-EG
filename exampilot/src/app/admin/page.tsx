@@ -9,6 +9,7 @@ import { triggerNewsFetch } from "@/app/actions/triggerNewsFetch";
 import { getMockAttempts, deleteMockAttempt } from "@/app/actions/mockAttemptsAdmin";
 import { fetchRecentUsers, fetchQuestions, deleteQuestion, addManualQuestion, getPendingReviewSummary, fetchPendingQuestions, approveQuestions, rejectQuestions } from "@/app/actions/adminManagement";
 import { exportMockPdf } from "@/app/actions/exportMockPdf";
+import { Brain, Target, Zap, Newspaper, Wrench, BarChart2, Settings, Trash2, Users, Search, Rocket, Plus, CheckCircle, AlertTriangle, Sparkles, ChevronDown, ChevronRight, RefreshCw, Check, X, Download, FileText } from "lucide-react";
 
 const subjectsByExam: Record<string, string[]> = {
   AFCAT: ["English", "General Awareness", "Numerical Ability", "Reasoning"],
@@ -384,7 +385,7 @@ export default function AdminDashboard() {
         <div className={`fixed top-24 md:top-4 right-4 px-6 py-4 rounded-xl font-bold shadow-2xl z-[100] animate-fade-in flex items-center gap-3 border ${
           toast.type === "success" ? "bg-emerald-950 border-emerald-500 text-emerald-400" : "bg-rose-950 border-rose-500 text-rose-400"
         }`}>
-          <span className="text-xl">{toast.type === "success" ? "✅" : "⚠️"}</span>
+          <span aria-hidden="true">{toast.type === "success" ? <CheckCircle size={20} strokeWidth={1.75} /> : <AlertTriangle size={20} strokeWidth={1.75} />}</span>
           {toast.message}
         </div>
       )}
@@ -393,7 +394,7 @@ export default function AdminDashboard() {
       <div className="sticky top-0 z-[60] bg-slate-950/80 backdrop-blur-md border-b border-slate-800 p-4 md:p-6 mb-8">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-4 justify-between items-center">
           <h1 className="text-3xl font-black text-white flex items-center gap-3">
-            <span aria-hidden="true">🛠️</span> Command Center
+            <Wrench size={26} strokeWidth={1.75} className="text-brand-accent-500" aria-hidden="true" /> Command Center
           </h1>
           <div className="flex bg-slate-900 rounded-lg p-1 border border-slate-800">
             {(["Config", "Questions", "Review", "Export", "Users"] as const).map(tab => (
@@ -402,7 +403,7 @@ export default function AdminDashboard() {
                 onClick={() => setActiveTab(tab)}
                 className={`relative px-5 py-2 rounded-md font-bold text-sm transition-all ${
                   activeTab === tab
-                    ? "bg-indigo-600 text-white shadow-md"
+                    ? "bg-brand-accent-500 text-white shadow-md"
                     : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/50"
                 }`}
               >
@@ -425,7 +426,7 @@ export default function AdminDashboard() {
             {/* Section 1: System Insights */}
             <section>
               <h2 className="text-xl font-black text-slate-100 mb-6 flex items-center gap-3 border-b border-slate-800 pb-4">
-                <span className="bg-indigo-500/10 text-indigo-400 p-2 rounded-lg">📊</span> 
+                <span className="bg-brand-accent-500/10 text-brand-accent-400 p-2 rounded-lg"><BarChart2 size={18} strokeWidth={1.75} /></span>
                 System Insights
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-max">
@@ -440,8 +441,8 @@ export default function AdminDashboard() {
                   </>
                 ) : (
                   <>
-                    <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-sm hover:border-slate-700 hover:shadow-indigo-500/5 transition-all">
-                      <div className="text-5xl font-black text-indigo-400 mb-2 tabular-nums">{insights?.profiles || 0}</div>
+                    <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-sm hover:border-slate-700 hover:shadow-brand-accent-500/5 transition-all">
+                      <div className="text-5xl font-black text-brand-accent-400 mb-2 tabular-nums">{insights?.profiles || 0}</div>
                       <div className="text-xs text-slate-400 uppercase font-bold tracking-widest">Registered Profiles</div>
                     </div>
                     <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-sm hover:border-slate-700 hover:shadow-amber-500/5 transition-all">
@@ -460,7 +461,7 @@ export default function AdminDashboard() {
             {/* Section 2: AI Engine Routing */}
             <section>
               <h2 className="text-xl font-black text-slate-100 mb-6 flex items-center gap-3 border-b border-slate-800 pb-4">
-                <span className="bg-indigo-500/10 text-indigo-400 p-2 rounded-lg">⚙️</span> 
+                <span className="bg-brand-accent-500/10 text-brand-accent-400 p-2 rounded-lg"><Settings size={18} strokeWidth={1.75} /></span>
                 AI Engine Routing
               </h2>
               <div className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-sm">
@@ -483,7 +484,7 @@ export default function AdminDashboard() {
                     {config.map((item) => (
                       <div key={item.key} className="p-6 md:p-8 flex flex-col lg:flex-row gap-6 lg:items-center hover:bg-slate-800/30 transition-colors">
                         <div className="flex-1">
-                          <h3 className="text-base font-black text-indigo-300 font-mono mb-1.5">{item.key}</h3>
+                          <h3 className="text-base font-black text-brand-accent-400 font-mono mb-1.5">{item.key}</h3>
                           {item.description && <p className="text-sm text-slate-400 leading-relaxed max-w-2xl">{item.description}</p>}
                         </div>
                         <div className="flex w-full lg:w-96 items-center shrink-0">
@@ -495,7 +496,7 @@ export default function AdminDashboard() {
                                 handleUpdateConfig(item.key, e.target.value);
                               }
                             }}
-                            className="w-full min-w-0 bg-slate-950 border border-slate-700 text-slate-200 text-sm px-5 py-3.5 rounded-xl focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all shadow-inner"
+                            className="w-full min-w-0 bg-slate-950 border border-slate-700 text-slate-200 text-sm px-5 py-3.5 rounded-xl focus:border-brand-accent-500 focus:ring-1 focus:ring-brand-accent-500 outline-none transition-all shadow-inner"
                             placeholder="Enter new model string..."
                           />
                         </div>
@@ -509,7 +510,7 @@ export default function AdminDashboard() {
             {/* Section 3: Question Bank Seeding */}
             <section>
               <h2 className="text-xl font-black text-slate-100 mb-6 flex items-center gap-3 border-b border-slate-800 pb-4">
-                <span className="bg-indigo-500/10 text-indigo-400 p-2 rounded-lg">🧠</span> 
+                <span className="bg-brand-accent-500/10 text-brand-accent-500 p-2 rounded-lg"><Brain size={18} strokeWidth={1.75} /></span>
                 Question Bank Operations
               </h2>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
@@ -525,7 +526,7 @@ export default function AdminDashboard() {
                           <select 
                             value={seedExam} 
                             onChange={e => setSeedExam(e.target.value)}
-                            className="w-full min-w-0 bg-slate-950 border border-slate-700 text-slate-200 text-sm font-medium px-4 py-3.5 rounded-xl focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none appearance-none shadow-inner"
+                            className="w-full min-w-0 bg-slate-950 border border-slate-700 text-slate-200 text-sm font-medium px-4 py-3.5 rounded-xl focus:border-brand-accent-500 focus:ring-1 focus:ring-brand-accent-500 outline-none appearance-none shadow-inner"
                           >
                             <option value="AFCAT">AFCAT</option>
                             <option value="NDA_MATH">NDA Math</option>
@@ -544,7 +545,7 @@ export default function AdminDashboard() {
                           <select 
                             value={seedSubject} 
                             onChange={e => setSeedSubject(e.target.value)}
-                            className="w-full min-w-0 bg-slate-950 border border-slate-700 text-slate-200 text-sm font-medium px-4 py-3.5 rounded-xl focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none appearance-none shadow-inner"
+                            className="w-full min-w-0 bg-slate-950 border border-slate-700 text-slate-200 text-sm font-medium px-4 py-3.5 rounded-xl focus:border-brand-accent-500 focus:ring-1 focus:ring-brand-accent-500 outline-none appearance-none shadow-inner"
                           >
                             {subjectsByExam[seedExam]?.map(subj => (
                               <option key={subj} value={subj}>{subj}</option>
@@ -562,7 +563,7 @@ export default function AdminDashboard() {
                           <select 
                             value={sourcePool} 
                             onChange={e => setSourcePool(e.target.value)}
-                            className="w-full min-w-0 bg-slate-950 border border-slate-700 text-slate-200 text-sm font-medium px-4 py-3.5 rounded-xl focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none appearance-none shadow-inner"
+                            className="w-full min-w-0 bg-slate-950 border border-slate-700 text-slate-200 text-sm font-medium px-4 py-3.5 rounded-xl focus:border-brand-accent-500 focus:ring-1 focus:ring-brand-accent-500 outline-none appearance-none shadow-inner"
                           >
                             <option value="booklet">Static Booklet</option>
                             <option value="mock">Dynamic Mock</option>
@@ -580,7 +581,7 @@ export default function AdminDashboard() {
                         id="isPyq" 
                         checked={isPyq}
                         onChange={e => setIsPyq(e.target.checked)}
-                        className="w-4 h-4 rounded border-slate-600 bg-slate-900 text-indigo-600 focus:ring-indigo-600 focus:ring-offset-slate-900"
+                        className="w-4 h-4 rounded border-slate-600 bg-slate-900 text-brand-accent-600 focus:ring-brand-accent-500 focus:ring-offset-slate-900"
                       />
                       <label htmlFor="isPyq" className="text-sm font-semibold text-slate-300 cursor-pointer select-none">
                         Mark batch as Previous Year Questions (PYQs)
@@ -591,11 +592,11 @@ export default function AdminDashboard() {
                       <button 
                         type="submit" 
                         disabled={isSeeding || isGeneratingMock}
-                        className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-base py-3.5 rounded-xl transition-all shadow-[0_0_15px_rgba(79,70,229,0.2)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 active:scale-[0.99] relative overflow-hidden"
+                        className="w-full bg-brand-accent-500 hover:bg-brand-accent-400 text-white font-bold text-base py-3.5 rounded-xl transition-all shadow-[0_0_15px_rgba(245,166,35,0.2)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 active:scale-[0.99] relative overflow-hidden"
                       >
                         {isSeeding && (
                           <div 
-                            className="absolute inset-y-0 left-0 bg-indigo-400/30 transition-all duration-200"
+                            className="absolute inset-y-0 left-0 bg-brand-accent-400/30 transition-all duration-200"
                             style={{ width: `${seedProgress}%` }}
                           />
                         )}
@@ -616,9 +617,9 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* Card 2: Full Mock Generator */}
-                <div className="bg-slate-900 border border-indigo-900/50 rounded-3xl p-6 md:p-8 shadow-[0_0_30px_rgba(79,70,229,0.05)] relative overflow-hidden flex flex-col">
-                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-600 via-purple-500 to-indigo-600"></div>
-                  <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2"><span>🚀</span> Full Mock Generator</h3>
+                <div className="bg-slate-900 border border-brand-accent-600/30 rounded-3xl p-6 md:p-8 shadow-[0_0_30px_rgba(245,166,35,0.05)] relative overflow-hidden flex flex-col">
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-brand-accent-500 via-brand-accent-400 to-brand-accent-600"></div>
+                  <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2"><Rocket size={18} strokeWidth={1.75} className="text-brand-accent-500" /> Full Mock Generator</h3>
                   
                   <form onSubmit={handleGenerateFullMock} className="flex flex-col gap-5 flex-1">
                     <div>
@@ -627,7 +628,7 @@ export default function AdminDashboard() {
                         <select 
                           value={fullMockExam} 
                           onChange={e => setFullMockExam(e.target.value)}
-                          className="w-full min-w-0 bg-slate-950 border border-slate-700 text-slate-200 text-sm font-medium px-4 py-3.5 rounded-xl focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none appearance-none shadow-inner"
+                          className="w-full min-w-0 bg-slate-950 border border-slate-700 text-slate-200 text-sm font-medium px-4 py-3.5 rounded-xl focus:border-brand-accent-500 focus:ring-1 focus:ring-brand-accent-500 outline-none appearance-none shadow-inner"
                         >
                           <option value="AFCAT">AFCAT (100 Qs)</option>
                           <option value="NDA_MATH">NDA Math (120 Qs)</option>
@@ -644,18 +645,18 @@ export default function AdminDashboard() {
                       <button 
                         type="submit" 
                         disabled={isGeneratingMock || isSeeding}
-                        className="w-full bg-slate-800 hover:bg-slate-700 border border-indigo-500/30 text-white font-bold text-base py-4 rounded-xl transition-all shadow-[0_0_20px_rgba(79,70,229,0.1)] disabled:opacity-50 disabled:cursor-not-allowed flex flex-col items-center justify-center gap-1 active:scale-[0.99] min-h-[80px] relative overflow-hidden group"
+                        className="w-full bg-slate-800 hover:bg-slate-700 border border-brand-accent-500/30 text-white font-bold text-base py-4 rounded-xl transition-all shadow-[0_0_20px_rgba(245,166,35,0.1)] disabled:opacity-50 disabled:cursor-not-allowed flex flex-col items-center justify-center gap-1 active:scale-[0.99] min-h-[80px] relative overflow-hidden group"
                       >
                         {isGeneratingMock && (
                           <div 
-                            className="absolute inset-y-0 left-0 bg-indigo-500/20 transition-all duration-200"
+                            className="absolute inset-y-0 left-0 bg-brand-accent-500/20 transition-all duration-200"
                             style={{ width: `${mockProgress}%` }}
                           />
                         )}
                         <span className="relative z-10 flex flex-col items-center gap-1">
                           {isGeneratingMock ? (
                             <>
-                              <div className="flex items-center gap-2 text-indigo-300">
+                              <div className="flex items-center gap-2 text-brand-accent-400">
                                 <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
                                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -666,7 +667,7 @@ export default function AdminDashboard() {
                             </>
                           ) : (
                             <>
-                              <span className="group-hover:text-indigo-300 transition-colors">Generate Full Mock Test</span>
+                              <span className="group-hover:text-brand-accent-400 transition-colors">Generate Full Mock Test</span>
                               <span className="text-[10px] font-medium text-slate-500 uppercase tracking-widest">Executes Sequentially</span>
                             </>
                           )}
@@ -681,7 +682,7 @@ export default function AdminDashboard() {
             {/* Section 4: News Pipeline */}
             <section>
               <h2 className="text-xl font-black text-slate-100 mb-6 flex items-center gap-3 border-b border-slate-800 pb-4">
-                <span className="bg-indigo-500/10 text-indigo-400 p-2 rounded-lg">📰</span> 
+                <span className="bg-brand-accent-500/10 text-brand-accent-400 p-2 rounded-lg"><Newspaper size={18} strokeWidth={1.75} /></span>
                 News Pipeline Operations
               </h2>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
@@ -709,8 +710,8 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className="bg-slate-900 border border-emerald-900/50 rounded-3xl p-6 md:p-8 shadow-[0_0_30px_rgba(16,185,129,0.05)] relative overflow-hidden flex flex-col h-full">
-                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-600 to-teal-500"></div>
-                  <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2"><span>🎯</span> Extract MCQs from News</h3>
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-600 to-emerald-500"></div>
+                  <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2"><Target size={16} strokeWidth={1.75} className="text-brand-accent-500" /> Extract MCQs from News</h3>
                   <p className="text-sm text-slate-400 mb-6">Reviews news_cache entries from the last 24 hours and uses Gemini to generate highly relevant MCQs.</p>
                   <div className="flex-1 flex flex-col justify-end">
                     <button 
@@ -738,7 +739,7 @@ export default function AdminDashboard() {
             {/* Section 5: Manage Mock Tests */}
             <section>
               <h2 className="text-xl font-black text-slate-100 mb-6 flex items-center gap-3 border-b border-slate-800 pb-4">
-                <span className="bg-indigo-500/10 text-indigo-400 p-2 rounded-lg">🗑️</span> 
+                <span className="bg-brand-accent-500/10 text-brand-accent-400 p-2 rounded-lg"><Trash2 size={18} strokeWidth={1.75} /></span>
                 Manage Mock Tests
               </h2>
               <div className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-sm">
@@ -810,7 +811,7 @@ export default function AdminDashboard() {
                   <select 
                     value={questionExam} 
                     onChange={e => setQuestionExam(e.target.value)}
-                    className="w-full md:w-48 bg-slate-950 border border-slate-700 text-slate-200 text-sm font-medium px-4 py-2.5 rounded-xl focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none"
+                    className="w-full md:w-48 bg-slate-950 border border-slate-700 text-slate-200 text-sm font-medium px-4 py-2.5 rounded-xl focus:border-brand-accent-500 focus:ring-1 focus:ring-brand-accent-500 outline-none"
                   >
                     <option value="AFCAT">AFCAT</option>
                     <option value="NDA_MATH">NDA Math</option>
@@ -823,7 +824,7 @@ export default function AdminDashboard() {
                   <select 
                     value={questionSubject} 
                     onChange={e => setQuestionSubject(e.target.value)}
-                    className="w-full md:w-48 bg-slate-950 border border-slate-700 text-slate-200 text-sm font-medium px-4 py-2.5 rounded-xl focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none"
+                    className="w-full md:w-48 bg-slate-950 border border-slate-700 text-slate-200 text-sm font-medium px-4 py-2.5 rounded-xl focus:border-brand-accent-500 focus:ring-1 focus:ring-brand-accent-500 outline-none"
                   >
                     {subjectsByExam[questionExam]?.map(subj => (
                       <option key={subj} value={subj}>{subj}</option>
@@ -835,14 +836,14 @@ export default function AdminDashboard() {
                 onClick={() => setIsAddModalOpen(true)}
                 className="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-all shadow-lg flex items-center gap-2 mt-4 md:mt-0 whitespace-nowrap"
               >
-                <span>➕</span> Add New Question
+                <Plus size={16} strokeWidth={1.75} aria-hidden="true" /> Add New Question
               </button>
             </div>
 
             <div className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-sm">
               {loadingQuestions ? (
                 <div className="p-12 flex justify-center items-center">
-                  <div className="w-8 h-8 rounded-full border-4 border-slate-800 border-t-indigo-500 animate-spin"></div>
+                  <div className="w-8 h-8 rounded-full border-4 border-slate-800 border-t-brand-accent-500 animate-spin"></div>
                 </div>
               ) : questions.length === 0 ? (
                 <div className="p-12 text-center text-slate-500 font-medium">
@@ -869,14 +870,14 @@ export default function AdminDashboard() {
                                 onClick={() => setExpandedQuestionId(expandedQuestionId === q.id ? null : q.id)}
                                 className="text-slate-400 hover:text-white"
                               >
-                                {expandedQuestionId === q.id ? "▼" : "▶"}
+                                {expandedQuestionId === q.id ? <ChevronDown size={16} strokeWidth={2} /> : <ChevronRight size={16} strokeWidth={2} />}
                               </button>
                             </td>
                             <td className="px-6 py-4 font-medium text-slate-200">
                               <div className="line-clamp-2">{q.question}</div>
                             </td>
                             <td className="px-6 py-4 text-xs font-bold text-slate-400">
-                              {q.is_pyq ? <span className="text-amber-400">PYQ {q.pyq_year}</span> : <span className="text-indigo-400">Generated</span>}
+                              {q.is_pyq ? <span className="text-amber-400">PYQ {q.pyq_year}</span> : <span className="text-brand-accent-400">Generated</span>}
                             </td>
                             <td className="px-6 py-4 text-slate-500 text-xs whitespace-nowrap">
                               {new Date(q.created_at).toLocaleDateString()}
@@ -920,13 +921,13 @@ export default function AdminDashboard() {
         {activeTab === "Users" && (
           <div className="space-y-6">
             <h2 className="text-xl font-black text-slate-100 mb-6 flex items-center gap-3 border-b border-slate-800 pb-4">
-              <span className="bg-indigo-500/10 text-indigo-400 p-2 rounded-lg">👥</span> 
+              <span className="bg-brand-accent-500/10 text-brand-accent-400 p-2 rounded-lg"><Users size={18} strokeWidth={1.75} /></span>
               New Registrations & Intelligence
             </h2>
             <div className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-sm">
               {loadingUsers ? (
                 <div className="p-12 flex justify-center items-center">
-                  <div className="w-8 h-8 rounded-full border-4 border-slate-800 border-t-indigo-500 animate-spin"></div>
+                  <div className="w-8 h-8 rounded-full border-4 border-slate-800 border-t-brand-accent-500 animate-spin"></div>
                 </div>
               ) : users.length === 0 ? (
                 <div className="p-12 text-center text-slate-500 font-medium">
@@ -960,8 +961,8 @@ export default function AdminDashboard() {
                             {u.lastSignIn ? new Date(u.lastSignIn).toLocaleString() : 'Never'}
                           </td>
                           <td className="px-6 py-4 text-right">
-                            <span className="bg-amber-900/30 border border-amber-700/50 text-amber-400 px-3 py-1 rounded-full font-bold text-xs">
-                              ⚡ {u.credits}
+                            <span className="bg-amber-900/30 border border-amber-700/50 text-amber-400 px-3 py-1 rounded-full font-bold text-xs flex items-center gap-1">
+                              <Zap size={10} strokeWidth={2} /> {u.credits}
                             </span>
                           </td>
                         </tr>
@@ -979,7 +980,7 @@ export default function AdminDashboard() {
           <div className="space-y-8">
             <section>
               <h2 className="text-xl font-black text-slate-100 mb-2 flex items-center gap-3">
-                <span className="bg-amber-500/10 text-amber-400 p-2 rounded-lg">🧐</span>
+                <span className="bg-amber-500/10 text-amber-400 p-2 rounded-lg"><Search size={20} strokeWidth={1.75} aria-hidden="true" /></span>
                 AI Question Review
               </h2>
               <p className="text-sm text-slate-400 mb-6 max-w-2xl">
@@ -993,7 +994,7 @@ export default function AdminDashboard() {
                 <select
                   value={reviewExam}
                   onChange={(e) => setReviewExam(e.target.value)}
-                  className="bg-slate-900 border border-slate-800 text-slate-200 text-sm rounded-xl px-4 py-2 focus:outline-none focus:border-indigo-500"
+                  className="bg-slate-900 border border-slate-800 text-slate-200 text-sm rounded-xl px-4 py-2 focus:outline-none focus:border-brand-accent-500"
                 >
                   <option value="">All Exams</option>
                   {Object.keys(subjectsByExam).map((ex) => (
@@ -1005,22 +1006,22 @@ export default function AdminDashboard() {
                   disabled={loadingReview}
                   className="px-4 py-2 rounded-xl text-sm font-bold bg-slate-800 text-slate-200 hover:bg-slate-700 transition-colors disabled:opacity-50"
                 >
-                  {loadingReview ? "Loading..." : "↻ Refresh"}
+                  {loadingReview ? "Loading..." : <span className="flex items-center gap-1.5"><RefreshCw size={14} strokeWidth={2} /> Refresh</span>}
                 </button>
                 <div className="flex-1" />
                 <button
                   onClick={() => handleReview(pendingQuestions.map((q) => q.id), "approve")}
                   disabled={reviewBusy || pendingQuestions.length === 0}
-                  className="px-4 py-2 rounded-xl text-sm font-bold bg-emerald-600 text-white hover:bg-emerald-500 transition-colors disabled:opacity-40"
+                  className="px-4 py-2 rounded-xl text-sm font-bold bg-emerald-600 text-white hover:bg-emerald-500 transition-colors disabled:opacity-40 flex items-center gap-1.5"
                 >
-                  ✓ Approve All Shown
+                  <Check size={14} strokeWidth={2.5} /> Approve All Shown
                 </button>
                 <button
                   onClick={() => handleReview(pendingQuestions.map((q) => q.id), "reject")}
                   disabled={reviewBusy || pendingQuestions.length === 0}
-                  className="px-4 py-2 rounded-xl text-sm font-bold bg-rose-600/80 text-white hover:bg-rose-600 transition-colors disabled:opacity-40"
+                  className="px-4 py-2 rounded-xl text-sm font-bold bg-rose-600/80 text-white hover:bg-rose-600 transition-colors disabled:opacity-40 flex items-center gap-1.5"
                 >
-                  ✕ Reject All Shown
+                  <X size={14} strokeWidth={2.5} /> Reject All Shown
                 </button>
               </div>
 
@@ -1028,7 +1029,7 @@ export default function AdminDashboard() {
                 <div className="p-8 text-center text-slate-400 font-medium">Loading review queue...</div>
               ) : pendingQuestions.length === 0 ? (
                 <div className="p-12 text-center bg-slate-900/50 border border-slate-800 rounded-3xl">
-                  <div className="text-4xl mb-3 opacity-60">✨</div>
+                  <div className="mb-3 opacity-60 flex justify-center"><Sparkles size={36} strokeWidth={1.75} aria-hidden="true" /></div>
                   <p className="text-slate-300 font-bold">Queue is clear</p>
                   <p className="text-slate-500 text-sm mt-1">No AI questions are awaiting review{reviewExam ? ` for ${reviewExam}` : ""}.</p>
                 </div>
@@ -1038,7 +1039,7 @@ export default function AdminDashboard() {
                     <div key={q.id} className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
                       <div className="flex items-start justify-between gap-4 mb-3">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-[10px] font-bold uppercase tracking-widest bg-indigo-500/15 text-indigo-300 px-2 py-1 rounded-md">{q.exam_target}</span>
+                          <span className="text-[10px] font-bold uppercase tracking-widest bg-brand-accent-500/15 text-brand-accent-400 px-2 py-1 rounded-md">{q.exam_target}</span>
                           <span className="text-[10px] font-bold uppercase tracking-widest bg-slate-800 text-slate-300 px-2 py-1 rounded-md">{q.subject}</span>
                         </div>
                         <div className="flex gap-2 shrink-0">
@@ -1047,14 +1048,14 @@ export default function AdminDashboard() {
                             disabled={reviewBusy}
                             className="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-500 transition-colors disabled:opacity-40"
                           >
-                            ✓ Approve
+                            <Check size={14} strokeWidth={2} aria-hidden="true" /> Approve
                           </button>
                           <button
                             onClick={() => handleReview([q.id], "reject")}
                             disabled={reviewBusy}
                             className="px-3 py-1.5 rounded-lg text-xs font-bold bg-rose-600/80 text-white hover:bg-rose-600 transition-colors disabled:opacity-40"
                           >
-                            ✕ Reject
+                            <X size={14} strokeWidth={2} aria-hidden="true" /> Reject
                           </button>
                         </div>
                       </div>
@@ -1070,7 +1071,7 @@ export default function AdminDashboard() {
                             }`}
                           >
                             {String.fromCharCode(65 + idx)}. {opt}
-                            {idx === q.correct_index && <span className="ml-2 text-[10px] font-bold uppercase">✓ Key</span>}
+                            {idx === q.correct_index && <span className="ml-2 text-[10px] font-bold uppercase flex items-center gap-0.5 inline-flex"><Check size={10} strokeWidth={2.5} aria-hidden="true" /> Key</span>}
                           </div>
                         ))}
                       </div>
@@ -1087,7 +1088,7 @@ export default function AdminDashboard() {
           <div className="space-y-8 max-w-2xl">
             <section>
               <h2 className="text-xl font-black text-slate-100 mb-2 flex items-center gap-3">
-                <span className="bg-sky-500/10 text-sky-400 p-2 rounded-lg">📄</span>
+                <span className="bg-sky-500/10 text-sky-400 p-2 rounded-lg"><FileText size={20} strokeWidth={1.75} aria-hidden="true" /></span>
                 Download Full Mock PDF
               </h2>
               <p className="text-sm text-slate-400 mb-6 max-w-2xl">
@@ -1101,7 +1102,7 @@ export default function AdminDashboard() {
                   <select
                     value={exportExam}
                     onChange={(e) => setExportExam(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 text-slate-200 text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-slate-950 border border-slate-800 text-slate-200 text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-brand-accent-500"
                   >
                     {Object.keys(subjectsByExam).map((ex) => (
                       <option key={ex} value={ex}>{ex}</option>
@@ -1116,7 +1117,7 @@ export default function AdminDashboard() {
                     max={200}
                     value={exportCount}
                     onChange={(e) => setExportCount(Math.max(5, Math.min(200, parseInt(e.target.value) || 0)))}
-                    className="w-full bg-slate-950 border border-slate-800 text-slate-200 text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-slate-950 border border-slate-800 text-slate-200 text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-brand-accent-500"
                   />
                 </div>
                 <label className="flex items-center gap-3 cursor-pointer">
@@ -1124,16 +1125,16 @@ export default function AdminDashboard() {
                     type="checkbox"
                     checked={exportAnswers}
                     onChange={(e) => setExportAnswers(e.target.checked)}
-                    className="w-4 h-4 accent-indigo-600"
+                    className="w-4 h-4 accent-amber-500"
                   />
                   <span className="text-sm font-medium text-slate-300">Include answer key (appended at the end)</span>
                 </label>
                 <button
                   onClick={handleExportPdf}
                   disabled={isExporting}
-                  className="w-full py-3 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-500 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="w-full py-3 rounded-xl font-bold text-white bg-brand-accent-500 hover:bg-brand-accent-400 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                 >
-                  {isExporting ? "Generating PDF..." : "⬇ Download PDF"}
+                  {isExporting ? "Generating PDF..." : <><Download size={16} strokeWidth={1.75} aria-hidden="true" /> Download PDF</>}
                 </button>
               </div>
             </section>
@@ -1148,7 +1149,7 @@ export default function AdminDashboard() {
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-2xl font-black text-white">Add New Question</h3>
               <button onClick={() => setIsAddModalOpen(false)} className="text-slate-400 hover:text-white p-2">
-                ✕
+                <X size={18} strokeWidth={2} aria-hidden="true" />
               </button>
             </div>
             
@@ -1159,7 +1160,7 @@ export default function AdminDashboard() {
                   <select 
                     value={newQuestion.exam_target}
                     onChange={e => setNewQuestion({...newQuestion, exam_target: e.target.value})}
-                    className="w-full bg-slate-950 border border-slate-700 text-slate-200 text-sm px-4 py-3 rounded-xl focus:border-indigo-500 outline-none"
+                    className="w-full bg-slate-950 border border-slate-700 text-slate-200 text-sm px-4 py-3 rounded-xl focus:border-brand-accent-500 outline-none"
                   >
                     <option value="AFCAT">AFCAT</option>
                     <option value="NDA">NDA</option>
@@ -1171,7 +1172,7 @@ export default function AdminDashboard() {
                   <select 
                     value={newQuestion.subject}
                     onChange={e => setNewQuestion({...newQuestion, subject: e.target.value})}
-                    className="w-full bg-slate-950 border border-slate-700 text-slate-200 text-sm px-4 py-3 rounded-xl focus:border-indigo-500 outline-none"
+                    className="w-full bg-slate-950 border border-slate-700 text-slate-200 text-sm px-4 py-3 rounded-xl focus:border-brand-accent-500 outline-none"
                   >
                     {subjectsByExam[newQuestion.exam_target]?.map(subj => (
                       <option key={subj} value={subj}>{subj}</option>
@@ -1186,7 +1187,7 @@ export default function AdminDashboard() {
                   value={newQuestion.question}
                   onChange={e => setNewQuestion({...newQuestion, question: e.target.value})}
                   rows={4}
-                  className="w-full bg-slate-950 border border-slate-700 text-slate-200 text-sm px-4 py-3 rounded-xl focus:border-indigo-500 outline-none"
+                  className="w-full bg-slate-950 border border-slate-700 text-slate-200 text-sm px-4 py-3 rounded-xl focus:border-brand-accent-500 outline-none"
                   placeholder="Type the question here..."
                   required
                 />
@@ -1203,14 +1204,14 @@ export default function AdminDashboard() {
                           name="correct_index"
                           checked={newQuestion.correct_index === idx - 1}
                           onChange={() => setNewQuestion({...newQuestion, correct_index: idx - 1})}
-                          className="w-4 h-4 text-indigo-600 bg-slate-900 border-slate-700"
+                          className="w-4 h-4 text-brand-accent-600 bg-slate-900 border-slate-700"
                         />
                       </div>
                       <input 
                         type="text" 
                         value={(newQuestion as any)[`option${idx}`]}
                         onChange={e => setNewQuestion({...newQuestion, [`option${idx}`]: e.target.value})}
-                        className="w-full bg-slate-950 border border-slate-700 text-slate-200 text-sm px-4 py-3 rounded-xl focus:border-indigo-500 outline-none"
+                        className="w-full bg-slate-950 border border-slate-700 text-slate-200 text-sm px-4 py-3 rounded-xl focus:border-brand-accent-500 outline-none"
                         placeholder={`Option ${idx}`}
                         required
                       />
@@ -1226,7 +1227,7 @@ export default function AdminDashboard() {
                     id="newIsPyq"
                     checked={newQuestion.is_pyq}
                     onChange={e => setNewQuestion({...newQuestion, is_pyq: e.target.checked})}
-                    className="w-4 h-4 rounded border-slate-600 bg-slate-900 text-indigo-600 focus:ring-indigo-600"
+                    className="w-4 h-4 rounded border-slate-600 bg-slate-900 text-brand-accent-600 focus:ring-brand-accent-500"
                   />
                   <label htmlFor="newIsPyq" className="text-sm font-semibold text-slate-300 cursor-pointer">
                     Is Previous Year Question?
@@ -1238,7 +1239,7 @@ export default function AdminDashboard() {
                     value={newQuestion.pyq_year}
                     onChange={e => setNewQuestion({...newQuestion, pyq_year: e.target.value})}
                     placeholder="e.g. 2023"
-                    className="w-32 bg-slate-900 border border-slate-700 text-slate-200 text-sm px-3 py-1.5 rounded-lg focus:border-indigo-500 outline-none"
+                    className="w-32 bg-slate-900 border border-slate-700 text-slate-200 text-sm px-3 py-1.5 rounded-lg focus:border-brand-accent-500 outline-none"
                   />
                 )}
               </div>
@@ -1247,7 +1248,7 @@ export default function AdminDashboard() {
                 <button type="button" onClick={() => setIsAddModalOpen(false)} className="px-6 py-3 rounded-xl font-bold text-slate-400 hover:text-white transition-colors">
                   Cancel
                 </button>
-                <button type="submit" className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold transition-colors shadow-lg shadow-indigo-500/20">
+                <button type="submit" className="px-6 py-3 bg-brand-accent-500 hover:bg-brand-accent-400 text-white rounded-xl font-bold transition-colors shadow-lg shadow-brand-accent-500/20">
                   Save Question
                 </button>
               </div>

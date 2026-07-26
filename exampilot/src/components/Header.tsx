@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { MessageSquare, Flame, Zap, AlertTriangle } from "lucide-react";
 import { createClient } from "@/utils/supabase/server";
 
 import { getUserCredits } from "@/lib/creditManager";
@@ -94,7 +95,7 @@ export default async function Header() {
   return (
     <header
       id="app-header"
-      className="print:hidden sticky top-0 z-50 bg-white border-b border-gray-100 safe-top w-full"
+      className="print:hidden sticky top-0 z-50 bg-white/85 backdrop-blur-md border-b border-slate-900/10 shadow-[0_2px_20px_rgba(0,0,0,0.05)] transition-all duration-smooth ease-standard safe-top w-full"
       style={{ height: "var(--header-height)" }}
     >
       <div className="flex justify-between items-center w-full px-6 py-4 max-w-7xl mx-auto">
@@ -103,13 +104,13 @@ export default async function Header() {
         <Link
           href="/"
           data-testid="header-title"
-          className="flex items-center gap-2 outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 rounded-lg shrink-0"
+          className="flex items-center gap-2 outline-none focus-visible:ring-2 focus-visible:ring-brand-accent-400 rounded-lg shrink-0"
           aria-label="ExamPilot home"
         >
           <div
             className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
             style={{
-              background: "linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)",
+              background: "linear-gradient(135deg, #F5A623 0%, #D98A0F 100%)",
             }}
             aria-hidden="true"
           >
@@ -125,7 +126,7 @@ export default async function Header() {
             </svg>
           </div>
           <span className="text-lg font-bold tracking-tight text-gray-900 hidden sm:block">
-            Exam<span className="text-indigo-600">Pilot</span>
+            Exam<span className="text-brand-accent-500">Pilot</span>
           </span>
         </Link>
 
@@ -136,13 +137,13 @@ export default async function Header() {
               href="mailto:support@exampilot.in?subject=[Beta%20Feedback]%20ExamPilot"
               className="hidden sm:flex items-center gap-1.5 h-9 px-3.5 bg-amber-100 border-[0.5px] border-amber-200 rounded-full text-xs font-bold text-amber-700 shadow-sm hover:bg-amber-200 transition-colors focus-visible:ring-2 focus-visible:ring-amber-400 outline-none whitespace-nowrap shrink-0"
             >
-              <span aria-hidden="true" className="text-sm leading-none flex-shrink-0">💬</span> 
+              <MessageSquare width={14} height={14} strokeWidth={1.75} aria-hidden="true" className="flex-shrink-0" />
               Give Feedback
             </a>
-            
+
             {upcomingExam && (
               <div className="flex items-center gap-1.5 h-9 px-3.5 bg-orange-50 border-[0.5px] border-orange-200 rounded-full text-xs font-bold text-orange-700 shadow-sm transition-colors whitespace-nowrap shrink-0">
-                <span aria-hidden="true" className="text-sm leading-none flex-shrink-0">🔥</span>
+                <Flame width={14} height={14} strokeWidth={1.75} aria-hidden="true" className="flex-shrink-0" />
                 {upcomingExam.daysLeft === 0 ? `Today is ${upcomingExam.name}!` : `${upcomingExam.daysLeft} Days to ${upcomingExam.name}`}
               </div>
             )}
@@ -151,18 +152,20 @@ export default async function Header() {
               <div className={`flex items-center gap-1.5 h-9 px-3.5 border-[0.5px] rounded-full text-xs font-bold shadow-sm transition-colors whitespace-nowrap shrink-0 ${
                 userCredits < LOW_CREDIT_THRESHOLD
                   ? "bg-rose-50 border-rose-200 text-rose-700"
-                  : "bg-indigo-50 border-indigo-100 text-indigo-600"
+                  : "bg-amber-50 border-amber-100 text-brand-accent-500"
               }`}>
-                <span aria-hidden="true" className="text-sm leading-none flex-shrink-0">
-                  {userCredits < LOW_CREDIT_THRESHOLD ? "⚠️" : "⚡"}
-                </span> 
+                {userCredits < LOW_CREDIT_THRESHOLD ? (
+                  <AlertTriangle width={14} height={14} strokeWidth={1.75} aria-hidden="true" className="flex-shrink-0" />
+                ) : (
+                  <Zap width={14} height={14} strokeWidth={1.75} aria-hidden="true" className="flex-shrink-0" />
+                )}
                 {userCredits} <span className="hidden sm:inline">Credits</span>
               </div>
             )}
 
             {streak > 0 && (
-              <div className="flex items-center gap-1.5 h-9 px-3.5 bg-indigo-50 border-[0.5px] border-indigo-100 rounded-full text-xs font-bold text-orange-600 shadow-sm whitespace-nowrap shrink-0">
-                <span className="text-sm leading-none flex-shrink-0" aria-hidden="true">🔥</span>
+              <div className="flex items-center gap-1.5 h-9 px-3.5 bg-amber-50 border-[0.5px] border-amber-100 rounded-full text-xs font-bold text-orange-600 shadow-sm whitespace-nowrap shrink-0">
+                <Flame width={14} height={14} strokeWidth={1.75} className="flex-shrink-0 text-orange-500" aria-hidden="true" />
                 <span
                   style={{
                     background: "linear-gradient(135deg, #F59E0B 0%, #EA580C 100%)",
@@ -181,11 +184,11 @@ export default async function Header() {
               data-testid="header-settings-link"
               href="/settings"
               aria-label={`Account settings for ${userEmail}`}
-              className="flex items-center outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 rounded-full shrink-0 ml-1"
+              className="flex items-center outline-none focus-visible:ring-2 focus-visible:ring-brand-accent-500 rounded-full shrink-0 ml-1"
             >
               <div
                 className="w-9 h-9 shrink-0 rounded-full flex items-center justify-center text-white text-xs font-bold transition-opacity duration-150 hover:opacity-80"
-                style={{ background: "linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)" }}
+                style={{ background: "linear-gradient(135deg, #F5A623 0%, #D98A0F 100%)" }}
                 aria-hidden="true"
               >
                 {userInitial}
@@ -198,7 +201,7 @@ export default async function Header() {
             id="header-sign-in-link"
             data-testid="header-sign-in-link"
             href="/login"
-            className="text-sm font-semibold text-indigo-600 hover:text-indigo-700 transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 rounded"
+            className="text-sm font-semibold text-brand-accent-500 hover:text-amber-700 transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-brand-accent-400 rounded"
           >
             Sign in
           </Link>

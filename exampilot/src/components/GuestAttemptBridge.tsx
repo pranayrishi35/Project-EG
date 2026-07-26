@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { CheckCircle } from "lucide-react";
 import { bridgeGuestAttempt } from "@/app/actions/bridgeGuestAttempt";
 
 export default function GuestAttemptBridge() {
@@ -44,7 +45,7 @@ export default function GuestAttemptBridge() {
   return (
     <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-8 flex items-start gap-4 shadow-sm animate-fade-in">
       <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 flex-shrink-0">
-        🎉
+        <CheckCircle size={20} strokeWidth={1.75} aria-hidden="true" />
       </div>
       <div>
         <h3 className="text-sm font-bold text-emerald-900">Your demo mock has been saved to your profile!</h3>

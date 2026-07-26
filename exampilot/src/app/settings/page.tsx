@@ -91,7 +91,7 @@ export default async function SettingsPage() {
 
       {/* ── Page header ───────────────────────────────────────────────── */}
       <div>
-        <p className="text-xs font-semibold uppercase tracking-widest text-indigo-500 mb-0.5">
+        <p className="text-xs font-semibold uppercase tracking-widest text-brand-accent-600 mb-0.5">
           Account
         </p>
         <h1 className="text-xl font-bold text-gray-900">Settings</h1>
@@ -100,12 +100,12 @@ export default async function SettingsPage() {
       {/* ── Profile card ──────────────────────────────────────────────── */}
       <div
         className="relative rounded-2xl p-6 flex flex-col items-center gap-4 text-center overflow-hidden"
-        style={{ background: "linear-gradient(135deg, #4F46E5 0%, #6D28D9 100%)" }}
+        style={{ background: "linear-gradient(135deg, #F5A623 0%, #D98A0F 100%)" }}
       >
         {/* Decorative orb */}
         <div
           className="absolute -top-10 -right-10 w-40 h-40 rounded-full opacity-20 pointer-events-none"
-          style={{ background: "radial-gradient(circle, #A5B4FC, transparent 70%)" }}
+          style={{ background: "radial-gradient(circle, #FFB800, transparent 70%)" }}
           aria-hidden="true"
         />
 
@@ -168,7 +168,7 @@ export default async function SettingsPage() {
           <span className="text-sm text-gray-500">Study Plans</span>
           <Link
             href="/planner"
-            className="text-sm font-semibold text-indigo-600 hover:text-indigo-700 transition-colors"
+            className="text-sm font-semibold text-brand-accent-600 hover:text-amber-700 transition-colors"
           >
             View all →
           </Link>

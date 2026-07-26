@@ -91,17 +91,17 @@ export function PlanViewerSkeleton() {
   return (
     <div className="flex flex-col gap-5 p-4 pt-6 pb-24" aria-busy="true" aria-label="Loading study plan">
       {/* Hero skeleton */}
-      <div className="rounded-2xl p-6 bg-indigo-100 animate-pulse flex flex-col gap-3">
-        <div className="h-3 w-24 bg-indigo-200 rounded-lg" />
-        <div className="h-7 w-48 bg-indigo-200 rounded-lg" />
-        <div className="h-4 w-36 bg-indigo-200 rounded-lg" />
+      <div className="rounded-2xl p-6 bg-amber-50 animate-pulse flex flex-col gap-3">
+        <div className="h-3 w-24 bg-amber-100 rounded-lg" />
+        <div className="h-7 w-48 bg-amber-100 rounded-lg" />
+        <div className="h-4 w-36 bg-amber-100 rounded-lg" />
         {/* Progress bar */}
         <div className="mt-2 flex flex-col gap-1.5">
           <div className="flex justify-between">
-            <div className="h-3 w-28 bg-indigo-200 rounded-lg" />
-            <div className="h-3 w-8 bg-indigo-200 rounded-lg" />
+            <div className="h-3 w-28 bg-amber-100 rounded-lg" />
+            <div className="h-3 w-8 bg-amber-100 rounded-lg" />
           </div>
-          <div className="h-2 w-full bg-indigo-200 rounded-full" />
+          <div className="h-2 w-full bg-amber-100 rounded-full" />
         </div>
       </div>
 

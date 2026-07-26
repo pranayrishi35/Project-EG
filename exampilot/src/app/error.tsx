@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
+import { AlertTriangle } from "lucide-react";
 
 export default function GlobalError({
   error,
@@ -21,8 +22,8 @@ export default function GlobalError({
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-400 to-rose-600" aria-hidden="true" />
         
         <div className="p-8 pb-6">
-          <div className="w-16 h-16 bg-rose-50 text-rose-500 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-6 shadow-sm border border-rose-100">
-            ⚠️
+          <div className="w-16 h-16 bg-rose-50 text-rose-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm border border-rose-100">
+            <AlertTriangle size={32} strokeWidth={1.75} aria-hidden="true" />
           </div>
           
           <h2 className="text-2xl font-black text-slate-800 tracking-tight mb-2">

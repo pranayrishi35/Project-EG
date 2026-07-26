@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import { checkIsAdmin } from "@/lib/adminAuth";
 import AdminLogin from "@/components/AdminLogin";
+import { Shield } from "lucide-react";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = createClient();
@@ -23,10 +24,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <div className="bg-slate-900 border-b border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-             <span className="text-2xl" aria-hidden="true">🛡️</span>
+             <span className="text-2xl" aria-hidden="true"><Shield size={22} strokeWidth={1.75} className="text-brand-accent-500" /></span>
              <div>
                <h1 className="text-xl font-black text-white tracking-tight">Admin Command Center</h1>
-               <p className="text-xs text-indigo-400 font-bold uppercase tracking-widest">Restricted Access</p>
+               <p className="text-xs text-brand-accent-500 font-bold uppercase tracking-widest">Restricted Access</p>
              </div>
           </div>
           <div className="flex items-center gap-4">

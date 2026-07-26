@@ -20,11 +20,11 @@ export default function BookletsLoading() {
               <div key={i} className="h-[160px] bg-white rounded-3xl border border-gray-100 shadow-sm p-6 flex flex-col justify-between">
                 <div>
                   <div className="h-6 w-3/4 bg-gray-200 rounded mb-2" />
-                  <div className="h-4 w-1/2 bg-indigo-100 rounded" />
+                  <div className="h-4 w-1/2 bg-amber-100 rounded" />
                 </div>
                 <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-50">
                   <div className="h-4 w-24 bg-gray-100 rounded" />
-                  <div className="h-8 w-8 rounded-full bg-indigo-50" />
+                  <div className="h-8 w-8 rounded-full bg-amber-50" />
                 </div>
               </div>
             ))}

@@ -159,6 +159,28 @@ const nextConfig = {
       '/refund-policy': ['./docs/legal/**/*']
     },
   },
+  webpack(config, ctx) {
+    // Edge Runtime V8 sandbox disallows dynamic string evaluation (eval).
+    // Ensure Webpack sourcemaps never use eval wrappers in Edge Runtime or production builds:
+    if (ctx.nextRuntime === 'edge' || (config.devtool && typeof config.devtool === 'string' && config.devtool.includes('eval'))) {
+      config.devtool = ctx.dev ? 'inline-source-map' : false;
+    }
+
+    // Intercept development pre-loaders (such as Reticle's data-reticle-source JSX injection)
+    // and exclude Three.js Canvas components to prevent R3F dashed-prop split collisions
+    // (e.g. attempting to assign instance.data.reticle.source on Three.js geometry meshes).
+    if (config.module && Array.isArray(config.module.rules)) {
+      config.module.rules.forEach((rule) => {
+        if (rule && rule.enforce === 'pre' && rule.test && String(rule.test).includes('sx')) {
+          rule.exclude = [
+            ...(Array.isArray(rule.exclude) ? rule.exclude : rule.exclude ? [rule.exclude] : []),
+            /Canvas\.tsx$/,
+          ];
+        }
+      });
+    }
+    return config;
+  },
   async headers() {
     return [
       {
@@ -174,4 +196,29 @@ const nextConfig = {
   },
 };
 
-export default withReticle(withPWA(nextConfig));
+const configWithPWA = withPWA(nextConfig);
+const baseConfig = process.env.NODE_ENV === 'development' ? withReticle(configWithPWA) : configWithPWA;
+
+const origWebpack = baseConfig.webpack;
+baseConfig.webpack = (config, ctx) => {
+  const res = origWebpack ? origWebpack(config, ctx) : config;
+  console.log(`=== WEBPACK COMPILATION [name: ${ctx.name || 'unknown'}, runtime: ${ctx.nextRuntime || 'none'}, dev: ${ctx.dev}] devtool before: ${res.devtool}`);
+  
+  // Unconditionally force devtool to false across ALL build targets:
+  res.devtool = false;
+
+  if (Array.isArray(res.plugins)) {
+    res.plugins = res.plugins.filter((p) => {
+      const pName = p && p.constructor && p.constructor.name;
+      if (pName && (pName.includes('Eval') || pName.includes('SourceMap'))) {
+        console.log(`=== REMOVING WEBPACK PLUGIN: ${pName}`);
+        return false;
+      }
+      return true;
+    });
+  }
+  console.log(`=== WEBPACK COMPILATION [name: ${ctx.name || 'unknown'}] devtool after: ${res.devtool}`);
+  return res;
+};
+
+export default baseConfig;

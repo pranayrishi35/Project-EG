@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { Brain, Target, Map, Shield, Plane } from "lucide-react";
 
 // A scripted, no-cost taste of Tejas for the guest landing page. It plays a
 // short canned conversation on a loop so visitors see the wingman in action
@@ -13,20 +14,20 @@ const SCRIPT: Turn[] = [
   { role: "user", text: "Explain Bernoulli's principle simply." },
   {
     role: "assistant",
-    text: "**Bernoulli's principle** 🛩️\n\nFast-moving air = low pressure. Slow-moving air = high pressure.\n\n- A wing is curved on top, flat below.\n- Air moves *faster* over the top → lower pressure above.\n- Higher pressure below pushes the wing up → **lift**.\n\nThat's how your Tejas jet flies. Want a quick MCQ on it?",
+    text: "**Bernoulli's principle**\n\nFast-moving air = low pressure. Slow-moving air = high pressure.\n\n- A wing is curved on top, flat below.\n- Air moves *faster* over the top → lower pressure above.\n- Higher pressure below pushes the wing up → **lift**.\n\nThat's how your Tejas jet flies. Want a quick MCQ on it?",
   },
   { role: "user", text: "Yes, quiz me!" },
   {
     role: "assistant",
-    text: "**Q.** Lift on an aircraft wing is generated primarily due to:\n\n- A) Gravity\n- B) Pressure difference ✅\n- C) Engine thrust\n- D) Air temperature\n\nNailed it? Create a free account and I'll run full adaptive drills with you. 🎯",
+    text: "**Q.** Lift on an aircraft wing is generated primarily due to:\n\n- A) Gravity\n- B) Pressure difference (Correct)\n- C) Engine thrust\n- D) Air temperature\n\nNailed it? Create a free account and I'll run full adaptive drills with you.",
   },
 ];
 
 const FEATURES = [
-  { icon: "🧠", title: "Concept breakdowns", desc: "Any topic, explained for a small screen in seconds." },
-  { icon: "🎯", title: "Instant drills", desc: "On-demand MCQs tuned to defense-exam patterns." },
-  { icon: "🗺️", title: "Revision strategy", desc: "High-yield plans for your final days before the exam." },
-  { icon: "🛡️", title: "Always on-mission", desc: "Laser-focused on your syllabus — no distractions." },
+  { icon: Brain, title: "Concept breakdowns", desc: "Any topic, explained for a small screen in seconds." },
+  { icon: Target, title: "Instant drills", desc: "On-demand MCQs tuned to defense-exam patterns." },
+  { icon: Map, title: "Revision strategy", desc: "High-yield plans for your final days before the exam." },
+  { icon: Shield, title: "Always on-mission", desc: "Laser-focused on your syllabus — no distractions." },
 ];
 
 export default function TejasSpotlight() {
@@ -107,18 +108,18 @@ export default function TejasSpotlight() {
     <div
       ref={containerRef}
       id="tejas"
-      className="scroll-mt-24 w-full rounded-3xl overflow-hidden border border-indigo-500/20 bg-slate-950 shadow-[0_0_25px_rgba(99,102,241,0.15)] animate-fade-in"
+      className="scroll-mt-24 w-full rounded-3xl overflow-hidden border border-brand-border-subtle bg-brand-bg-surface shadow-[0_0_25px_rgba(245,166,35,0.1)] animate-fade-in"
     >
       <div className="grid grid-cols-1 md:grid-cols-2">
         {/* Left: pitch + features */}
         <div className="relative p-6 md:p-8 flex flex-col justify-center gap-5 overflow-hidden">
-          <div className="pointer-events-none absolute -left-10 -top-10 w-40 h-40 rounded-full bg-indigo-600/20 blur-3xl" aria-hidden="true" />
+          <div className="pointer-events-none absolute -left-10 -top-10 w-40 h-40 rounded-full bg-brand-accent-500/10 blur-3xl" aria-hidden="true" />
           <div className="relative z-10">
-            <span className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-indigo-300 bg-indigo-500/10 border border-indigo-500/30 px-3 py-1 rounded-full">
+            <span className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-brand-accent-500 bg-brand-accent-500/10 border border-brand-accent-500/30 px-3 py-1 rounded-full">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> Meet your wingman
             </span>
             <h2 className="mt-4 text-3xl md:text-4xl font-black text-white tracking-tight">
-              Tejas <span className="text-lg align-middle">🛩️</span>
+              Tejas <Plane size={20} strokeWidth={1.75} className="inline-block align-middle text-brand-accent-500" />
             </h2>
             <p className="mt-2 text-sm text-slate-300 leading-relaxed max-w-sm">
               Your always-on AI study wingman. Ask anything on your syllabus and get sharp, exam-ready answers built for
@@ -129,7 +130,7 @@ export default function TejasSpotlight() {
           <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 gap-3">
             {FEATURES.map((f) => (
               <div key={f.title} className="flex items-start gap-3 rounded-2xl bg-white/[0.03] border border-white/10 p-3">
-                <span className="text-xl leading-none" aria-hidden="true">{f.icon}</span>
+                <f.icon size={18} strokeWidth={1.75} className="text-brand-accent-500 shrink-0 mt-0.5" aria-hidden="true" />
                 <div>
                   <p className="text-xs font-bold text-white">{f.title}</p>
                   <p className="text-[11px] text-slate-400 leading-snug mt-0.5">{f.desc}</p>
@@ -140,16 +141,18 @@ export default function TejasSpotlight() {
 
           <button
             onClick={launchTejas}
-            className="relative z-10 self-start inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-black shadow-lg shadow-indigo-600/30 transition-all active:scale-95"
+            className="relative z-10 self-start inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-brand-accent-500 hover:bg-brand-accent-400 text-brand-accent-ink text-sm font-black shadow-lg shadow-brand-accent-500/30 transition-all active:scale-95"
           >
-            🛫 Talk to Tejas now
+            <Plane size={16} strokeWidth={1.75} /> Talk to Tejas now
           </button>
         </div>
 
         {/* Right: scripted live-demo window */}
         <div className="border-t md:border-t-0 md:border-l border-white/10 bg-slate-900/60 p-5 md:p-6 flex flex-col">
           <div className="flex items-center gap-2.5 pb-3 border-b border-white/10">
-            <div className="w-8 h-8 rounded-xl bg-indigo-600/30 ring-1 ring-indigo-400/40 flex items-center justify-center text-base">🛩️</div>
+            <div className="w-8 h-8 rounded-xl bg-brand-accent-500/20 ring-1 ring-brand-accent-500/40 flex items-center justify-center">
+              <Plane size={14} strokeWidth={1.75} className="text-brand-accent-500" />
+            </div>
             <div>
               <p className="text-xs font-black text-white leading-tight">Tejas</p>
               <p className="text-[9px] uppercase tracking-widest font-bold text-emerald-400">Live demo</p>
@@ -162,8 +165,8 @@ export default function TejasSpotlight() {
                 <div
                   className={`px-3 py-2 rounded-2xl text-xs leading-relaxed shadow-sm ${
                     turn.role === "user"
-                      ? "bg-indigo-600 text-white rounded-br-sm"
-                      : "bg-slate-800 text-slate-100 border border-white/10 rounded-bl-sm prose prose-invert prose-xs max-w-none prose-p:my-1 prose-ul:my-1 prose-li:my-0.5 prose-strong:text-indigo-300"
+                      ? "bg-brand-accent-500 text-brand-accent-ink rounded-br-sm"
+                      : "bg-slate-800 text-slate-100 border border-white/10 rounded-bl-sm prose prose-invert prose-xs max-w-none prose-p:my-1 prose-ul:my-1 prose-li:my-0.5 prose-strong:text-amber-300"
                   }`}
                 >
                   {turn.role === "assistant" ? (
@@ -177,9 +180,9 @@ export default function TejasSpotlight() {
 
             {typing && (
               <div className="self-start flex items-center gap-1.5 px-3 py-2.5 bg-slate-800 border border-white/10 rounded-2xl rounded-bl-sm">
-                <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: "0ms" }} />
-                <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: "150ms" }} />
-                <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: "300ms" }} />
+                <span className="w-1.5 h-1.5 rounded-full bg-brand-accent-500 animate-bounce" style={{ animationDelay: "0ms" }} />
+                <span className="w-1.5 h-1.5 rounded-full bg-brand-accent-500 animate-bounce" style={{ animationDelay: "150ms" }} />
+                <span className="w-1.5 h-1.5 rounded-full bg-brand-accent-500 animate-bounce" style={{ animationDelay: "300ms" }} />
               </div>
             )}
           </div>

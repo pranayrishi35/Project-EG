@@ -8,6 +8,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import Link from "next/link";
 import PrimaryButton from "./PrimaryButton";
+import { Map, Target, Zap, Bot } from "lucide-react";
 
 const MissionClock = dynamic(() => import("./MissionClock"), { ssr: false });
 
@@ -166,7 +167,7 @@ export default function DemoTestRunner({ questions }: { questions: Question[] })
         highlightColor = "text-amber-600";
       } else if (score <= 20) {
         percentileMsg = "You're ahead of 58% of casual aspirants! Keep pushing!";
-        highlightColor = "text-indigo-600";
+        highlightColor = "text-brand-accent-500";
       } else if (score <= 30) {
         percentileMsg = "You're ahead of 82% of casual aspirants! Great work.";
         highlightColor = "text-emerald-600";
@@ -177,16 +178,16 @@ export default function DemoTestRunner({ questions }: { questions: Question[] })
     }
 
     return (
-      <div className="flex flex-col items-center justify-center p-6 md:p-12 bg-indigo-50 border border-indigo-100 rounded-3xl min-h-[400px] shadow-sm w-full max-w-4xl mx-auto">
-        <span className="text-6xl mb-4" aria-hidden="true">🎯</span>
-        <h2 className="text-3xl font-black text-indigo-950 mb-2">Demo Complete</h2>
+      <div className="flex flex-col items-center justify-center p-6 md:p-12 bg-amber-50 border border-amber-100 rounded-3xl min-h-[400px] shadow-sm w-full max-w-4xl mx-auto">
+        <Target size={56} strokeWidth={1.25} className="text-brand-accent-500 mb-4" aria-hidden="true" />
+        <h2 className="text-3xl font-black text-brand-ink-primary mb-2">Demo Complete</h2>
         <p className="text-lg text-slate-700 font-medium max-w-md mb-8 text-center">
-          Your estimated score is <strong className="text-indigo-600 text-2xl">{score}</strong>. 
+          Your estimated score is <strong className="text-brand-accent-600 text-2xl">{score}</strong>.
           <br/>
           <span className={`font-bold ${highlightColor}`}>{percentileMsg}</span>
         </p>
 
-        <div className="w-full bg-white p-6 md:p-8 rounded-2xl border border-indigo-100 shadow-sm mb-8 text-left">
+        <div className="w-full bg-white p-6 md:p-8 rounded-2xl border border-amber-100 shadow-sm mb-8 text-left">
           <p className="text-sm font-black text-slate-800 uppercase tracking-widest mb-6 flex items-center justify-center gap-2 text-center">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
             Unlock 100% Free Access
@@ -194,28 +195,28 @@ export default function DemoTestRunner({ questions }: { questions: Question[] })
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <div className="p-4 rounded-xl border border-slate-100 bg-slate-50 flex items-start gap-3">
-              <span className="text-2xl mt-1" aria-hidden="true">🗺️</span>
+              <Map size={20} strokeWidth={1.75} className="text-brand-accent-500 mt-1 shrink-0" aria-hidden="true" />
               <div>
                 <h3 className="font-bold text-slate-900 text-sm">AI Study Planner</h3>
                 <p className="text-xs text-slate-600 mt-1">Generate personalized, day-by-day tactical study plans.</p>
               </div>
             </div>
             <div className="p-4 rounded-xl border border-slate-100 bg-slate-50 flex items-start gap-3">
-              <span className="text-2xl mt-1" aria-hidden="true">🎯</span>
+              <Target size={20} strokeWidth={1.75} className="text-brand-accent-500 mt-1 shrink-0" aria-hidden="true" />
               <div>
                 <h3 className="font-bold text-slate-900 text-sm">Practice Hub</h3>
                 <p className="text-xs text-slate-600 mt-1">Access thousands of PYQs and full-length CBT mocks.</p>
               </div>
             </div>
             <div className="p-4 rounded-xl border border-slate-100 bg-slate-50 flex items-start gap-3">
-              <span className="text-2xl mt-1" aria-hidden="true">⚡</span>
+              <Zap size={20} strokeWidth={1.75} className="text-brand-accent-500 mt-1 shrink-0" aria-hidden="true" />
               <div>
                 <h3 className="font-bold text-slate-900 text-sm">Smart Booklets</h3>
                 <p className="text-xs text-slate-600 mt-1">Memorize faster with daily interactive flashcards.</p>
               </div>
             </div>
             <div className="p-4 rounded-xl border border-slate-100 bg-slate-50 flex items-start gap-3">
-              <span className="text-2xl mt-1" aria-hidden="true">🤖</span>
+              <Bot size={20} strokeWidth={1.75} className="text-brand-accent-500 mt-1 shrink-0" aria-hidden="true" />
               <div>
                 <h3 className="font-bold text-slate-900 text-sm">Tactical AI Coach</h3>
                 <p className="text-xs text-slate-600 mt-1">Instant performance breakdowns and targeted drills.</p>
@@ -224,7 +225,7 @@ export default function DemoTestRunner({ questions }: { questions: Question[] })
           </div>
           
           <div className="text-center">
-             <p className="text-indigo-700 font-black text-sm uppercase tracking-wide">No credit card, no hidden fees to start.</p>
+             <p className="text-amber-700 font-black text-sm uppercase tracking-wide">No credit card, no hidden fees to start.</p>
           </div>
         </div>
         
@@ -247,7 +248,7 @@ export default function DemoTestRunner({ questions }: { questions: Question[] })
         {/* Header */}
         <div className="flex items-center justify-between p-4 md:px-8 border-b border-gray-100 bg-white z-20 pointer-events-auto">
            <div className="flex items-center gap-3">
-             <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-sm">
+             <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-sm">
                {currentQuestionIndex + 1}
              </div>
              <span className="font-bold text-slate-800 hidden md:block">
@@ -301,7 +302,7 @@ export default function DemoTestRunner({ questions }: { questions: Question[] })
                 <button 
                   type="button"
                   onClick={() => markForReviewAndNext(qId)}
-                  className="px-3 md:px-4 py-3 rounded-xl border-2 border-indigo-600 text-indigo-600 font-bold text-xs md:text-sm hover:bg-indigo-50 transition-colors min-h-[44px] hidden sm:block"
+                  className="px-3 md:px-4 py-3 rounded-xl border-2 border-brand-accent-500 text-brand-accent-500 font-bold text-xs md:text-sm hover:bg-brand-accent-500/10 transition-colors min-h-[44px] hidden sm:block"
                 >
                   Mark & Next
                 </button>
@@ -310,14 +311,14 @@ export default function DemoTestRunner({ questions }: { questions: Question[] })
                <button 
                   type="button"
                   onClick={() => markForReviewAndNext(qId)}
-                  className="px-3 py-3 rounded-xl border-2 border-indigo-600 text-indigo-600 font-bold text-xs hover:bg-indigo-50 transition-colors min-h-[44px] sm:hidden"
+                  className="px-3 py-3 rounded-xl border-2 border-brand-accent-500 text-brand-accent-500 font-bold text-xs hover:bg-brand-accent-500/10 transition-colors min-h-[44px] sm:hidden"
                >
                   Mark
                </button>
                <button 
                   type="button"
                   onClick={() => saveAndNext(qId)}
-                  className="px-4 md:px-6 py-3 rounded-xl bg-indigo-600 text-white font-black text-xs md:text-sm hover:bg-indigo-700 hover:shadow-lg transition-all min-h-[44px]"
+                  className="px-4 md:px-6 py-3 rounded-xl bg-brand-accent-500 text-brand-accent-ink font-black text-xs md:text-sm hover:bg-brand-accent-400 hover:shadow-lg transition-all min-h-[44px]"
                >
                   Save & Next
                </button>
@@ -386,17 +387,17 @@ const OptionButton = memo(function OptionButton({ optionText, optionId, question
       type="button"
       onClick={() => onSelect(questionId, optionId)}
       className={`text-left p-4 rounded-xl border-2 transition-all duration-200 flex items-center gap-4 group min-h-[44px] active:scale-[0.98] ${
-        isSelected 
-          ? 'border-indigo-600 bg-indigo-50 shadow-md' 
+        isSelected
+          ? 'border-brand-accent-500 bg-brand-accent-500/10 shadow-md'
           : 'border-slate-300 bg-white hover:border-slate-400 hover:bg-slate-50'
       }`}
     >
       <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
-        isSelected ? 'border-indigo-600 bg-indigo-600 text-white font-bold' : 'border-slate-400 text-transparent group-hover:border-slate-500'
+        isSelected ? 'border-brand-accent-600 bg-brand-accent-600 text-white font-bold' : 'border-slate-400 text-transparent group-hover:border-slate-500'
       }`}>
         {isSelected && <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
       </div>
-      <span className={`text-base font-medium leading-tight ${isSelected ? 'text-indigo-900' : 'text-slate-700'}`}>{optionText}</span>
+      <span className={`text-base font-medium leading-tight ${isSelected ? 'text-amber-900' : 'text-slate-700'}`}>{optionText}</span>
     </button>
   );
 });
@@ -405,14 +406,14 @@ const PaletteButton = memo(function PaletteButton({ number, status, isActive, on
   let styleClass = "bg-slate-200 text-slate-700 rounded border border-slate-300";
   if (status === "unanswered") styleClass = "bg-red-500 text-white rounded-t-md shadow-sm";
   if (status === "answered") styleClass = "bg-green-600 text-white rounded-b-md shadow-sm";
-  if (status === "marked") styleClass = "bg-purple-600 text-white rounded-full shadow-sm";
-  if (status === "answered_and_marked") styleClass = "bg-purple-600 text-white rounded-full shadow-sm relative";
+  if (status === "marked") styleClass = "bg-amber-500 text-white rounded-full shadow-sm";
+  if (status === "answered_and_marked") styleClass = "bg-amber-500 text-white rounded-full shadow-sm relative";
   
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`w-full aspect-square flex items-center justify-center font-bold text-sm transition-transform hover:scale-105 active:scale-95 relative pointer-events-auto ${styleClass} ${isActive ? 'ring-2 ring-offset-2 ring-indigo-500' : ''}`}
+      className={`w-full aspect-square flex items-center justify-center font-bold text-sm transition-transform hover:scale-105 active:scale-95 relative pointer-events-auto ${styleClass} ${isActive ? 'ring-2 ring-offset-2 ring-brand-accent-500' : ''}`}
     >
       {number}
       {status === "answered_and_marked" && (

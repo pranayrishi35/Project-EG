@@ -20,6 +20,7 @@ import CreditModal from "./CreditModal";
 import { create } from 'zustand';
 import { EXAM_CONFIGS, ExamTarget } from "@/lib/examConfig";
 import type { Question, ScoringMap } from "@/app/actions/getMockTest";
+import { Zap, Target, Brain, Newspaper, Star } from "lucide-react";
 
 // --- Zustand Store (Granular State Management) ---
 
@@ -150,13 +151,13 @@ const PaletteButton = memo(function PaletteButton({ questionId, questionNumber, 
   let styleClass = "bg-slate-200 text-slate-700 rounded border border-slate-300";
   if (status === "unanswered") styleClass = "bg-red-500 text-white rounded-t-md shadow-sm";
   if (status === "answered") styleClass = "bg-green-600 text-white rounded-b-md shadow-sm";
-  if (status === "marked") styleClass = "bg-purple-600 text-white rounded-full shadow-sm";
-  if (status === "answered_and_marked") styleClass = "bg-purple-600 text-white rounded-full shadow-sm relative";
+  if (status === "marked") styleClass = "bg-amber-600 text-white rounded-full shadow-sm";
+  if (status === "answered_and_marked") styleClass = "bg-amber-600 text-white rounded-full shadow-sm relative";
   
   return (
     <button
       onClick={onClick}
-      className={`w-full aspect-square flex items-center justify-center font-bold text-sm transition-transform hover:scale-105 active:scale-95 relative z-50 pointer-events-auto ${styleClass} ${isActive ? 'ring-2 ring-offset-2 ring-indigo-500' : ''}`}
+      className={`w-full aspect-square flex items-center justify-center font-bold text-sm transition-transform hover:scale-105 active:scale-95 relative z-50 pointer-events-auto ${styleClass} ${isActive ? 'ring-2 ring-offset-2 ring-brand-accent-500' : ''}`}
     >
       {questionNumber}
       {status === "answered_and_marked" && (
@@ -174,17 +175,17 @@ const OptionButton = memo(function OptionButton({ optionText, optionId, question
     <button
       onClick={() => { if(!isReviewMode) selectOption(questionId, optionId) }}
       className={`text-left p-4 rounded-xl border-2 transition-all duration-200 flex items-center gap-4 group min-h-[44px] active:scale-[0.98] active:bg-slate-100 ${
-        isSelected 
-          ? 'border-indigo-600 bg-indigo-50 shadow-md' 
+        isSelected
+          ? 'border-brand-accent-500 bg-amber-50 shadow-md'
           : 'border-slate-300 bg-white hover:border-slate-400 hover:bg-slate-50'
       }`}
     >
       <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
-        isSelected ? 'border-indigo-600 bg-indigo-600 text-white font-bold' : 'border-slate-400 text-transparent group-hover:border-slate-500'
+        isSelected ? 'border-brand-accent-500 bg-brand-accent-500 text-white font-bold' : 'border-slate-400 text-transparent group-hover:border-slate-500'
       }`}>
         {isSelected && <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
       </div>
-      <span className={`text-base font-medium leading-tight ${isSelected ? 'text-indigo-900' : 'text-slate-700'}`}>{optionText}</span>
+      <span className={`text-base font-medium leading-tight ${isSelected ? 'text-amber-900' : 'text-slate-700'}`}>{optionText}</span>
     </button>
   );
 });
@@ -254,11 +255,11 @@ const PaletteLegendGrid = memo(function PaletteLegendGrid({ questions }: { quest
          <span>Answered</span>
       </div>
       <div className="flex items-center gap-2">
-         <div className="w-6 h-6 bg-purple-600 text-white flex items-center justify-center rounded-full">{counts.marked}</div>
+         <div className="w-6 h-6 bg-amber-600 text-white flex items-center justify-center rounded-full">{counts.marked}</div>
          <span>Marked</span>
       </div>
       <div className="flex items-center gap-2 col-span-2">
-         <div className="w-6 h-6 bg-purple-600 text-white flex items-center justify-center rounded-full relative">
+         <div className="w-6 h-6 bg-amber-600 text-white flex items-center justify-center rounded-full relative">
             {counts.answered_and_marked}
             <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-[1.5px] border-white"></div>
          </div>
@@ -284,7 +285,7 @@ const MobilePaletteToggle = memo(function MobilePaletteToggle({ questions, onCli
   }, [questions]);
   
   return (
-    <button onClick={onClick} className="md:hidden relative p-2.5 rounded-xl bg-indigo-50 border border-indigo-100 hover:bg-indigo-100 text-indigo-700 transition-colors flex items-center justify-center">
+    <button onClick={onClick} className="md:hidden relative p-2.5 rounded-xl bg-amber-50 border border-amber-100 hover:bg-amber-100 text-amber-700 transition-colors flex items-center justify-center">
       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
       {(counts.unanswered > 0 || counts.marked > 0) && (
         <span className="absolute -top-1.5 -right-1.5 bg-rose-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white shadow-sm">
@@ -376,7 +377,7 @@ const ActiveQuestionView = memo(function ActiveQuestionView({ questions, isRevie
           </span>
           {currentQ.pyqYear && (
             <span className="flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200 px-3 py-1 rounded-lg text-xs font-bold shadow-sm">
-              ⭐ PYQ {currentQ.pyqYear}
+              <Star size={12} strokeWidth={1.75} aria-hidden="true" /> PYQ {currentQ.pyqYear}
             </span>
           )}
         </div>
@@ -436,14 +437,14 @@ const ActiveQuestionView = memo(function ActiveQuestionView({ questions, isRevie
          <div className="flex items-center justify-end gap-3 flex-1">
             <button 
               onClick={() => { if(!isReviewMode) markForReviewAndNext(currentQ.id, questions) }}
-              className="px-3 md:px-6 py-3 rounded-lg bg-white border-2 border-indigo-600 text-indigo-600 font-bold hover:bg-indigo-50 transition-colors shadow-sm min-h-[44px] text-xs sm:text-sm"
+              className="px-3 md:px-6 py-3 rounded-lg bg-white border-2 border-brand-accent-500 text-brand-accent-500 font-bold hover:bg-amber-50 transition-colors shadow-sm min-h-[44px] text-xs sm:text-sm"
             >
               <span className="hidden sm:inline">Mark for Review</span>
               <span className="sm:hidden">Mark Review</span>
             </button>
             <button 
               onClick={() => { if(!isReviewMode) saveAndNext(currentQ.id, questions) }}
-              className="px-4 md:px-8 py-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition-all shadow-md active:scale-95 text-xs sm:text-sm min-h-[44px]"
+              className="px-4 md:px-8 py-3 rounded-lg bg-brand-accent-500 hover:bg-brand-accent-400 text-white font-bold transition-all shadow-md active:scale-95 text-xs sm:text-sm min-h-[44px]"
             >
               Save & Next
             </button>
@@ -635,7 +636,7 @@ const ResultsView = memo(function ResultsView({ type, questions, scoringMap, isR
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-slate-700/50 p-4 rounded-2xl flex flex-col items-center border border-slate-600">
-            <span className="text-4xl font-black text-indigo-400 mb-1">{score}</span>
+            <span className="text-4xl font-black text-brand-accent-500 mb-1">{score}</span>
             <span className="text-xs text-slate-400 uppercase tracking-wider font-bold mt-auto">Score / {maxScore}</span>
           </div>
           <div className="bg-slate-700/50 p-4 rounded-2xl flex flex-col items-center border border-slate-600">
@@ -708,11 +709,11 @@ const ResultsView = memo(function ResultsView({ type, questions, scoringMap, isR
                   <div key={subject} className="flex flex-col gap-1.5">
                     <div className="flex justify-between items-center text-sm font-bold">
                       <span className="text-slate-300 print:text-black">{subject}</span>
-                      <span className="text-indigo-400 print:text-indigo-700">{percentage}% <span className="text-slate-500 font-medium">({stats.correct}/{stats.total})</span></span>
+                      <span className="text-brand-accent-500 print:text-brand-accent-500">{percentage}% <span className="text-slate-500 font-medium">({stats.correct}/{stats.total})</span></span>
                     </div>
                     <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden print:border print:border-gray-300">
-                      <div 
-                        className="h-full bg-indigo-500 transition-all duration-1000 ease-out print:bg-indigo-600" 
+                      <div
+                        className="h-full bg-brand-accent-500 transition-all duration-1000 ease-out print:bg-brand-accent-500"
                         style={{ width: `${percentage}%` }}
                       />
                     </div>
@@ -725,7 +726,7 @@ const ResultsView = memo(function ResultsView({ type, questions, scoringMap, isR
 
         <div className="w-full bg-slate-700/30 border border-slate-700/50 rounded-2xl p-6 mb-8 print:hidden">
           <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-            <span aria-hidden="true">🧠</span> AI Tactical Coach
+            <Brain size={18} strokeWidth={1.75} className="text-brand-accent-500" /> AI Tactical Coach
           </h3>
           
           {!completion && !isAnalyzing ? (
@@ -740,7 +741,7 @@ const ResultsView = memo(function ResultsView({ type, questions, scoringMap, isR
                 <select 
                   value={archetype}
                   onChange={(e) => setArchetype(e.target.value)}
-                  className="bg-slate-800 border border-slate-700 text-white text-base rounded-xl p-3 focus:outline-none focus:border-indigo-500 transition-colors"
+                  className="bg-brand-bg-elevated border border-brand-border-subtle text-white text-base rounded-xl p-3 focus:outline-none focus:border-brand-accent-500 transition-colors"
                 >
                   <option value="Analytical & Technical">Analytical & Technical</option>
                   <option value="Visual & Conceptual">Visual & Conceptual</option>
@@ -751,21 +752,21 @@ const ResultsView = memo(function ResultsView({ type, questions, scoringMap, isR
               <button 
                 onClick={() => handleAnalyze(parseFloat(score), parseFloat(maxScore))}
                 disabled={isAnalyzing}
-                className="w-full py-3 bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 hover:bg-indigo-600/30 hover:border-indigo-500/50 font-bold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full py-3 bg-brand-accent-500/10 text-brand-accent-500 border border-brand-accent-500/30 hover:bg-brand-accent-500/20 hover:border-brand-accent-500/50 font-bold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 Analyze Performance (AI)
               </button>
             </div>
           ) : (
-            <div className="bg-indigo-950/30 border border-indigo-500/20 p-5 rounded-xl text-indigo-100 text-sm leading-relaxed animate-fade-in shadow-inner prose prose-invert prose-sm prose-indigo prose-p:my-2 prose-headings:text-indigo-400 prose-headings:font-black prose-headings:tracking-widest prose-headings:uppercase prose-headings:text-sm prose-headings:border-b prose-headings:border-indigo-500/30 prose-headings:pb-2">
+            <div className="bg-brand-bg-elevated/30 border border-brand-accent-500/20 p-5 rounded-xl text-brand-ink-inverse text-sm leading-relaxed animate-fade-in shadow-inner prose prose-invert prose-sm prose-p:my-2 prose-headings:text-brand-accent-500 prose-headings:font-black prose-headings:tracking-widest prose-headings:uppercase prose-headings:text-sm prose-headings:border-b prose-headings:border-brand-accent-500/30 prose-headings:pb-2">
               <ReactMarkdown remarkPlugins={[remarkGfm]}>
                 {completion}
               </ReactMarkdown>
               {isAnalyzing && (
                 <div className="flex items-center gap-1.5 mt-4">
-                  <span className="w-2 h-2 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <span className="w-2 h-2 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <span className="w-2 h-2 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+                  <span className="w-2 h-2 rounded-full bg-brand-accent-500 animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <span className="w-2 h-2 rounded-full bg-brand-accent-500 animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <span className="w-2 h-2 rounded-full bg-brand-accent-500 animate-bounce" style={{ animationDelay: '300ms' }} />
                 </div>
               )}
             </div>
@@ -1165,11 +1166,11 @@ export default function TestRunner({ type, questions, scoringMap, onExit, attemp
           ending the test. */}
       {showSubmitConfirm && (
         <div className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in pointer-events-auto">
-          <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl text-center border-t-4 border-indigo-500">
+          <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl text-center border-t-4 border-brand-accent-500">
             <h3 className="text-2xl font-black text-slate-900 mb-2">Submit Exam?</h3>
             <p className="text-slate-600 mb-6 font-medium">Once submitted, this attempt is graded and locked — you cannot change your answers. Make sure you have reviewed your responses.</p>
             <div className="flex flex-col gap-3">
-              <button onClick={confirmSubmit} className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-all shadow-md active:scale-95 min-h-[44px]">
+              <button onClick={confirmSubmit} className="w-full py-3 bg-brand-accent-500 hover:bg-brand-accent-400 text-white font-bold rounded-xl transition-all shadow-md active:scale-95 min-h-[44px]">
                 Yes, Submit Now
               </button>
               <button onClick={() => setShowSubmitConfirm(false)} className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-all active:scale-95 min-h-[44px]">
@@ -1201,8 +1202,8 @@ export default function TestRunner({ type, questions, scoringMap, onExit, attemp
       {/* Top Bar */}
       <div className="bg-white border-b border-slate-300 px-6 py-4 flex items-center justify-between shadow-sm pointer-events-auto">
         <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg">
-            <span className="text-xl" aria-hidden="true">{type === "Mini-Test" ? "⚡" : "🎯"}</span>
+          <div className="w-10 h-10 rounded-xl bg-brand-bg-elevated flex items-center justify-center shadow-lg">
+            <span className="text-xl" aria-hidden="true">{type === "Mini-Test" ? <Zap size={18} strokeWidth={1.75} className="text-brand-accent-500" /> : <Target size={18} strokeWidth={1.75} className="text-brand-accent-500" />}</span>
           </div>
           <div>
             <h1 className="text-slate-900 font-black text-lg leading-tight">{type}</h1>
@@ -1224,9 +1225,9 @@ export default function TestRunner({ type, questions, scoringMap, onExit, attemp
             </div>
           )}
           {focusedSubjects && focusedSubjects.length > 0 && (
-            <div className="hidden md:flex items-center gap-1.5 bg-purple-50 border border-purple-100 px-3 py-1.5 rounded-xl ml-4">
-              <span className="text-sm">🎯</span>
-              <span className="text-xs font-bold text-purple-700">Focused on: {focusedSubjects.join(", ")}</span>
+            <div className="hidden md:flex items-center gap-1.5 bg-amber-50 border border-amber-100 px-3 py-1.5 rounded-xl ml-4">
+              <Target size={14} strokeWidth={1.75} className="text-brand-accent-600" />
+              <span className="text-xs font-bold text-amber-700">Focused on: {focusedSubjects.join(", ")}</span>
             </div>
           )}
         </div>

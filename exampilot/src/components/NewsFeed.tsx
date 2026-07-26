@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { Flame } from "lucide-react";
 import { fetchDefenseNews, NewsItem } from "@/app/actions/fetchDefenseNews";
 
 interface NewsFeedProps {
@@ -63,7 +64,7 @@ export default function NewsFeed({ initialNews, initialHasMore }: NewsFeedProps)
             <select 
               value={filterCategory} 
               onChange={(e) => setFilterCategory(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-300 focus:ring-2 focus:ring-indigo-500 outline-none"
+              className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-300 focus:ring-2 focus:ring-brand-accent-500 outline-none"
             >
               <option value="All">All Topics</option>
               <option value="Defence">Defence</option>
@@ -79,7 +80,7 @@ export default function NewsFeed({ initialNews, initialHasMore }: NewsFeedProps)
             <select 
               value={filterDate} 
               onChange={(e) => setFilterDate(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-300 focus:ring-2 focus:ring-indigo-500 outline-none"
+              className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-300 focus:ring-2 focus:ring-brand-accent-500 outline-none"
             >
               <option value="All Time">All Time</option>
               <option value="Last 24 Hours">Last 24 Hours</option>
@@ -92,7 +93,7 @@ export default function NewsFeed({ initialNews, initialHasMore }: NewsFeedProps)
             <select 
               value={filterScore} 
               onChange={(e) => setFilterScore(Number(e.target.value))}
-              className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-300 focus:ring-2 focus:ring-indigo-500 outline-none"
+              className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-300 focus:ring-2 focus:ring-brand-accent-500 outline-none"
             >
               <option value={0}>Any Score</option>
               <option value={50}>50+ (Medium)</option>
@@ -105,7 +106,7 @@ export default function NewsFeed({ initialNews, initialHasMore }: NewsFeedProps)
         <button
           onClick={applyFilters}
           disabled={isFiltering}
-          className="w-full md:w-auto whitespace-nowrap px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg shadow-lg shadow-indigo-500/20 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+          className="w-full md:w-auto whitespace-nowrap px-6 py-2.5 bg-brand-accent-500 hover:bg-brand-accent-400 text-brand-accent-ink font-bold rounded-lg shadow-lg shadow-brand-accent-500/20 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
         >
           {isFiltering ? (
             <div className="w-4 h-4 rounded-full border-2 border-white/20 border-t-white animate-spin" />
@@ -118,7 +119,7 @@ export default function NewsFeed({ initialNews, initialHasMore }: NewsFeedProps)
 
       {isFiltering ? (
         <div className="flex justify-center py-20">
-          <div className="w-8 h-8 rounded-full border-4 border-indigo-500/20 border-t-indigo-500 animate-spin" />
+          <div className="w-8 h-8 rounded-full border-4 border-brand-accent-500/20 border-t-brand-accent-500 animate-spin" />
         </div>
       ) : newsItems.length === 0 ? (
         <div className="text-center py-20 px-6 bg-slate-900 border border-slate-800 rounded-3xl">
@@ -129,7 +130,7 @@ export default function NewsFeed({ initialNews, initialHasMore }: NewsFeedProps)
           {newsItems.map((item, index) => (
             <article
               key={`${item.id}-${index}`}
-              className="w-full flex flex-col md:flex-row relative rounded-3xl overflow-hidden bg-slate-950 shadow-[0_0_15px_rgba(99,102,241,0.1)] group ring-1 ring-indigo-500/20 animate-fade-in"
+              className="w-full flex flex-col md:flex-row relative rounded-3xl overflow-hidden bg-slate-950 shadow-[0_0_15px_rgba(245,166,35,0.1)] group ring-1 ring-brand-accent-500/20 animate-fade-in"
               style={{ animationDelay: `${(index % 20) * 100}ms` }}
             >
               {/* Image Section */}
@@ -152,15 +153,15 @@ export default function NewsFeed({ initialNews, initialHasMore }: NewsFeedProps)
               {/* Content Area */}
               <div className="relative z-10 p-6 md:p-8 flex flex-col justify-center flex-1 min-w-0 bg-slate-950/40 backdrop-blur-sm">
                 <div className="mb-4 flex items-center gap-3 flex-wrap">
-                  <span className="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-2.5 py-1 rounded text-xs font-bold tracking-wider uppercase inline-block shadow-inner">
+                  <span className="bg-brand-accent-500/10 text-brand-accent-500 border border-brand-accent-500/20 px-2.5 py-1 rounded text-xs font-bold tracking-wider uppercase inline-block shadow-inner">
                     {item.category}
                   </span>
                   <span className="bg-amber-500/10 text-amber-500 border border-amber-500/20 px-2.5 py-1 rounded text-xs font-bold tracking-wider uppercase inline-flex items-center gap-1.5 shadow-inner">
-                    🔥 Score: {item.relevanceScore}/100
+                    <Flame size={12} strokeWidth={1.75} aria-hidden="true" /> Score: {item.relevanceScore}/100
                   </span>
                 </div>
 
-                <h2 className="tracking-tight leading-snug font-extrabold text-white text-xl md:text-2xl mb-3 drop-shadow-sm group-hover:text-indigo-300 transition-colors duration-300">
+                <h2 className="tracking-tight leading-snug font-extrabold text-white text-xl md:text-2xl mb-3 drop-shadow-sm group-hover:text-brand-accent-400 transition-colors duration-300">
                   {item.title}
                 </h2>
 
@@ -182,7 +183,7 @@ export default function NewsFeed({ initialNews, initialHasMore }: NewsFeedProps)
                     href={item.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[48px] rounded-xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-xs font-bold uppercase tracking-wider hover:bg-indigo-600 hover:border-indigo-500 hover:text-white transition-all duration-300 active:scale-95 shadow-lg"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[48px] rounded-xl bg-brand-accent-500/10 border border-brand-accent-500/30 text-brand-accent-500 text-xs font-bold uppercase tracking-wider hover:bg-brand-accent-500 hover:border-brand-accent-500 hover:text-brand-accent-ink transition-all duration-300 active:scale-95 shadow-lg"
                   >
                     Read Full Article
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
@@ -199,7 +200,7 @@ export default function NewsFeed({ initialNews, initialHasMore }: NewsFeedProps)
           <button
             onClick={loadMore}
             disabled={isLoading}
-            className="flex items-center gap-2 px-8 py-3 rounded-full bg-slate-900 border border-indigo-500/30 text-indigo-400 font-bold tracking-wide shadow-lg hover:bg-indigo-600 hover:text-white hover:border-indigo-500 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-8 py-3 rounded-full bg-slate-900 border border-brand-accent-500/30 text-brand-accent-500 font-bold tracking-wide shadow-lg hover:bg-brand-accent-500 hover:text-brand-accent-ink hover:border-brand-accent-500 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? (
               <>

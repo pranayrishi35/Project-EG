@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Compass } from "lucide-react";
 
 export default function NotFound() {
   return (
@@ -7,8 +8,8 @@ export default function NotFound() {
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-slate-300 to-slate-400" aria-hidden="true" />
         
         <div className="p-8 pb-6">
-          <div className="w-16 h-16 bg-slate-50 text-slate-500 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-6 shadow-sm border border-slate-100">
-            🧭
+          <div className="w-16 h-16 bg-slate-50 text-slate-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm border border-slate-100">
+            <Compass size={32} strokeWidth={1.75} aria-hidden="true" />
           </div>
           
           <h2 className="text-6xl font-black text-slate-200 tracking-tighter mb-2">
@@ -27,7 +28,7 @@ export default function NotFound() {
         <div className="p-6 bg-slate-50 border-t border-slate-100">
           <Link
             href="/"
-            className="flex items-center justify-center w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 rounded-xl shadow-[0_4px_14px_rgba(79,70,229,0.3)] transition-all active:scale-[0.98]"
+            className="flex items-center justify-center w-full bg-brand-accent-500 hover:bg-amber-700 text-white font-bold py-3.5 rounded-xl shadow-[0_4px_14px_rgba(245,166,35,0.3)] transition-all active:scale-[0.98]"
           >
             Return to Dashboard
           </Link>

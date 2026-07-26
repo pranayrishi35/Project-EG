@@ -41,11 +41,11 @@ export default function ConsentPage() {
                 type="checkbox"
                 checked={agreedToTerms}
                 onChange={(e) => setAgreedToTerms(e.target.checked)}
-                className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer"
+                className="w-4 h-4 text-brand-accent-500 border-gray-300 rounded focus:ring-brand-accent-500 cursor-pointer"
               />
             </div>
             <span className="text-sm text-gray-700">
-              I agree to the <a href="/terms" target="_blank" className="text-indigo-600 hover:underline">Terms of Service</a> and <a href="/privacy" target="_blank" className="text-indigo-600 hover:underline">Privacy Policy</a>.
+              I agree to the <a href="/terms" target="_blank" className="text-brand-accent-600 hover:underline">Terms of Service</a> and <a href="/privacy" target="_blank" className="text-brand-accent-600 hover:underline">Privacy Policy</a>.
             </span>
           </label>
 
@@ -56,7 +56,7 @@ export default function ConsentPage() {
                 type="checkbox"
                 checked={agreedToAge}
                 onChange={(e) => setAgreedToAge(e.target.checked)}
-                className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer"
+                className="w-4 h-4 text-brand-accent-500 border-gray-300 rounded focus:ring-brand-accent-500 cursor-pointer"
               />
             </div>
             <span className="text-sm text-gray-700">
@@ -73,7 +73,7 @@ export default function ConsentPage() {
           <button
             type="submit"
             disabled={!agreedToTerms || !agreedToAge || isPending}
-            className="mt-2 w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="mt-2 w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-brand-accent-500 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-accent-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {isPending ? "Recording Consent..." : "I Agree & Continue"}
           </button>

@@ -28,7 +28,7 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('')`. */
-    baseURL: 'http://localhost:3000',
+    baseURL: 'http://127.0.0.1:4001',
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
@@ -38,7 +38,16 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: { 
+        ...devices['Desktop Chrome'],
+        launchOptions: {
+          args: [
+            '--enable-webgl',
+            '--use-gl=angle',
+            '--use-angle=swiftshader',
+          ],
+        },
+      },
     },
 
     {
@@ -56,9 +65,6 @@ export default defineConfig({
       name: 'Mobile Chrome',
       use: { 
         ...devices['Pixel 5'],
-        // slowMo simulates budget Android phone processing speed
-        // This surfaces timing-related UI bugs not visible on desktop
-        launchOptions: { slowMo: 100 }
       },
     },
     // {
@@ -79,9 +85,13 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: 'npm run dev', // Runs the dev server
-    url: 'http://127.0.0.1:3000',
+    command: 'npx next dev -p 4001', // Runs the dev server on isolated test port
+    url: 'http://127.0.0.1:4001',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
+    env: {
+      ...process.env,
+      ALLOW_MOCK_AUTH: 'true',
+    },
   },
 });

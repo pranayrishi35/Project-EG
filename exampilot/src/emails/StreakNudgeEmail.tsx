@@ -31,7 +31,7 @@ export const StreakNudgeEmail = ({
         <Body className="bg-slate-50 my-auto mx-auto font-sans">
           <Container className="bg-white border border-slate-200 rounded-xl my-[40px] mx-auto p-[30px] max-w-[500px] shadow-sm">
             <Heading className="text-slate-900 text-[24px] font-black text-center p-0 my-[10px] mx-0">
-              🚨 Don't lose your progress!
+              Don't lose your progress!
             </Heading>
             <Text className="text-slate-700 text-[16px] leading-[24px]">
               Hi {firstName},
@@ -45,7 +45,7 @@ export const StreakNudgeEmail = ({
             
             <Section className="text-center mt-[32px] mb-[32px]">
               <Button
-                className="bg-indigo-600 rounded-lg text-white text-[14px] font-bold no-underline text-center px-6 py-3"
+                className="bg-[#F5A623] rounded-lg text-[#1A1205] text-[14px] font-bold no-underline text-center px-6 py-3"
                 href="https://exampilot.in"
               >
                 Save My Streak

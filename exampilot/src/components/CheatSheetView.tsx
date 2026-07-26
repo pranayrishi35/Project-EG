@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { generateCheatSheet, type CheatSheetSection } from "@/app/actions/generateCheatSheet";
+import { Brain, Printer, AlertTriangle, X } from "lucide-react";
 
 export default function CheatSheetView({ planId, onClose }: { planId: string; onClose: () => void }) {
   const [cheatSheet, setCheatSheet] = useState<CheatSheetSection[]>([]);
@@ -27,7 +28,7 @@ export default function CheatSheetView({ planId, onClose }: { planId: string; on
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-xl font-black text-slate-800">Generating Cheat Sheet...</h2>
           <button onClick={onClose} className="p-2 bg-slate-100 rounded-full text-slate-500 hover:text-slate-800">
-            ✕
+            <X size={16} strokeWidth={2} aria-hidden="true" />
           </button>
         </div>
         <div className="columns-1 md:columns-2 gap-4">
@@ -49,7 +50,7 @@ export default function CheatSheetView({ planId, onClose }: { planId: string; on
   if (error) {
     return (
       <div className="fixed inset-0 z-[100] bg-white flex flex-col items-center justify-center p-6 text-center animate-fade-in print:hidden">
-        <span className="text-4xl mb-4">⚠️</span>
+        <span className="text-4xl mb-4"><AlertTriangle size={40} strokeWidth={1.5} className="text-red-400" aria-hidden="true" /></span>
         <h2 className="text-lg font-bold text-red-600 mb-2">{error}</h2>
         <button onClick={onClose} className="ep-btn-primary mt-4">Close</button>
       </div>
@@ -64,22 +65,22 @@ export default function CheatSheetView({ planId, onClose }: { planId: string; on
         <div className="print:hidden flex items-center justify-between mb-8 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm sticky top-4 z-10">
           <div>
             <h2 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-              <span className="text-2xl">🧠</span> AI Cheat Sheet
+              <Brain size={20} strokeWidth={1.75} className="text-brand-accent-500" /> AI Cheat Sheet
             </h2>
             <p className="text-xs text-slate-500 font-medium mt-1">High-yield revision notes</p>
           </div>
           <div className="flex items-center gap-3">
             <button
               onClick={() => window.print()}
-              className="flex items-center gap-2 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 px-4 py-2 rounded-xl text-sm font-bold transition-colors"
+              className="flex items-center gap-2 bg-amber-50 text-amber-700 hover:bg-amber-100 px-4 py-2 rounded-xl text-sm font-bold transition-colors"
             >
-              🖨️ Print Notes
+              <Printer size={14} strokeWidth={1.75} /> Print Notes
             </button>
             <button
               onClick={onClose}
               className="w-10 h-10 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl transition-colors font-bold"
             >
-              ✕
+              <X size={16} strokeWidth={2} aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -94,13 +95,13 @@ export default function CheatSheetView({ planId, onClose }: { planId: string; on
         <div className="columns-1 md:columns-2 gap-6 print:columns-2 print:gap-8">
           {cheatSheet.map((section, idx) => (
             <div key={idx} className="mb-6 break-inside-avoid bg-white border border-slate-200 rounded-2xl p-5 shadow-sm print:border-black print:rounded-none print:shadow-none print:p-0">
-              <h3 className="text-sm font-black uppercase tracking-widest text-indigo-600 mb-4 print:text-black print:border-b print:border-black print:pb-1">
+              <h3 className="text-sm font-black uppercase tracking-widest text-brand-accent-500 mb-4 print:text-black print:border-b print:border-black print:pb-1">
                 {section.subject}
               </h3>
               <ul className="flex flex-col gap-3">
                 {section.points.map((point, pIdx) => (
                   <li key={pIdx} className="flex items-start gap-2 text-sm text-slate-700 print:text-black">
-                    <span className="text-indigo-400 mt-0.5 font-bold print:text-black">•</span>
+                    <span className="text-brand-accent-400 mt-0.5 font-bold print:text-black">•</span>
                     <span className="leading-snug">{point}</span>
                   </li>
                 ))}

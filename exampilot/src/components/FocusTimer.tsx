@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { Timer } from "lucide-react";
 
 // ─── Config ────────────────────────────────────────────────────────────────────
 
@@ -72,10 +73,10 @@ export default function FocusTimer() {
           isRunning ? "animate-pulse" : "",
         ].join(" ")}
         style={{
-          background: "linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)",
+          background: "linear-gradient(135deg, #F5A623 0%, #D98A0F 100%)",
           boxShadow: isRunning
-            ? "0 4px 20px rgba(124, 58, 237, 0.6)"
-            : "0 4px 16px rgba(79, 70, 229, 0.35)",
+            ? "0 4px 20px rgba(245, 166, 35, 0.6)"
+            : "0 4px 16px rgba(245, 166, 35, 0.35)",
         }}
       >
         {/* Clock icon */}
@@ -99,14 +100,14 @@ export default function FocusTimer() {
     <div
       id="focus-timer-card"
       className="fixed bottom-24 right-4 z-40 w-60 rounded-2xl overflow-hidden shadow-2xl"
-      style={{ background: "linear-gradient(160deg, #4338CA 0%, #6D28D9 100%)" }}
+      style={{ background: "linear-gradient(160deg, #F5A623 0%, #D98A0F 100%)" }}
       role="dialog"
       aria-label="Focus timer"
     >
       {/* Header */}
       <div className="flex items-center justify-between px-4 pt-4 pb-2">
-        <span className="text-white text-sm font-bold tracking-tight">
-          🍅 Focus Timer
+        <span className="text-white text-sm font-bold tracking-tight flex items-center gap-1.5">
+          <Timer size={14} strokeWidth={2} /> Focus Timer
         </span>
         <button
           onClick={() => setIsExpanded(false)}
@@ -129,7 +130,7 @@ export default function FocusTimer() {
               className={[
                 "flex-1 py-1.5 text-xs font-semibold rounded-[10px] transition-all duration-200",
                 mode === key
-                  ? "bg-white text-indigo-700 shadow"
+                  ? "bg-white text-amber-700 shadow"
                   : "text-white/60 hover:text-white/90",
               ].join(" ")}
               aria-pressed={mode === key}
@@ -208,7 +209,7 @@ export default function FocusTimer() {
           id="focus-timer-play-pause"
           onClick={() => setIsRunning((r) => !r)}
           aria-label={isRunning ? "Pause" : "Start focus session"}
-          className="w-16 h-16 rounded-full flex items-center justify-center bg-white text-indigo-700 shadow-xl transition-all duration-150 hover:scale-105 active:scale-95"
+          className="w-16 h-16 rounded-full flex items-center justify-center bg-white text-amber-700 shadow-xl transition-all duration-150 hover:scale-105 active:scale-95"
         >
           {isRunning ? (
             /* Pause icon */

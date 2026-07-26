@@ -9,6 +9,7 @@ import type { MockTestResult } from "@/app/actions/logMockTest";
 import FocusTimer from "@/components/FocusTimer";
 import MockTestAnalyzer from "@/components/MockTestAnalyzer";
 import CheatSheetView from "@/components/CheatSheetView";
+import { Zap, Target, Timer, BookOpen, Calendar, Flame, AlertTriangle } from "lucide-react";
 
 const MissionClock = dynamic(() => import("@/components/MissionClock"), { ssr: false });
 const TestRunner = dynamic(() => import("@/components/TestRunner"), { ssr: false });
@@ -78,7 +79,7 @@ function DayCard({
     (_, i) => completed.has(topicKey(weekNum, day.day_number, i))
   );
 
-  let borderCls = "border-indigo-100 bg-white";
+  let borderCls = "border-slate-100 bg-white";
   let badge: React.ReactNode = null;
 
   if (dayDone) {
@@ -91,9 +92,9 @@ function DayCard({
       </span>
     );
   } else if (isRevision) {
-    borderCls = "border-violet-200 bg-violet-50/40";
+    borderCls = "border-amber-200 bg-amber-50/40";
     badge = (
-      <span className="text-xs font-bold text-violet-700 bg-violet-100 px-2 py-0.5 rounded-full">
+      <span className="text-xs font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
         Revision
       </span>
     );
@@ -155,8 +156,8 @@ function DayCard({
                   "disabled:opacity-50 disabled:cursor-not-allowed",
                   isBumping ? "animate-check-bump" : "",
                   isChecked
-                    ? "bg-indigo-600 border-indigo-600"
-                    : "bg-white border-gray-300 hover:border-indigo-400",
+                    ? "bg-brand-accent-600 border-brand-accent-600"
+                    : "bg-white border-gray-300 hover:border-brand-accent-400",
                 ].join(" ")}
               >
                 {isChecked && (
@@ -318,9 +319,9 @@ export default function PlanViewer({
       {/* Hero — hidden on print (replaced by the print header below) */}
       <div
         className="print:hidden relative rounded-2xl p-6 text-white overflow-hidden"
-        style={{ background: "linear-gradient(135deg, #4F46E5 0%, #6D28D9 100%)" }}
+        style={{ background: "linear-gradient(135deg, #F5A623 0%, #D98A0F 100%)" }}
       >
-        <div className="absolute -top-8 -right-8 w-40 h-40 rounded-full opacity-20 pointer-events-none" style={{ background: "radial-gradient(circle, #A5B4FC, transparent 70%)" }} aria-hidden="true" />
+        <div className="absolute -top-8 -right-8 w-40 h-40 rounded-full opacity-20 pointer-events-none" style={{ background: "radial-gradient(circle, #FFB800, transparent 70%)" }} aria-hidden="true" />
         <p className="relative text-xs font-semibold uppercase tracking-widest opacity-70 mb-1">
           Your AI Study Plan
         </p>
@@ -351,7 +352,7 @@ export default function PlanViewer({
 
       {testError && (
         <div className="print:hidden bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-2xl mb-3 text-sm font-medium animate-fade-in">
-          ⚠️ {testError}
+          <span className="inline-flex items-center gap-1.5"><AlertTriangle size={16} strokeWidth={1.75} aria-hidden="true" /> {testError}</span>
         </div>
       )}
 
@@ -361,7 +362,7 @@ export default function PlanViewer({
             <h3 className="font-bold text-lg mb-1">Select NDA Paper</h3>
             <p className="text-slate-300 text-xs mb-4">The NDA exam has two separate papers with distinct scoring algorithms.</p>
             <div className="grid grid-cols-2 gap-3">
-              <button onClick={() => handleLaunchTest(pendingNDATest, "NDA_MATH")} className="bg-indigo-600 hover:bg-indigo-500 py-3 rounded-xl font-bold text-sm transition-all active:scale-95 shadow-md">
+              <button onClick={() => handleLaunchTest(pendingNDATest, "NDA_MATH")} className="bg-brand-accent-500 hover:bg-brand-accent-400 text-brand-accent-ink py-3 rounded-xl font-bold text-sm transition-all active:scale-95 shadow-md">
                 Mathematics (Paper I)
               </button>
               <button onClick={() => handleLaunchTest(pendingNDATest, "NDA_GAT")} className="bg-slate-700 hover:bg-slate-600 py-3 rounded-xl font-bold text-sm transition-all active:scale-95 shadow-md border border-slate-600">
@@ -388,7 +389,7 @@ export default function PlanViewer({
                 {weakSubjects.map((subject) => (
                   <span
                     key={subject}
-                    className="text-[11px] font-bold text-purple-700 bg-purple-50 border border-purple-100 px-2 py-0.5 rounded-full truncate max-w-[160px]"
+                    className="text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-100 px-2 py-0.5 rounded-full truncate max-w-[160px]"
                     title={subject}
                   >
                     {subject}
@@ -400,8 +401,8 @@ export default function PlanViewer({
             <span className="text-xs text-slate-400 font-medium">Take a mock to unlock weak-subject targeting</span>
           )}
           <label className="flex items-center gap-2 cursor-pointer group flex-shrink-0">
-            <span className="text-xs font-bold text-slate-500 group-hover:text-indigo-600 transition-colors">Target Weak Subjects</span>
-            <div className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${useFocusMode ? 'bg-indigo-600' : 'bg-slate-300'}`}>
+            <span className="text-xs font-bold text-slate-500 group-hover:text-brand-accent-500 transition-colors">Target Weak Subjects</span>
+            <div className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${useFocusMode ? 'bg-brand-accent-500' : 'bg-slate-300'}`}>
               <input type="checkbox" className="sr-only" checked={useFocusMode} onChange={(e) => setUseFocusMode(e.target.checked)} />
               <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform duration-200 ease-in-out ${useFocusMode ? 'translate-x-[18px]' : 'translate-x-0.5'}`} />
             </div>
@@ -411,9 +412,9 @@ export default function PlanViewer({
           <button
             onClick={() => handleLaunchTest("Mini-Test")}
             disabled={testLoading !== null}
-            className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-2xl font-bold shadow-[0_4px_14px_rgba(79,70,229,0.3)] transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+            className="flex items-center justify-center gap-2 bg-brand-accent-500 hover:bg-brand-accent-400 text-brand-accent-ink py-3 rounded-2xl font-bold shadow-[0_4px_14px_rgba(245,166,35,0.3)] transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            <span className="text-lg leading-none" aria-hidden="true">⚡</span>
+            <Zap size={16} strokeWidth={1.75} />
             {testLoading === "Mini-Test" ? "Loading..." : "Daily Mini-Test"}
           </button>
           <button
@@ -421,7 +422,7 @@ export default function PlanViewer({
             disabled={testLoading !== null}
             className="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-white py-3 rounded-2xl font-bold shadow-lg transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            <span className="text-lg leading-none" aria-hidden="true">🎯</span>
+            <Target size={16} strokeWidth={1.75} />
             {testLoading === "Full Mock" ? "Loading..." : "Full Mock"}
           </button>
         </div>
@@ -430,12 +431,12 @@ export default function PlanViewer({
       {/* Stats strip */}
       <div className="print:hidden grid grid-cols-3 gap-3">
         {[
-          { label: "Total Days", value: plan.weeks.reduce((a, w) => a + w.days.length, 0), emoji: "📅" },
-          { label: "Hours Done", value: `${hoursCompleted}/${totalHours}`, emoji: "⏱️" },
-          { label: "Progress", value: `${progress}%`, emoji: "🎯" },
-        ].map(({ label, value, emoji }) => (
+          { label: "Total Days", value: plan.weeks.reduce((a, w) => a + w.days.length, 0), Icon: Calendar },
+          { label: "Hours Done", value: `${hoursCompleted}/${totalHours}`, Icon: Timer },
+          { label: "Progress", value: `${progress}%`, Icon: Target },
+        ].map(({ label, value, Icon }) => (
           <div key={label} className="ep-stat-card bg-white rounded-2xl border border-gray-100 p-3 flex flex-col items-center gap-1 shadow-sm">
-            <span className="text-xl" aria-hidden="true">{emoji}</span>
+            <Icon size={22} strokeWidth={1.75} className="text-brand-accent-500" aria-hidden="true" />
             <span className="ep-stat-value text-base font-bold text-gray-800 tabular-nums">{value}</span>
             <span className="ep-stat-label text-xs text-slate-700 text-center leading-tight">{label}</span>
           </div>
@@ -445,9 +446,9 @@ export default function PlanViewer({
       {/* ── Tab switcher: Schedule | Mock Tests ── */}
       <div className="print:hidden flex rounded-2xl bg-gray-100 p-1 gap-1" role="tablist" aria-label="Plan sections">
         {([
-          { key: "schedule", icon: "📚", label: "Schedule",   badge: 0 },
-          { key: "mocks",    icon: "🎯", label: "Mock Tests", badge: mockTests.length },
-        ] as const).map(({ key, icon, label, badge }) => (
+          { key: "schedule", Icon: BookOpen, label: "Schedule",   badge: 0 },
+          { key: "mocks",    Icon: Target,   label: "Mock Tests", badge: mockTests.length },
+        ] as const).map(({ key, Icon, label, badge }) => (
           <button
             key={key}
             id={`tab-${key}`}
@@ -462,10 +463,10 @@ export default function PlanViewer({
                 : "text-slate-700 hover:text-gray-600",
             ].join(" ")}
           >
-            <span aria-hidden="true">{icon}</span>
+            <Icon size={16} strokeWidth={1.75} aria-hidden="true" />
             {label}
             {badge != null && badge > 0 && (
-              <span className="w-4 h-4 rounded-full bg-indigo-600 text-white text-[9px] font-black flex items-center justify-center">
+              <span className="w-4 h-4 rounded-full bg-brand-accent-500 text-brand-accent-ink text-[9px] font-black flex items-center justify-center">
                 {badge}
               </span>
             )}
@@ -483,9 +484,9 @@ export default function PlanViewer({
                 onClick={() => setIsPressureMode(true)}
                 aria-pressed={false}
                 aria-label="Enter Exam Pressure Mode"
-                className="flex-1 flex items-center justify-center gap-2 rounded-xl py-2.5 px-4 text-xs font-bold transition-all duration-200 active:scale-[0.97] bg-white border border-gray-200 text-gray-700 hover:border-indigo-300 hover:text-indigo-700 shadow-sm"
+                className="flex-1 flex items-center justify-center gap-2 rounded-xl py-2.5 px-4 text-xs font-bold transition-all duration-200 active:scale-[0.97] bg-white border border-gray-200 text-gray-700 hover:border-brand-accent-300 hover:text-brand-accent-500 shadow-sm"
               >
-                <span aria-hidden="true" className="text-base leading-none">🔥</span>
+                <Flame size={16} strokeWidth={1.75} aria-hidden="true" />
                 Pressure Mode
               </button>
             )}
@@ -495,7 +496,7 @@ export default function PlanViewer({
               type="button"
               onClick={() => setIsCheatSheetOpen(true)}
               aria-label="Generate AI Cheat Sheet"
-              className="flex items-center justify-center gap-2 rounded-xl py-2.5 px-4 text-xs font-bold bg-white border border-gray-200 text-gray-700 hover:border-indigo-300 hover:text-indigo-700 shadow-sm transition-all duration-200 active:scale-[0.97]"
+              className="flex items-center justify-center gap-2 rounded-xl py-2.5 px-4 text-xs font-bold bg-white border border-gray-200 text-gray-700 hover:border-brand-accent-300 hover:text-brand-accent-500 shadow-sm transition-all duration-200 active:scale-[0.97]"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <polyline points="6 9 6 2 18 2 18 9" />
@@ -508,7 +509,7 @@ export default function PlanViewer({
 
           {/* Save indicator */}
           {isPending && (
-            <p className="print:hidden text-center text-xs text-indigo-400 animate-fade-in" aria-live="polite">
+            <p className="print:hidden text-center text-xs text-brand-accent-500 animate-fade-in" aria-live="polite">
               Saving…
             </p>
           )}
@@ -520,7 +521,7 @@ export default function PlanViewer({
                 <div className="flex items-center gap-3 mb-3">
                   <div
                     className="w-8 h-8 rounded-xl flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
-                    style={{ background: "linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)" }}
+                    style={{ background: "linear-gradient(135deg, #F5A623 0%, #D98A0F 100%)" }}
                     aria-hidden="true"
                   >
                     W{week.week_number}
@@ -598,12 +599,12 @@ export default function PlanViewer({
         <div className="border-b-2 border-gray-800 pb-3 mb-5">
           <h1 className="text-xl font-black text-gray-900 leading-tight">{examName}</h1>
           <div className="flex flex-wrap gap-x-6 gap-y-1 mt-1" style={{ fontSize: "10pt", color: "#4B5563" }}>
-            <span>📅 {new Date(examDate).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}</span>
-            <span>✅ {completedCount}/{totalTopics} topics done ({progress}%)</span>
-            <span>⏱️ {hoursCompleted}/{totalHours}h completed</span>
+            <span className="inline-flex items-center gap-1.5"><Calendar size={12} strokeWidth={1.75} aria-hidden="true" /> {new Date(examDate).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}</span>
+            <span className="inline-flex items-center gap-1.5"><Target size={12} strokeWidth={1.75} aria-hidden="true" /> {completedCount}/{totalTopics} topics done ({progress}%)</span>
+            <span className="inline-flex items-center gap-1.5"><Timer size={12} strokeWidth={1.75} aria-hidden="true" /> {hoursCompleted}/{totalHours}h completed</span>
           </div>
           <p style={{ fontSize: "8pt", color: "#9CA3AF", marginTop: "4px" }}>
-            Generated by ExamPilot AI · Print &amp; Ace Your Exam! 🚀
+            Generated by ExamPilot AI · Print &amp; Ace Your Exam!
           </p>
         </div>
 

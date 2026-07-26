@@ -2,6 +2,7 @@
 
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
+import { Lock, RefreshCw } from "lucide-react";
 
 interface AdminLoginProps {
   email: string;
@@ -30,7 +31,7 @@ export default function AdminLogin({ email, errorMessage, errorDetails }: AdminL
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-rose-600 via-rose-500 to-rose-600"></div>
         
         <div className="flex items-center gap-4 mb-6">
-          <span className="text-4xl" aria-hidden="true">🔒</span>
+          <Lock size={36} strokeWidth={1.75} className="text-rose-400" aria-hidden="true" />
           <div>
             <h2 className="text-2xl font-black text-white">Access Denied</h2>
             <p className="text-sm font-bold text-rose-500 uppercase tracking-widest">Restricted Area</p>
@@ -58,9 +59,9 @@ export default function AdminLogin({ email, errorMessage, errorDetails }: AdminL
           <div className="pt-4 flex flex-col sm:flex-row gap-3">
             <button 
               onClick={handleRetry}
-              className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2"
+              className="flex-1 bg-brand-accent-500 hover:bg-brand-accent-400 text-brand-accent-ink font-bold py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2"
             >
-              <span>🔄</span> Retry Authorization
+              <RefreshCw size={16} strokeWidth={1.75} aria-hidden="true" /> Retry Authorization
             </button>
             <button 
               onClick={handleSignOut}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Timer } from "lucide-react";
 
 interface MissionClockProps {
   examDate?: string;
@@ -78,7 +79,7 @@ export default function MissionClock({ examDate, initialSeconds, onTick, onTimeU
 
     return (
       <div className={`font-mono text-xl font-bold px-4 py-2 rounded-xl border flex items-center gap-2 shadow-inner transition-colors duration-300 ${isUrgent ? 'bg-red-50 border-red-200 text-red-600 animate-pulse' : 'bg-slate-900 border-slate-700 text-emerald-400'}`}>
-        <span>⏱️</span>
+        <Timer size={20} strokeWidth={1.75} aria-hidden="true" />
         <span>
           {String(h).padStart(2, '0')}:{String(m).padStart(2, '0')}:{String(s).padStart(2, '0')}
         </span>

@@ -8,10 +8,17 @@ import FloatingAssistant from "@/components/FloatingAssistant";
 import { LegalFooter } from "@/components/LegalFooter";
 import { createClient } from "@/utils/supabase/server";
 import dynamic from 'next/dynamic';
-import { Inter } from 'next/font/google';
+import { Inter, Space_Grotesk, JetBrains_Mono } from 'next/font/google';
 
 const inter = Inter({ subsets: ['latin'], display: 'swap', variable: '--font-inter' });
+// Design-system fonts (Phase 1): display = geometric headline face, mono = CBT
+// timer / scores / credits only. Exposed as CSS vars for the Tailwind fontFamily tokens.
+const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], display: 'swap', variable: '--font-display' });
+const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], display: 'swap', variable: '--font-mono' });
 const ReticleDev = dynamic(() => import('./reticle-dev').then(m => m.ReticleDev), { ssr: false });
+// Smooth-scroll + custom-cursor craft layer (Phase 1). Client-only; self-disables
+// on CBT routes, touch devices, and under prefers-reduced-motion.
+const SmoothScrollProvider = dynamic(() => import('@/components/ui/SmoothScrollProvider'), { ssr: false });
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://exampilot-delta.vercel.app'),
@@ -79,38 +86,40 @@ export default async function RootLayout({
   return (
     <html lang="en">
       {/* LIGHTHOUSE FIX: Eliminate CLS by applying next/font/google class directly */}
-      <body className={`${inter.className} antialiased bg-slate-50 text-slate-900`}>
+      <body className={`${inter.className} ${inter.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} antialiased bg-slate-50 text-slate-900`}>
           {process.env.NODE_ENV === 'development' ? <ReticleDev /> : null}
-          <div className="flex min-h-screen relative w-full">
-            {/* Sticky Sidebar for md+ */}
-            <Sidebar isAdmin={isAdmin} />
+          <SmoothScrollProvider />
 
-            <div className="flex-1 flex flex-col min-w-0 w-full">
-              {/* Sticky Header */}
-              <Header />
-
-              {/* Main scrollable content area */}
-              <main
-                id="main-content"
-                className="w-full relative"
-              >
-                <div className="pb-24 md:pb-0 min-h-[calc(100vh-var(--header-height))] flex flex-col">
-                  <div className="flex-1 w-full relative">
-                    {children}
-                  </div>
-                  <LegalFooter />
+          {user ? (
+            /* ── Authenticated app shell ── */
+            <>
+              <div className="flex min-h-screen relative w-full">
+                <Sidebar isAdmin={isAdmin} />
+                <div className="flex-1 flex flex-col min-w-0 w-full">
+                  <Header />
+                  <main id="main-content" className="w-full relative">
+                    <div className="pb-24 md:pb-0 min-h-[calc(100vh-var(--header-height))] flex flex-col">
+                      <div className="flex-1 w-full relative">{children}</div>
+                      <LegalFooter />
+                    </div>
+                  </main>
                 </div>
+              </div>
+              <div className="flex md:hidden">
+                <BottomNav isAdmin={isAdmin} />
+              </div>
+              <FloatingAssistant />
+            </>
+          ) : (
+            /* ── Guest / marketing shell — no sidebar, no app header, no bottom nav ── */
+            <>
+              <main id="main-content" className="w-full">
+                {children}
               </main>
-            </div>
-          </div>
-
-          {/* Fixed Bottom Navigation for mobile */}
-          <div className="flex md:hidden">
-            <BottomNav isAdmin={isAdmin} />
-          </div>
-          
-          {/* Floating AI study wingman — Tejas */}
-          <FloatingAssistant />
+              {/* Floating AI study wingman — Tejas (present on all pages incl. landing) */}
+              <FloatingAssistant />
+            </>
+          )}
       </body>
     </html>
   );

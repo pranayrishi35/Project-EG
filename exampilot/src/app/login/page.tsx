@@ -3,6 +3,7 @@
 import { useTransition, useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { signInWithOtp, signUpWithPassword } from "@/app/login/actions";
+import { CheckCircle, AlertTriangle, ShieldAlert } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type FormState = { error?: string; success?: boolean; pending?: boolean } | null;
@@ -32,7 +33,7 @@ function Spinner({ light = false }: { light?: boolean }) {
     <span
       className={[
         "w-5 h-5 rounded-full border-2 animate-spin flex-shrink-0",
-        light ? "border-white/30 border-t-white" : "border-gray-300 border-t-indigo-500",
+        light ? "border-white/30 border-t-white" : "border-gray-300 border-t-brand-accent-500",
       ].join(" ")}
       aria-hidden="true"
     />
@@ -53,7 +54,7 @@ function Toast({ type, message }: { type: "success" | "error"; message: string }
       ].join(" ")}
     >
       <span className="text-base leading-5 flex-shrink-0" aria-hidden="true">
-        {type === "success" ? "✅" : "⚠️"}
+        {type === "success" ? <CheckCircle size={18} strokeWidth={1.75} className="text-emerald-600" /> : <AlertTriangle size={18} strokeWidth={1.75} className="text-red-500" />}
       </span>
       <p className="leading-snug">{message}</p>
     </div>
@@ -178,7 +179,7 @@ function LoginForm() {
         </form>
 
         <p className="text-xs text-center text-gray-600 mt-2 leading-relaxed">
-          By continuing, you agree to our <a href="/terms" target="_blank" className="text-indigo-600 hover:underline">Terms of Service</a>, <a href="/privacy" target="_blank" className="text-indigo-600 hover:underline">Privacy Policy</a>, and confirm you are 18 or older.
+          By continuing, you agree to our <a href="/terms" target="_blank" className="text-brand-accent-600 hover:underline">Terms of Service</a>, <a href="/privacy" target="_blank" className="text-brand-accent-600 hover:underline">Privacy Policy</a>, and confirm you are 18 or older.
         </p>
       </div>
     );
@@ -242,7 +243,7 @@ function LoginForm() {
 
             {passwordState?.error && passwordState.error.startsWith("BREACHED_PASSWORD") && (
               <div className="bg-red-50 text-red-800 rounded-lg p-3 text-sm flex items-start gap-2 border border-red-200">
-                <span className="text-base leading-tight">🚨</span>
+                <span className="text-base leading-tight"><ShieldAlert size={18} strokeWidth={1.75} className="text-red-600" aria-hidden="true" /></span>
                 <p><strong>Data Breach Detected:</strong> {passwordState.error.replace("BREACHED_PASSWORD: ", "")}</p>
               </div>
             )}
@@ -272,7 +273,7 @@ function LoginForm() {
               type="button"
               onClick={handleMagicLink}
               disabled={isOtpPending}
-              className="text-sm font-semibold text-indigo-600 hover:text-indigo-800 disabled:opacity-50 flex items-center gap-2"
+              className="text-sm font-semibold text-brand-accent-600 hover:text-amber-800 disabled:opacity-50 flex items-center gap-2"
             >
               {isOtpPending ? <Spinner /> : null}
               Send a magic link instead
@@ -301,10 +302,10 @@ export default function LoginPage() {
       {/* Hero banner */}
       <div
         className="relative rounded-2xl p-6 text-white overflow-hidden"
-        style={{ background: "linear-gradient(135deg, #4F46E5 0%, #6D28D9 100%)" }}
+        style={{ background: "linear-gradient(135deg, #F5A623 0%, #D98A0F 100%)" }}
       >
-        <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full opacity-20 pointer-events-none" style={{ background: "radial-gradient(circle, #A5B4FC, transparent 70%)" }} aria-hidden="true" />
-        <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full opacity-15 pointer-events-none" style={{ background: "radial-gradient(circle, #C4B5FD, transparent 70%)" }} aria-hidden="true" />
+        <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full opacity-20 pointer-events-none" style={{ background: "radial-gradient(circle, #FFB800, transparent 70%)" }} aria-hidden="true" />
+        <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full opacity-15 pointer-events-none" style={{ background: "radial-gradient(circle, #F5A623, transparent 70%)" }} aria-hidden="true" />
         <p className="relative text-xs font-semibold uppercase tracking-widest opacity-70 mb-1">Welcome back</p>
         <h1 className="relative text-2xl font-bold leading-tight mb-1">Sign in to ExamPilot</h1>
         <p className="relative text-sm opacity-75">Your personalised study planner awaits.</p>
@@ -313,7 +314,7 @@ export default function LoginPage() {
       {/* Account Deletion Banner */}
       {deletedAccount && (
         <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl p-4 text-sm font-medium animate-fade-in flex items-start gap-3 shadow-sm z-20 relative">
-          <span className="text-base leading-5 flex-shrink-0" aria-hidden="true">✅</span>
+          <span className="text-base leading-5 flex-shrink-0" aria-hidden="true"><CheckCircle size={18} strokeWidth={1.75} className="text-emerald-600" /></span>
           <p>Your account has been successfully scheduled for deletion.</p>
         </div>
       )}

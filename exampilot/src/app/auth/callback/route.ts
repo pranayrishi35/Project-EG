@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
           }
           .btn {
             display: inline-block;
-            background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+            background: linear-gradient(135deg, #F5A623 0%, #D98A0F 100%);
             color: white;
             padding: 16px 24px;
             border-radius: 12px;
@@ -104,7 +104,7 @@ export async function GET(request: NextRequest) {
       </head>
       <body>
         <div class="card">
-          <span class="icon" aria-hidden="true">👋</span>
+          <span class="icon" aria-hidden="true">&#x1F44B;</span>
           <h1 class="title">Secure Session Verified</h1>
           <p class="subtitle">Your identity has been confirmed.</p>
           <!-- MANUAL TAP BRIDGE: Defeats ITP by forcing a top-level user interaction -->

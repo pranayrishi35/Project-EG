@@ -3,6 +3,7 @@ import { createClient } from "@/utils/supabase/server";
 import { Suspense } from "react";
 import { fetchMockHistory } from "@/app/actions/mockAttempts";
 import dynamic from 'next/dynamic';
+import { Target, Timer, Zap, Newspaper } from "lucide-react";
 import { redirect } from "next/navigation";
 import { isGuestUser } from "@/lib/guestShield";
 
@@ -41,10 +42,10 @@ async function PracticeContent() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
         <Link
           href={activePlanId ? `/planner/${activePlanId}?tab=mocks` : "/planner"}
-          className="group flex flex-col gap-3 p-5 rounded-3xl bg-white border border-gray-100 shadow-sm hover:border-indigo-300 hover:shadow-md transition-all active:scale-[0.98] min-h-[120px]"
+          className="group flex flex-col gap-3 p-5 rounded-3xl bg-white border border-gray-100 shadow-sm hover:border-amber-300 hover:shadow-md transition-all active:scale-[0.98] min-h-[120px]"
         >
-          <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-2xl mb-2 group-hover:scale-110 transition-transform">
-            🎯
+          <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+            <Target size={22} strokeWidth={1.75} />
           </div>
           <div>
             <h2 className="text-lg font-black text-gray-900">Mock Tests</h2>
@@ -56,8 +57,8 @@ async function PracticeContent() {
           href={activePlanId ? `/planner/${activePlanId}?tab=mocks` : "/planner"}
           className="group flex flex-col gap-3 p-5 rounded-3xl bg-white border border-gray-100 shadow-sm hover:border-sky-300 hover:shadow-md transition-all active:scale-[0.98] min-h-[120px]"
         >
-          <div className="w-12 h-12 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center text-2xl mb-2 group-hover:scale-110 transition-transform">
-            ⏱️
+          <div className="w-12 h-12 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+            <Timer size={22} strokeWidth={1.75} />
           </div>
           <div>
             <h2 className="text-lg font-black text-gray-900">Mini-Tests</h2>
@@ -69,8 +70,8 @@ async function PracticeContent() {
           href="/flashcards"
           className="group flex flex-col gap-3 p-5 rounded-3xl bg-white border border-gray-100 shadow-sm hover:border-amber-300 hover:shadow-md transition-all active:scale-[0.98] min-h-[120px]"
         >
-          <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-2xl mb-2 group-hover:scale-110 transition-transform">
-            ⚡
+          <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+            <Zap size={22} strokeWidth={1.75} />
           </div>
           <div>
             <h2 className="text-lg font-black text-gray-900">Daily Flashcards</h2>
@@ -80,10 +81,10 @@ async function PracticeContent() {
 
         <Link
           href="/practice/current-affairs"
-          className="group flex flex-col gap-3 p-5 rounded-3xl bg-white border border-gray-100 shadow-sm hover:border-violet-300 hover:shadow-md transition-all active:scale-[0.98] min-h-[120px]"
+          className="group flex flex-col gap-3 p-5 rounded-3xl bg-white border border-gray-100 shadow-sm hover:border-amber-300 hover:shadow-md transition-all active:scale-[0.98] min-h-[120px]"
         >
-          <div className="w-12 h-12 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center text-2xl mb-2 group-hover:scale-110 transition-transform">
-            📰
+          <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+            <Newspaper size={22} strokeWidth={1.75} />
           </div>
           <div>
             <h2 className="text-lg font-black text-gray-900">Daily Current Affairs Quiz</h2>
@@ -126,7 +127,7 @@ async function PracticeContent() {
                   <div className="flex items-center gap-4">
                     <div className="text-right">
                       <p className="text-xs text-gray-500 uppercase tracking-widest font-bold">Score</p>
-                      <p className="font-black text-indigo-600">{attempt.score}</p>
+                      <p className="font-black text-brand-accent-600">{attempt.score}</p>
                     </div>
                     <Link 
                       href={`/practice/mock/${attempt.id}`}
@@ -141,12 +142,12 @@ async function PracticeContent() {
             ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center gap-5 p-10 bg-gradient-to-br from-indigo-50/50 to-white border border-indigo-100/50 rounded-3xl shadow-sm relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-100/30 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" aria-hidden="true" />
+          <div className="flex flex-col items-center justify-center gap-5 p-10 bg-gradient-to-br from-amber-50/50 to-white border border-amber-100/50 rounded-3xl shadow-sm relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-amber-100/30 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" aria-hidden="true" />
             <div className="absolute bottom-0 left-0 w-48 h-48 bg-emerald-50/40 rounded-full blur-2xl translate-y-1/3 -translate-x-1/3" aria-hidden="true" />
-            
-            <div className="relative z-10 w-20 h-20 rounded-2xl bg-white shadow-md border border-indigo-50 flex items-center justify-center mb-2">
-              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-400">
+
+            <div className="relative z-10 w-20 h-20 rounded-2xl bg-white shadow-md border border-amber-50 flex items-center justify-center mb-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-brand-accent-500">
                 <circle cx="12" cy="12" r="10"></circle>
                 <circle cx="12" cy="12" r="6"></circle>
                 <circle cx="12" cy="12" r="2"></circle>

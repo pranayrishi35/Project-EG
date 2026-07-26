@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { getBookletContent, BookletQuestion } from "@/app/actions/getBooklets";
 import Link from "next/link";
+import { Printer } from "lucide-react";
 
 
 export default function BookletPrintView({ params }: { params: { exam: string, subject: string } }) {
@@ -64,16 +65,16 @@ export default function BookletPrintView({ params }: { params: { exam: string, s
         <div className="print:hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8">
           <Link
             href="/booklets"
-            className="text-sm font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1"
+            className="text-sm font-bold text-brand-accent-600 hover:text-amber-800 flex items-center gap-1"
           >
             ← Back to Directory
           </Link>
           
           <button
             onClick={() => window.print()}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-indigo-600 text-white text-sm font-bold shadow-md hover:bg-indigo-700 hover:shadow-lg transition-all active:scale-95 print:hidden"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-brand-accent-500 text-white text-sm font-bold shadow-md hover:bg-amber-700 hover:shadow-lg transition-all active:scale-95 print:hidden"
           >
-            <span aria-hidden="true">🖨️</span> Print Booklet
+            <span aria-hidden="true"><Printer size={16} strokeWidth={1.75} /></span> Print Booklet
           </button>
         </div>
 
@@ -100,7 +101,7 @@ export default function BookletPrintView({ params }: { params: { exam: string, s
               }, {} as Record<string, typeof questions>)
           ).map(([subjectName, subjectQs]) => (
             <div key={subjectName} className="flex flex-col gap-8 print:gap-6">
-              <h3 className="text-xl font-bold text-indigo-400 mt-8 mb-4 border-b border-gray-200 pb-2 print:text-black print:border-black break-after-avoid">
+              <h3 className="text-xl font-bold text-brand-accent-500 mt-8 mb-4 border-b border-gray-200 pb-2 print:text-black print:border-black break-after-avoid">
                 {subjectName} Section
               </h3>
               {subjectQs.map((q, index) => (
@@ -144,7 +145,7 @@ export default function BookletPrintView({ params }: { params: { exam: string, s
             <button
               onClick={loadMore}
               disabled={isLoadingMore}
-              className="flex items-center gap-2 px-8 py-3 rounded-full bg-indigo-600 text-white font-bold shadow-md hover:bg-indigo-700 hover:shadow-lg transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-8 py-3 rounded-full bg-brand-accent-500 text-white font-bold shadow-md hover:bg-amber-700 hover:shadow-lg transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoadingMore ? (
                 <>

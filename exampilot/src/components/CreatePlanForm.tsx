@@ -12,6 +12,7 @@ import {
 import { useRouter } from "next/navigation";
 import { generateStudyPlan } from "@/app/actions/planner";
 import CreditModal from "./CreditModal";
+import { Target, Plane, Medal, Anchor, Calendar, Paperclip, FileText, Image, Flame, AlertTriangle } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface UploadedFile {
@@ -36,8 +37,8 @@ const ACCEPTED_LABEL = "PDF, PNG, JPG or WEBP";
 function HeroOrbs() {
   return (
     <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none" aria-hidden="true">
-      <div className="absolute -top-8 -right-8 w-40 h-40 rounded-full opacity-30" style={{ background: "radial-gradient(circle, #818CF8 0%, transparent 70%)" }} />
-      <div className="absolute -bottom-6 -left-6 w-32 h-32 rounded-full opacity-20" style={{ background: "radial-gradient(circle, #C4B5FD 0%, transparent 70%)" }} />
+      <div className="absolute -top-8 -right-8 w-40 h-40 rounded-full opacity-30" style={{ background: "radial-gradient(circle, #F5A623 0%, transparent 70%)" }} />
+      <div className="absolute -bottom-6 -left-6 w-32 h-32 rounded-full opacity-20" style={{ background: "radial-gradient(circle, #FFB800 0%, transparent 70%)" }} />
     </div>
   );
 }
@@ -55,9 +56,9 @@ function UploadIcon({ className }: { className?: string }) {
 function FilePill({ file, onRemove, disabled }: { file: UploadedFile; onRemove: () => void; disabled: boolean }) {
   const isPDF = file.type === "application/pdf";
   return (
-    <div id="selected-file-pill" className="flex items-center gap-3 bg-indigo-50 border border-indigo-200 rounded-xl px-4 py-3 mt-4 animate-fade-in">
-      <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 text-base" style={{ background: isPDF ? "#EEF2FF" : "#F0FDF4" }} aria-hidden="true">
-        {isPDF ? "📄" : "🖼️"}
+    <div id="selected-file-pill" className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mt-4 animate-fade-in">
+      <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: isPDF ? "#FEF3C7" : "#F0FDF4" }} aria-hidden="true">
+        {isPDF ? <FileText size={20} strokeWidth={1.75} className="text-amber-600" /> : <Image size={20} strokeWidth={1.75} className="text-emerald-600" />}
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold text-gray-800 truncate">{file.name}</p>
@@ -85,7 +86,7 @@ function StreakBadge({ streak }: { streak: number }) {
       className="flex items-center gap-2 bg-white/15 rounded-xl px-3 py-2 backdrop-blur-sm border border-white/20"
       aria-label={`${streak} day study streak`}
     >
-      <span className="text-lg leading-none" aria-hidden="true">🔥</span>
+      <span className="text-lg leading-none" aria-hidden="true"><Flame size={20} strokeWidth={1.75} className="text-orange-400" /></span>
       <div className="flex items-baseline gap-1">
         <span
           className="text-xl font-black leading-none tabular-nums"
@@ -192,7 +193,7 @@ export default function CreatePlanForm({ streak, compact = false }: { streak: nu
 
       {/* Hero Banner (hidden in compact mode) */}
       {!compact && (
-        <section id="create-plan-hero" aria-labelledby="create-plan-heading" className="relative rounded-2xl p-5 text-white overflow-hidden" style={{ background: "linear-gradient(135deg, #4F46E5 0%, #6D28D9 100%)" }}>
+        <section id="create-plan-hero" aria-labelledby="create-plan-heading" className="relative rounded-2xl p-5 text-white overflow-hidden" style={{ background: "linear-gradient(135deg, #F5A623 0%, #D98A0F 100%)" }}>
           <HeroOrbs />
           <div className="relative flex items-start justify-between gap-3">
             <div>
@@ -217,7 +218,7 @@ export default function CreatePlanForm({ streak, compact = false }: { streak: nu
             {/* Exam Name */}
         <div id="exam-name-section" className="flex flex-col gap-3">
           <label className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
-            <span className="text-base" aria-hidden="true">🎯</span> Target Exam
+            <Target size={16} strokeWidth={1.75} className="text-brand-accent-500" /> Target Exam
           </label>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {/* AFCAT Card */}
@@ -227,14 +228,14 @@ export default function CreatePlanForm({ streak, compact = false }: { streak: nu
               onClick={() => { if (!isPending) setExamName("AFCAT"); }}
               className={`relative flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border-2 transition-all cursor-pointer ${
                 isPending ? "opacity-60 cursor-not-allowed border-gray-200" 
-                : examName === "AFCAT" ? "border-indigo-500 bg-indigo-50/50 shadow-sm" 
-                : "border-gray-200 bg-white hover:border-indigo-300 hover:bg-indigo-50/30"
+                : examName === "AFCAT" ? "border-brand-accent-500 bg-amber-50/50 shadow-sm"
+                : "border-gray-200 bg-white hover:border-brand-accent-400 hover:bg-amber-50/30"
               }`}
             >
-              <div className="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center text-xl">
-                ✈️
+              <div className="w-10 h-10 rounded-xl bg-amber-100 text-brand-accent-500 flex items-center justify-center">
+                <Plane size={20} strokeWidth={1.75} aria-hidden="true" />
               </div>
-              <span className={`font-bold ${examName === "AFCAT" ? "text-indigo-900" : "text-gray-700"}`}>AFCAT</span>
+              <span className={`font-bold ${examName === "AFCAT" ? "text-amber-900" : "text-gray-700"}`}>AFCAT</span>
             </div>
 
             {/* NDA Card (Disabled) */}
@@ -242,8 +243,8 @@ export default function CreatePlanForm({ streak, compact = false }: { streak: nu
               <div className="absolute -top-2 -right-2 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full shadow-sm">
                 Coming Soon
               </div>
-              <div className="w-10 h-10 rounded-xl bg-gray-200 text-gray-500 flex items-center justify-center text-xl grayscale">
-                🎖️
+              <div className="w-10 h-10 rounded-xl bg-gray-200 text-gray-500 flex items-center justify-center grayscale">
+                <Medal size={20} strokeWidth={1.75} aria-hidden="true" />
               </div>
               <span className="font-bold text-gray-500">NDA</span>
             </div>
@@ -255,14 +256,14 @@ export default function CreatePlanForm({ streak, compact = false }: { streak: nu
               onClick={() => { if (!isPending) setExamName("CDS"); }}
               className={`relative flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border-2 transition-all cursor-pointer ${
                 isPending ? "opacity-60 cursor-not-allowed border-gray-200" 
-                : examName === "CDS" ? "border-indigo-500 bg-indigo-50/50 shadow-sm" 
-                : "border-gray-200 bg-white hover:border-indigo-300 hover:bg-indigo-50/30"
+                : examName === "CDS" ? "border-brand-accent-500 bg-amber-50/50 shadow-sm"
+                : "border-gray-200 bg-white hover:border-brand-accent-400 hover:bg-amber-50/30"
               }`}
             >
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl transition-colors ${examName === "CDS" ? "bg-indigo-100 text-indigo-600" : "bg-gray-100 text-gray-500"}`}>
-                ⚓
+              <div className="w-10 h-10 rounded-xl bg-amber-100 text-brand-accent-500 flex items-center justify-center">
+                <Anchor size={20} strokeWidth={1.75} aria-hidden="true" />
               </div>
-              <span className={`font-bold ${examName === "CDS" ? "text-indigo-900" : "text-gray-700"}`}>CDS</span>
+              <span className={`font-bold ${examName === "CDS" ? "text-amber-900" : "text-gray-700"}`}>CDS</span>
             </div>
           </div>
           {/* Hidden input to pass the selected exam to the server action */}
@@ -272,7 +273,7 @@ export default function CreatePlanForm({ streak, compact = false }: { streak: nu
         {/* Exam Date */}
         <div id="exam-date-section" className="flex flex-col gap-1.5">
           <label htmlFor="exam-date" className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
-            <span className="text-base" aria-hidden="true">📅</span> Exam Date
+            <Calendar size={16} strokeWidth={1.75} className="text-brand-accent-500" aria-hidden="true" /> Exam Date
           </label>
           <div className="relative">
             <input 
@@ -287,7 +288,7 @@ export default function CreatePlanForm({ streak, compact = false }: { streak: nu
               aria-required="true" 
               min={new Date().toISOString().split("T")[0]} 
             />
-            <div className="pointer-events-none absolute inset-0 rounded-xl ring-0 peer-focus:ring-2 ring-indigo-400 transition-all duration-200" aria-hidden="true" />
+            <div className="pointer-events-none absolute inset-0 rounded-xl ring-0 peer-focus:ring-2 ring-brand-accent-400 transition-all duration-200" aria-hidden="true" />
           </div>
         </div>
       </div>
@@ -298,7 +299,7 @@ export default function CreatePlanForm({ streak, compact = false }: { streak: nu
           <div className="animate-fade-in flex flex-col gap-5">
             <div id="syllabus-upload-section" className="flex flex-col gap-1.5">
           <label className="text-sm font-semibold text-gray-700 flex items-center gap-1.5" id="upload-label">
-            <span className="text-base" aria-hidden="true">📎</span> Upload Syllabus
+            <Paperclip size={16} strokeWidth={1.75} className="text-brand-accent-500" aria-hidden="true" /> Upload Syllabus
             <span className="text-xs font-normal text-slate-700 ml-1">(optional)</span>
           </label>
           <div
@@ -310,15 +311,15 @@ export default function CreatePlanForm({ streak, compact = false }: { streak: nu
             onDrop={isPending ? undefined : handleDrop}
             onClick={() => !isPending && fileInputRef.current?.click()}
             onKeyDown={(e) => { if (!isPending && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); fileInputRef.current?.click(); } }}
-            className={["relative rounded-2xl border-2 border-dashed p-6 flex flex-col items-center gap-3", "cursor-pointer select-none transition-all duration-200 outline-none", "focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2",
-              isPending ? "border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed" : isDragging ? "border-indigo-500 bg-indigo-50 scale-[1.01]" : dragError ? "border-red-400 bg-red-50" : "border-gray-200 bg-white hover:border-indigo-400 hover:bg-indigo-50/50"].join(" ")}
+            className={["relative rounded-2xl border-2 border-dashed p-6 flex flex-col items-center gap-3", "cursor-pointer select-none transition-all duration-200 outline-none", "focus-visible:ring-2 focus-visible:ring-brand-accent-500 focus-visible:ring-offset-2",
+              isPending ? "border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed" : isDragging ? "border-brand-accent-500 bg-amber-50 scale-[1.01]" : dragError ? "border-red-400 bg-red-50" : "border-gray-200 bg-white hover:border-brand-accent-500 hover:bg-amber-50/50"].join(" ")}
           >
-            {isDragging && !isPending && <div className="absolute inset-0 rounded-2xl pointer-events-none" style={{ background: "radial-gradient(ellipse at center, rgba(99,102,241,0.08) 0%, transparent 70%)" }} aria-hidden="true" />}
-            <div className={["w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-200", isDragging ? "bg-indigo-100 scale-110" : dragError ? "bg-red-100" : "bg-gray-50"].join(" ")} aria-hidden="true">
-              <UploadIcon className={["w-7 h-7 transition-colors duration-200", isDragging ? "text-indigo-500" : dragError ? "text-red-400" : "text-slate-700"].join(" ")} />
+            {isDragging && !isPending && <div className="absolute inset-0 rounded-2xl pointer-events-none" style={{ background: "radial-gradient(ellipse at center, rgba(245,166,35,0.08) 0%, transparent 70%)" }} aria-hidden="true" />}
+            <div className={["w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-200", isDragging ? "bg-amber-100 scale-110" : dragError ? "bg-red-100" : "bg-gray-50"].join(" ")} aria-hidden="true">
+              <UploadIcon className={["w-7 h-7 transition-colors duration-200", isDragging ? "text-brand-accent-500" : dragError ? "text-red-400" : "text-slate-700"].join(" ")} />
             </div>
             <div className="text-center">
-              <p className={["text-sm font-semibold transition-colors duration-150", isDragging ? "text-indigo-600" : dragError ? "text-red-500" : "text-gray-700"].join(" ")}>
+              <p className={["text-sm font-semibold transition-colors duration-150", isDragging ? "text-brand-accent-600" : dragError ? "text-red-500" : "text-gray-700"].join(" ")}>
                 {isDragging ? "Drop it right here!" : dragError ? "Wrong file type" : "Tap to browse or drag & drop"}
               </p>
               <p id="upload-hint" className="text-xs text-slate-700 mt-0.5">{dragError ?? `${ACCEPTED_LABEL} · Max 20 MB`}</p>
@@ -340,7 +341,7 @@ export default function CreatePlanForm({ streak, compact = false }: { streak: nu
         {/* Submit error */}
         {submitError && (
           <div role="alert" aria-live="polite" className="flex items-start gap-3 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 animate-fade-in">
-            <span className="text-base flex-shrink-0" aria-hidden="true">⚠️</span>
+            <AlertTriangle size={16} strokeWidth={1.75} className="flex-shrink-0 mt-0.5" aria-hidden="true" />
             <p className="leading-snug">{submitError}</p>
           </div>
         )}
@@ -407,7 +408,7 @@ export default function CreatePlanForm({ streak, compact = false }: { streak: nu
         )}
 
         {!isPending && <p className="text-center text-xs text-slate-700 -mt-2">AI-powered · Personalised for your exam · Free</p>}
-        {isPending && <p className="text-center text-xs text-indigo-400 -mt-2 animate-fade-in">Building your schedule — this takes ~15 seconds…</p>}
+        {isPending && <p className="text-center text-xs text-brand-accent-500 -mt-2 animate-fade-in">Building your schedule — this takes ~15 seconds…</p>}
 
       </form>
       

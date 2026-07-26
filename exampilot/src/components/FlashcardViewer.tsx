@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { Flame } from "lucide-react";
 import type { Flashcard } from "@/app/actions/generateFlashcards";
+import { Target } from "lucide-react";
 
 interface FlashcardViewerProps {
   flashcards: Flashcard[];
@@ -32,8 +34,8 @@ export default function FlashcardViewer({ flashcards, focusedSubjects }: Flashca
   if (isFinished) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-slate-50 text-center animate-fade-in">
-        <div className="w-24 h-24 bg-emerald-100 rounded-full flex items-center justify-center text-4xl mb-6 shadow-sm">
-          🔥
+        <div className="w-24 h-24 bg-emerald-100 rounded-full flex items-center justify-center mb-6 shadow-sm">
+          <Flame size={40} strokeWidth={1.5} className="text-emerald-500" aria-hidden="true" />
         </div>
         <h1 className="text-3xl font-black text-slate-800 mb-2 tracking-tight">Daily Practice Complete!</h1>
         <p className="text-slate-500 mb-8 font-medium">You smashed through 5 targeted questions today.</p>
@@ -55,15 +57,15 @@ export default function FlashcardViewer({ flashcards, focusedSubjects }: Flashca
           <Link href="/" className="text-slate-700 hover:text-slate-600 font-medium text-sm transition-colors">
             ← Back
           </Link>
-          <div className="text-xs font-bold uppercase tracking-widest text-indigo-500 bg-indigo-50 px-3 py-1 rounded-full">
+          <div className="text-xs font-bold uppercase tracking-widest text-brand-accent-500 bg-amber-50 px-3 py-1 rounded-full">
             Card {currentIndex + 1} of {flashcards.length}
           </div>
         </div>
         
         {focusedSubjects && focusedSubjects.length > 0 && (
-          <div className="flex items-center gap-2 bg-purple-50 border border-purple-100 px-3 py-1.5 rounded-xl self-center w-full justify-center">
-            <span className="text-sm">🎯</span>
-            <span className="text-xs font-bold text-purple-700">Focused on: {focusedSubjects.join(", ")}</span>
+          <div className="flex items-center gap-2 bg-amber-50 border border-amber-100 px-3 py-1.5 rounded-xl self-center w-full justify-center">
+            <Target size={14} strokeWidth={1.75} className="text-brand-accent-600" />
+            <span className="text-xs font-bold text-amber-700">Focused on: {focusedSubjects.join(", ")}</span>
           </div>
         )}
       </div>
@@ -80,13 +82,13 @@ export default function FlashcardViewer({ flashcards, focusedSubjects }: Flashca
             <h2 className="text-xl md:text-2xl font-bold text-slate-800 leading-snug">
               {currentCard?.question}
             </h2>
-            <p className="absolute bottom-6 left-0 right-0 text-xs font-semibold text-indigo-400 uppercase tracking-widest animate-pulse">
+            <p className="absolute bottom-6 left-0 right-0 text-xs font-semibold text-brand-accent-400 uppercase tracking-widest animate-pulse">
               Tap to flip
             </p>
           </div>
 
           {/* Back (Answer) */}
-          <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] bg-indigo-600 rounded-3xl shadow-xl p-8 flex flex-col justify-center text-center">
+          <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] bg-brand-accent-500 rounded-3xl shadow-xl p-8 flex flex-col justify-center text-center">
             <span className="absolute top-6 left-6 text-2xl text-white opacity-20">A.</span>
             <h2 className="text-xl md:text-2xl font-bold text-white leading-snug">
               {currentCard?.answer}
@@ -100,7 +102,7 @@ export default function FlashcardViewer({ flashcards, focusedSubjects }: Flashca
         {!isFlipped ? (
           <button 
             onClick={handleFlip}
-            className="flex-1 py-4 bg-white border border-slate-200 text-slate-700 font-bold rounded-2xl shadow-sm hover:border-indigo-300 hover:text-indigo-600 transition-all active:scale-95"
+            className="flex-1 py-4 bg-white border border-slate-200 text-slate-700 font-bold rounded-2xl shadow-sm hover:border-brand-accent-400 hover:text-brand-accent-500 transition-all active:scale-95"
           >
             Show Answer
           </button>

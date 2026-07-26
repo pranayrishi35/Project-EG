@@ -33,7 +33,7 @@ export default function PlanLoading() {
               <div key={i} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
                 <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
                   <div className="w-16 h-5 bg-slate-200 rounded animate-pulse" />
-                  <div className="w-12 h-5 bg-indigo-100 rounded animate-pulse" />
+                  <div className="w-12 h-5 bg-amber-100 rounded animate-pulse" />
                 </div>
                 <div className="space-y-3">
                   <div className="flex gap-3 items-start">

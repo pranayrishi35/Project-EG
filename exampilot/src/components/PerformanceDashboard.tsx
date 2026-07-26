@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { TrendingUp } from "lucide-react";
 import { fetchAggregateStats } from "@/app/actions/mockAttempts";
 
 export default function PerformanceDashboard() {
@@ -49,14 +50,14 @@ export default function PerformanceDashboard() {
     <div className="mb-8 bg-slate-900 rounded-3xl p-6 shadow-xl border border-slate-800 text-white relative print:hidden">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <h2 className="text-xl font-black tracking-tight flex items-center gap-2">
-          <span>📈</span> Performance Analytics
+          <TrendingUp size={20} strokeWidth={1.75} aria-hidden="true" /> Performance Analytics
         </h2>
         <div className="flex flex-wrap gap-2">
           {tabs.map(tab => (
             <button
               key={tab}
               onClick={() => setFilter(tab)}
-              className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${filter === tab ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-500 hover:bg-slate-700'}`}
+              className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${filter === tab ? 'bg-brand-accent-500 text-brand-accent-ink' : 'bg-slate-800 text-slate-500 hover:bg-slate-700'}`}
             >
               {tab.replace("_", " ")}
             </button>
@@ -75,7 +76,7 @@ export default function PerformanceDashboard() {
         </div>
         <div className="bg-slate-800/50 rounded-2xl p-4 border border-slate-700/50 flex flex-col items-center justify-center text-center">
           <span className="text-slate-500 text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-1">Best Score</span>
-          <span className="text-2xl font-black text-indigo-400">{stats?.bestScore || 0}</span>
+          <span className="text-2xl font-black text-brand-accent-500">{stats?.bestScore || 0}</span>
         </div>
       </div>
 

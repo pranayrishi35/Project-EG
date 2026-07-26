@@ -74,7 +74,7 @@ function PlanCard({ plan }: { plan: PlanSummary }) {
     <div className="relative group">
       <Link
         href={`/planner/${plan.id}`}
-        className="block bg-white rounded-2xl border border-gray-100 shadow-sm p-5 transition-all duration-200 hover:shadow-md hover:border-indigo-100 active:scale-[0.99]"
+        className="block bg-white rounded-2xl border border-gray-100 shadow-sm p-5 transition-all duration-200 hover:shadow-md hover:border-amber-100 active:scale-[0.99]"
       >
         {/* Header */}
         <div className="flex items-start justify-between mb-4 pr-12">
@@ -112,12 +112,12 @@ function PlanCard({ plan }: { plan: PlanSummary }) {
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center justify-between text-xs">
             <span className="text-gray-500">{completed} / {total} topics done</span>
-            <span className={["font-bold", progress === 100 ? "text-emerald-600" : progress > 50 ? "text-indigo-600" : "text-gray-500"].join(" ")}>
+            <span className={["font-bold", progress === 100 ? "text-emerald-600" : progress > 50 ? "text-brand-accent-600" : "text-gray-500"].join(" ")}>
               {progress}%
             </span>
           </div>
           <div className="w-full h-2 rounded-full bg-gray-100 overflow-hidden" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100} aria-label={`${progress}% complete`}>
-            <div className="h-full rounded-full transition-all duration-500" style={{ width: `${progress}%`, background: progress === 100 ? "linear-gradient(90deg, #10B981, #34D399)" : "linear-gradient(90deg, #4F46E5, #7C3AED)" }} />
+            <div className="h-full rounded-full transition-all duration-500" style={{ width: `${progress}%`, background: progress === 100 ? "linear-gradient(90deg, #10B981, #34D399)" : "linear-gradient(90deg, #F5A623, #D98A0F)" }} />
           </div>
         </div>
       </Link>
@@ -147,7 +147,7 @@ export default async function PlannerPage() {
       {/* Header row */}
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-indigo-500 mb-0.5">
+          <p className="text-xs font-semibold uppercase tracking-widest text-brand-accent-600 mb-0.5">
             My Plans
           </p>
           <h1 className="text-xl font-bold text-gray-900">Study Planner</h1>

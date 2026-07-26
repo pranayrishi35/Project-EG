@@ -53,7 +53,7 @@ export async function POST(req: Request) {
   // gate solely on that cookie — otherwise logged-out visitors 401 and Tejas
   // shows "lost signal" instead of the guest greeting.
   const guestReply =
-    "I'm Tejas, your AI study wingman! 🛫 I can break down concepts, quiz you, and map out revision plans. Create a free account to fly a full mission with me!";
+    "I'm Tejas, your AI study wingman! I can break down concepts, quiz you, and map out revision plans. Create a free account to fly a full mission with me!";
 
   try {
     if (isGuestUser()) {

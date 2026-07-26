@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Zap } from "lucide-react";
 
 interface CreditModalProps {
   isOpen: boolean;
@@ -44,8 +45,8 @@ export default function CreditModal({ isOpen, onClose }: CreditModalProps) {
         aria-labelledby="credit-modal-title"
         className={`relative w-full max-w-sm bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl flex flex-col items-center text-center transition-all duration-300 transform ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}
       >
-        <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-4xl mb-4 border border-indigo-500/20 shadow-[0_0_20px_rgba(99,102,241,0.15)]">
-          <span aria-hidden="true">⚡</span>
+        <div className="w-16 h-16 rounded-2xl bg-brand-accent-500/10 flex items-center justify-center mb-4 border border-brand-accent-500/20 shadow-[0_0_20px_rgba(245,166,35,0.15)]">
+          <Zap size={28} strokeWidth={1.75} className="text-brand-accent-500" />
         </div>
         
         <h2 id="credit-modal-title" className="text-2xl font-black text-white mb-2 tracking-tight">
@@ -58,7 +59,7 @@ export default function CreditModal({ isOpen, onClose }: CreditModalProps) {
         
         <button 
           onClick={onClose}
-          className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-all active:scale-[0.98] min-h-[48px]"
+          className="w-full py-3.5 bg-brand-accent-500 hover:bg-brand-accent-400 text-brand-accent-ink font-bold rounded-xl transition-all active:scale-[0.98] min-h-[48px]"
         >
           Understood
         </button>

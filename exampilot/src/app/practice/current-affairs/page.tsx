@@ -6,6 +6,7 @@ import { getCurrentAffairsTest } from "@/app/actions/getCurrentAffairsTest";
 import { gradeCurrentAffairs } from "@/app/actions/gradeCurrentAffairs";
 import type { Question, ScoringMap } from "@/app/actions/getMockTest";
 import dynamic from "next/dynamic";
+import { AlertTriangle } from "lucide-react";
 
 const TestRunner = dynamic(() => import("@/components/TestRunner"), { ssr: false });
 
@@ -34,7 +35,7 @@ export default function CurrentAffairsPracticePage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white">
         <div className="animate-pulse flex flex-col items-center gap-4">
-          <div className="w-12 h-12 rounded-full border-4 border-t-indigo-500 border-indigo-200/20 animate-spin" />
+          <div className="w-12 h-12 rounded-full border-4 border-t-brand-accent-500 border-brand-accent-200/20 animate-spin" />
           <p className="text-sm font-bold uppercase tracking-widest text-slate-700">Loading Current Affairs Quiz...</p>
         </div>
       </div>
@@ -45,8 +46,8 @@ export default function CurrentAffairsPracticePage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-900 p-6">
         <div className="max-w-md w-full bg-slate-800 p-8 rounded-3xl border border-slate-700 shadow-xl text-center">
-          <div className="w-16 h-16 bg-rose-500/10 text-rose-500 flex items-center justify-center rounded-2xl text-3xl mx-auto mb-4">
-            ⚠️
+          <div className="w-16 h-16 bg-rose-500/10 text-rose-500 flex items-center justify-center rounded-2xl mx-auto mb-4">
+            <AlertTriangle size={32} strokeWidth={1.75} aria-hidden="true" />
           </div>
           <h2 className="text-xl font-bold text-white mb-2">Test Unavailable</h2>
           <p className="text-slate-700 mb-8">{error || "Failed to load test."}</p>

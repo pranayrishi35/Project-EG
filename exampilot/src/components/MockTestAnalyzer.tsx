@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { AlertTriangle } from "lucide-react";
 import { logMockTest, deleteMockTest } from "@/app/actions/logMockTest";
 import type { MockTestResult } from "@/app/actions/logMockTest";
+import { Target } from "lucide-react";
 
 // ─── Props ─────────────────────────────────────────────────────────────────────
 
@@ -35,11 +37,11 @@ function EmptyMocks() {
   return (
     <div className="flex flex-col items-center gap-4 py-10 text-center">
       <div
-        className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl"
-        style={{ background: "linear-gradient(135deg, #EEF2FF 0%, #F5F3FF 100%)" }}
+        className="w-16 h-16 rounded-2xl flex items-center justify-center"
+        style={{ background: "linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%)" }}
         aria-hidden="true"
       >
-        🎯
+        <Target size={28} strokeWidth={1.75} className="text-brand-accent-600" />
       </div>
       <div>
         <p className="text-sm font-bold text-gray-700 mb-0.5">No mock tests logged yet</p>
@@ -69,7 +71,7 @@ function TrendChart({ tests }: { tests: MockTestResult[] }) {
       {/* Summary pills */}
       <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
         {[
-          { label: "Avg Accuracy", value: `${avgAccuracy}%`, color: "#4F46E5" },
+          { label: "Avg Accuracy", value: `${avgAccuracy}%`, color: "#F5A623" },
           { label: "Best Score", value: bestScore > 0 ? `+${bestScore}` : String(bestScore), color: "#059669" },
           {
             label: "Trend",
@@ -315,7 +317,7 @@ export default function MockTestAnalyzer({
 
       {/* ── Log form ── */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-        <p className="text-xs font-bold uppercase tracking-widest text-indigo-500 mb-3">
+        <p className="text-xs font-bold uppercase tracking-widest text-brand-accent-500 mb-3">
           Log Mock Test
         </p>
 
@@ -340,7 +342,7 @@ export default function MockTestAnalyzer({
                   value={value}
                   onChange={(e) => set(e.target.value)}
                   placeholder="0"
-                  className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-bold text-gray-800 text-center placeholder-gray-200 outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all duration-150"
+                  className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-bold text-gray-800 text-center placeholder-gray-200 outline-none focus:ring-2 focus:ring-brand-accent-400 focus:border-transparent transition-all duration-150"
                 />
               </div>
             ))}
@@ -359,7 +361,7 @@ export default function MockTestAnalyzer({
                 value={marksPerCorrect}
                 onChange={(e) => setMarksPerCorrect(e.target.value)}
                 aria-label="Marks per correct answer"
-                className="w-12 text-center text-xs font-bold text-gray-700 bg-white border border-gray-200 rounded-lg py-1 outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent"
+                className="w-12 text-center text-xs font-bold text-gray-700 bg-white border border-gray-200 rounded-lg py-1 outline-none focus:ring-2 focus:ring-brand-accent-400 focus:border-transparent"
               />
               <span className="text-[10px] text-slate-500 flex-shrink-0">correct</span>
             </div>
@@ -373,7 +375,7 @@ export default function MockTestAnalyzer({
                 value={penaltyPerIncorrect}
                 onChange={(e) => setPenaltyPerIncorrect(e.target.value)}
                 aria-label="Penalty per incorrect answer"
-                className="w-12 text-center text-xs font-bold text-gray-700 bg-white border border-gray-200 rounded-lg py-1 outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent"
+                className="w-12 text-center text-xs font-bold text-gray-700 bg-white border border-gray-200 rounded-lg py-1 outline-none focus:ring-2 focus:ring-brand-accent-400 focus:border-transparent"
               />
               <span className="text-[10px] text-slate-500 flex-shrink-0">wrong</span>
             </div>
@@ -392,8 +394,8 @@ export default function MockTestAnalyzer({
               ].join(" ")}
             >
               {isInvalid ? (
-                <p className="text-xs font-semibold text-rose-600 text-center">
-                  ⚠️ Correct + Incorrect ({cor + inc}) exceeds Attempted ({att})
+                <p className="text-xs font-semibold text-rose-600 text-center inline-flex items-center gap-1.5 justify-center">
+                  <AlertTriangle size={14} strokeWidth={1.75} aria-hidden="true" /> Correct + Incorrect ({cor + inc}) exceeds Attempted ({att})
                 </p>
               ) : (
                 <div className="flex items-center justify-between">
@@ -441,7 +443,7 @@ export default function MockTestAnalyzer({
                 ? "hover:opacity-90"
                 : "opacity-40 cursor-not-allowed",
             ].join(" ")}
-            style={canSubmit ? { background: "linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)" } : { background: "#9CA3AF" }}
+            style={canSubmit ? { background: "linear-gradient(135deg, #F5A623 0%, #D98A0F 100%)" } : { background: "#9CA3AF" }}
           >
             {isSaving ? (
               <>
@@ -458,7 +460,7 @@ export default function MockTestAnalyzer({
       {/* ── Trend chart ── */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
         <div className="flex items-center justify-between mb-4">
-          <p className="text-xs font-bold uppercase tracking-widest text-indigo-500">
+          <p className="text-xs font-bold uppercase tracking-widest text-brand-accent-500">
             Score Trend
           </p>
           {tests.length > 0 && (
@@ -478,7 +480,7 @@ export default function MockTestAnalyzer({
       {/* ── History list ── */}
       {tests.length > 0 && (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-          <p className="text-xs font-bold uppercase tracking-widest text-indigo-500 mb-3">
+          <p className="text-xs font-bold uppercase tracking-widest text-brand-accent-500 mb-3">
             History
           </p>
           <div className="flex flex-col">

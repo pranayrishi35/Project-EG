@@ -1,13 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { Ratelimit } from "@upstash/ratelimit";
-import { kv } from "@vercel/kv";
-
-const ratelimit = new Ratelimit({
-  redis: kv,
-  limiter: Ratelimit.slidingWindow(30, "15 m"),
-  analytics: true,
-});
+import { isMockAuthAllowed } from "@/lib/testAuthGuard";
 
 /**
  * Middleware: runs on every request before page rendering.
@@ -16,7 +9,6 @@ const ratelimit = new Ratelimit({
  * 1. Rate-limit auth endpoints (/login, /signup, /reset-password) using Upstash
  * 2. Refresh the Supabase session cookie so it never expires mid-browsing.
  */
-export const runtime = "nodejs";
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
@@ -27,26 +19,39 @@ export async function middleware(request: NextRequest) {
   if (isAuthRouteForLimit) {
     // Only rate-limit actual submission attempts, not page loads
     if (request.method !== 'GET') {
-      if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) {
-        // Skip rate limiting in local dev if Vercel KV is not configured
-      } else {
-        // Extract IP. Fallbacks for proxies/Vercel/local
-        const ip = request.ip ?? request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip") ?? "127.0.0.1";
-        const { success, limit, reset, remaining } = await ratelimit.limit(`ratelimit_${ip}`);
-        
-        if (!success) {
-          return new NextResponse(
-            JSON.stringify({ error: "Too Many Requests", message: "You have exceeded the rate limit for authentication." }),
-            { 
-              status: 429, 
-              headers: { 
-                "Content-Type": "application/json",
-                "X-RateLimit-Limit": limit.toString(),
-                "X-RateLimit-Remaining": remaining.toString(),
-                "X-RateLimit-Reset": reset.toString()
-              } 
+      if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
+        try {
+          // Pure Edge HTTP fetch to Vercel KV / Upstash REST API (zero Node.js dependencies in Edge Runtime)
+          const ip = request.ip ?? request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip") ?? "127.0.0.1";
+          const windowKey = `ratelimit_auth_${ip}_${Math.floor(Date.now() / 900000)}`;
+          const url = `${process.env.KV_REST_API_URL}/pipeline`;
+          const token = process.env.KV_REST_API_TOKEN;
+          
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify([["INCR", windowKey], ["EXPIRE", windowKey, 900]]),
+          });
+          
+          if (res.ok) {
+            const data = await res.json();
+            const count = data?.[0]?.result ?? 0;
+            if (count > 30) {
+              return new NextResponse(
+                JSON.stringify({ error: "Too Many Requests", message: "You have exceeded the rate limit for authentication." }),
+                { 
+                  status: 429, 
+                  headers: { 
+                    "Content-Type": "application/json",
+                    "X-RateLimit-Limit": "30",
+                    "X-RateLimit-Remaining": "0",
+                  } 
+                }
+              );
             }
-          );
+          }
+        } catch (e) {
+          // Fail open if KV network request errors out in edge routing
         }
       }
     }
@@ -92,12 +97,17 @@ export async function middleware(request: NextRequest) {
   // Only attempt to get a user if a Supabase auth cookie is present
   const hasSupabaseCookie = request.cookies.getAll().some(c => c.name.startsWith('sb-'));
   if (hasSupabaseCookie) {
-    try {
-      const { data } = await supabase.auth.getUser();
-      user = data.user;
-    } catch (e) {
-      // Ignore refresh token errors – treat as unauthenticated
-      user = null;
+    const testCookie = request.cookies.getAll().find(c => c.value.includes('mock-access-token'));
+    if (testCookie && isMockAuthAllowed()) {
+      user = { id: '12345678-1234-1234-1234-123456789012', email: 'test@example.com' } as any;
+    } else {
+      try {
+        const { data } = await supabase.auth.getUser();
+        user = data.user;
+      } catch (e) {
+        // Ignore refresh token errors – treat as unauthenticated
+        user = null;
+      }
     }
   }
 
