@@ -14,11 +14,11 @@ export function LegalFooter() {
             <div>
               <h3 className="text-sm font-semibold text-gray-900 mb-3">Legal Documents</h3>
               <ul className="space-y-2 text-sm text-gray-600">
-                <li><Link href="/terms" className="hover:text-indigo-600">Terms of Service</Link></li>
-                <li><Link href="/privacy" className="hover:text-indigo-600">Privacy Policy</Link></li>
-                <li><Link href="/aup" className="hover:text-indigo-600">Acceptable Usage Policy</Link></li>
-                <li><Link href="/refund-policy" className="hover:text-indigo-600">Refund & Cancellation Policy</Link></li>
-                <li><Link href="/cookies" className="hover:text-indigo-600">Cookie Policy</Link></li>
+                <li><Link href="/terms" className="hover:text-brand-accent-600">Terms of Service</Link></li>
+                <li><Link href="/privacy" className="hover:text-brand-accent-600">Privacy Policy</Link></li>
+                <li><Link href="/aup" className="hover:text-brand-accent-600">Acceptable Usage Policy</Link></li>
+                <li><Link href="/refund-policy" className="hover:text-brand-accent-600">Refund & Cancellation Policy</Link></li>
+                <li><Link href="/cookies" className="hover:text-brand-accent-600">Cookie Policy</Link></li>
               </ul>
             </div>
             <div>
@@ -30,8 +30,13 @@ export function LegalFooter() {
               </div>
             </div>
           </div>
-          <div className="pt-8 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-gray-500">
-            <p>© {new Date().getFullYear()} ExamPilot. All rights reserved.</p>
+          <div className="pt-6 border-t border-gray-100 text-center text-xs text-gray-500 mb-6 leading-relaxed">
+            <p>
+              <strong>Disclaimer:</strong> ExamPilot is an independent educational platform and is <strong>not affiliated with, endorsed by, or sponsored by</strong> the Union Public Service Commission (UPSC), the Indian Air Force, the Indian Army, the Indian Navy, or any government examination authority. All exam names and acronyms (e.g., AFCAT, CDS, NDA) belong solely to their respective formal institutions and are used for identification purposes only.
+            </p>
+          </div>
+          <div className="pt-4 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-gray-500">
+            <p>&copy; {new Date().getFullYear()} ExamPilot. All rights reserved.</p>
             <button 
               onClick={() => setIsCookieModalOpen(true)} 
               className="hover:text-gray-900 hover:underline"
@@ -63,7 +68,7 @@ export function LegalFooter() {
             </p>
             <button 
               onClick={() => setIsCookieModalOpen(false)}
-              className="w-full bg-indigo-600 text-white rounded-xl py-2.5 text-sm font-medium hover:bg-indigo-700 transition-colors"
+              className="w-full bg-brand-accent-500 text-brand-accent-ink rounded-xl py-2.5 text-sm font-medium hover:bg-brand-accent-400 transition-colors"
             >
               Close
             </button>

@@ -126,10 +126,12 @@ USING (true);
 -- ==============================================================================
 -- NOTE ON MATERIALIZED VIEWS:
 -- Materialized views (e.g., mock_leaderboards) DO NOT inherit RLS policies.
--- Access to `mock_leaderboards` is secured implicitly because the frontend only accesses 
--- it via the `get_instant_rank` RPC function, which has been audited. Do not expose 
--- the materialized view directly via PostgREST.
+-- Access to `mock_leaderboards` is secured implicitly via get_instant_rank RPC.
+-- EXPLICIT HARDENING: Revoke direct PostgREST SELECT access from anon and authenticated:
 -- ==============================================================================
+REVOKE SELECT ON mock_leaderboards FROM anon;
+REVOKE SELECT ON mock_leaderboards FROM authenticated;
+REVOKE SELECT ON mock_leaderboards FROM public;
 
 -- ==============================================================================
 -- DEFENSE IN DEPTH: COLUMN LEVEL SECURITY
@@ -137,6 +139,10 @@ USING (true);
 -- Hide the correct answer from standard API queries to prevent answer extraction
 REVOKE SELECT (correct_index) ON question_bank FROM authenticated;
 REVOKE SELECT (correct_index) ON question_bank FROM anon;
+
+-- Lock down exam_name in study_plans against client-side DB updates to prevent AI prompt injection
+REVOKE UPDATE (exam_name) ON study_plans FROM authenticated;
+REVOKE UPDATE (exam_name) ON study_plans FROM anon;
 
 -- ------------------------------------------------------------------------------
 -- user_profiles: lock the monetized / privilege / lifecycle columns.
@@ -148,3 +154,4 @@ REVOKE UPDATE (credits, tier, is_deleted, deletion_deadline) ON user_profiles FR
 REVOKE UPDATE (credits, tier, is_deleted, deletion_deadline) ON user_profiles FROM anon;
 REVOKE INSERT (credits, tier, is_deleted, deletion_deadline) ON user_profiles FROM authenticated;
 REVOKE INSERT (credits, tier, is_deleted, deletion_deadline) ON user_profiles FROM anon;
+

@@ -6,6 +6,8 @@ import { z } from "zod";
 import { EXAM_CONFIGS } from "@/lib/examConfig";
 import { isGuestUser } from "@/lib/guestShield";
 import { MOCK_HISTORY_DATA, MOCK_PERFORMANCE_DASHBOARD_DATA } from "@/lib/mockData";
+import { isMockAuthAllowed } from "@/lib/testAuthGuard";
+
 
 const QStatusSchema = z.enum(["unvisited", "unanswered", "answered", "marked", "answered_and_marked"]);
 
@@ -160,7 +162,12 @@ export async function saveMockProgress(payload: any) {
         ? existingRow!.served_question_ids!
         : null;
 
-    const gradableIds = servedIds ?? answers_state.questions.map((q: any) => q.id);
+    if (!servedIds) {
+      console.error("[Mock Sync] Security Rejection: No server-authoritative served_question_ids found for attempt:", id);
+      return { success: false, error: "Attempt rejected: server-authoritative question list not found. Cannot grade uninitialized attempt." };
+    }
+
+    const gradableIds = servedIds;
     const gradableIdSet = new Set(gradableIds);
 
     // Fetch truth from database using service role (bypassing column restrictions)
@@ -297,6 +304,57 @@ export async function fetchMockHistory() {
 }
 
 export async function fetchMockAttempt(id: string) {
+  if (isMockAuthAllowed() && (id === 'demo-test-101' || id === 'test-id-101')) {
+    return {
+      success: true,
+      data: {
+        id: id,
+        user_id: '12345678-1234-1234-1234-123456789012',
+        exam_target: 'AFCAT Practice Mock #101',
+        status: 'in-progress',
+        time_remaining: 1800,
+        answers_state: {
+          timeRemaining: 1800,
+          currentQuestionIndex: 0,
+          selectedAnswers: {},
+          statuses: {},
+          questions: [
+            {
+              id: "1",
+              subject: "Aviation & Defence",
+              text: "Which indigenous fighter aircraft was designed by ADA and manufactured by HAL for the Indian Air Force?",
+              options: [
+                "Tejas Mk1A",
+                "Su-30MKI",
+                "Rafale",
+                "Mirage 2000"
+              ],
+              correctAnswer: 0,
+              explanation: "LCA Tejas is a single-engine, multirole combat aircraft designed by the Aeronautical Development Agency (ADA) in collaboration with HAL."
+            },
+            {
+              id: "2",
+              subject: "General Awareness",
+              text: "What is the primary operational objective of Operation Gagan-2026?",
+              options: [
+                "Air defense modernization",
+                "Naval blockade",
+                "Satellite launch",
+                "Border logistics"
+              ],
+              correctAnswer: 0,
+              explanation: "Operation Gagan focuses on integrating multi-layered modern air defense tracking systems."
+            }
+          ],
+          scoringMap: {
+            correct: 4,
+            incorrect: -1,
+            unattempted: 0
+          }
+        }
+      }
+    };
+  }
   const supabase = createClient();
   const { data, error } = await supabase.from('mock_attempts').select('*').eq('id', id).single();
   if (error) {

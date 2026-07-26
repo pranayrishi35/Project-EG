@@ -25,6 +25,11 @@ SELECT
 FROM mock_attempts
 WHERE status = 'completed' AND test_number > 0;
 
+-- Security Hardening: Revoke direct PostgREST access from anon/authenticated so score data cannot be dumped globally.
+REVOKE SELECT ON mock_leaderboards FROM anon;
+REVOKE SELECT ON mock_leaderboards FROM authenticated;
+REVOKE SELECT ON mock_leaderboards FROM public;
+
 -- 4. Re-create Indexes for blazing fast lookups and concurrent refreshes
 -- Note: We must include cohort_key in the unique index to allow CONCURRENT refreshes
 CREATE UNIQUE INDEX idx_mock_leaderboards_unique 

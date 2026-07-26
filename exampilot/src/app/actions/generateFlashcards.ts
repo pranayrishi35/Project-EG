@@ -74,9 +74,10 @@ export async function generateFlashcards(): Promise<GenerateFlashcardsResult> {
   }
 
   try {
-    const weakSubjects = await getWeakestSubjects(plan.exam_name);
+    const safeExamName = String(plan.exam_name || "").replace(/[^a-zA-Z0-9\s()_-]/g, "").slice(0, 60);
+    const weakSubjects = await getWeakestSubjects(safeExamName);
 
-    let prompt = `Act as an expert examiner for ${plan.exam_name}. Based on this syllabus: ${plan.generated_plan}, generate 5 highly probable, quick-fire flashcards.
+    let prompt = `Act as an expert examiner for ${safeExamName}. Based on this syllabus: ${plan.generated_plan}, generate 5 highly probable, quick-fire flashcards.
     
     CRITICAL INSTRUCTIONS:
     1. Return STRICTLY a JSON array of objects.

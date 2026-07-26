@@ -68,7 +68,8 @@ export async function generateCheatSheet(planId: string): Promise<GenerateCheatS
   }
 
   try {
-    const prompt = `Act as an expert tutor for Indian Defense Exams (${plan.exam_name}). Based on this syllabus, do NOT just output the syllabus list. Generate high-yield, subject-wise revision notes and top 5 formulas/facts for last-minute revision. 
+    const safeExamName = String(plan.exam_name || "").replace(/[^a-zA-Z0-9\s()_-]/g, "").slice(0, 60);
+    const prompt = `Act as an expert tutor for Indian Defense Exams (${safeExamName}). Based on this syllabus, do NOT just output the syllabus list. Generate high-yield, subject-wise revision notes and top 5 formulas/facts for last-minute revision. 
     
     CRITICAL INSTRUCTIONS:
     1. Return STRICTLY a JSON object.
