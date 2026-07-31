@@ -9,6 +9,7 @@ import type { MockTestResult } from "@/app/actions/logMockTest";
 import FocusTimer from "@/components/FocusTimer";
 import MockTestAnalyzer from "@/components/MockTestAnalyzer";
 import CheatSheetView from "@/components/CheatSheetView";
+import AddToCalendarButton from "@/components/AddToCalendarButton";
 import { Zap, Target, Timer, BookOpen, Calendar, Flame, AlertTriangle } from "lucide-react";
 
 const MissionClock = dynamic(() => import("@/components/MissionClock"), { ssr: false });
@@ -225,6 +226,7 @@ export default function PlanViewer({
     setTestLoading(type);
     setTestError(null);
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const action = type === "Mini-Test" ? getMiniTest : getMockTest;
     const result = type === "Mini-Test" ? await getMiniTest(finalTarget, useFocusMode) : await getMockTest(finalTarget);
 
@@ -349,6 +351,12 @@ export default function PlanViewer({
       </div>
 
       <MissionClock examDate={examDate} />
+
+      {/* Calendar sync — subscribe to this plan as an auto-updating .ics feed. */}
+      <div className="print:hidden flex justify-center">
+        <AddToCalendarButton />
+      </div>
+
 
       {testError && (
         <div className="print:hidden bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-2xl mb-3 text-sm font-medium animate-fade-in">

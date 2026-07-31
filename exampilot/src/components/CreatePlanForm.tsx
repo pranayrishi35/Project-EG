@@ -12,6 +12,7 @@ import {
 import { useRouter } from "next/navigation";
 import { generateStudyPlan } from "@/app/actions/planner";
 import CreditModal from "./CreditModal";
+import PlanLimitUpsell from "./PlanLimitUpsell";
 import { Target, Plane, Medal, Anchor, Calendar, Paperclip, FileText, Image, Flame, AlertTriangle } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -58,6 +59,7 @@ function FilePill({ file, onRemove, disabled }: { file: UploadedFile; onRemove: 
   return (
     <div id="selected-file-pill" className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mt-4 animate-fade-in">
       <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: isPDF ? "#FEF3C7" : "#F0FDF4" }} aria-hidden="true">
+        // eslint-disable-next-line jsx-a11y/alt-text
         {isPDF ? <FileText size={20} strokeWidth={1.75} className="text-amber-600" /> : <Image size={20} strokeWidth={1.75} className="text-emerald-600" />}
       </div>
       <div className="flex-1 min-w-0">
@@ -122,6 +124,7 @@ export default function CreatePlanForm({ streak, compact = false }: { streak: nu
   const [dragError, setDragError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [showCreditModal, setShowCreditModal] = useState(false);
+  const [showPlanLimit, setShowPlanLimit] = useState(false);
   const [examName, setExamName] = useState("AFCAT");
   const [examDate, setExamDate] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -150,6 +153,7 @@ export default function CreatePlanForm({ streak, compact = false }: { streak: nu
     }
 
     setSubmitError(null);
+    setShowPlanLimit(false);
     const formData = new FormData(e.currentTarget);
     
     // Step 1 fields are unmounted in Step 2, so manually append their states:
@@ -176,6 +180,10 @@ export default function CreatePlanForm({ streak, compact = false }: { streak: nu
           return;
         } else if (result.error === 'AI_SERVICE_UNAVAILABLE' && 'message' in result) {
           setSubmitError(result.message as string);
+        } else if (result.error === 'PLAN_LIMIT_REACHED') {
+          setSubmitError(""); // Clear the red banner
+          setShowPlanLimit(true); // Show the non-punitive upgrade card
+          return;
         } else {
           setSubmitError(result.error); 
         }
@@ -345,6 +353,9 @@ export default function CreatePlanForm({ streak, compact = false }: { streak: nu
             <p className="leading-snug">{submitError}</p>
           </div>
         )}
+
+        {/* Single active plan limit — non-punitive upgrade card */}
+        {showPlanLimit && <PlanLimitUpsell />}
 
         {/* Submit action buttons depending on step */}
         {step === 1 ? (

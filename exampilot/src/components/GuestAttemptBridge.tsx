@@ -14,6 +14,7 @@ export default function GuestAttemptBridge() {
     let parsed;
     try {
       parsed = JSON.parse(saved);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
       localStorage.removeItem("exampilot_guest_attempt");
       return;
@@ -49,6 +50,7 @@ export default function GuestAttemptBridge() {
       </div>
       <div>
         <h3 className="text-sm font-bold text-emerald-900">Your demo mock has been saved to your profile!</h3>
+        {/* eslint-disable-next-line react/no-unescaped-entities */}
         <p className="text-xs text-emerald-700 mt-1">We've securely linked your guest progress. Your baseline score is preserved and ready for you.</p>
       </div>
     </div>

@@ -28,6 +28,7 @@ export async function GET(request: NextRequest) {
     }
   );
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {

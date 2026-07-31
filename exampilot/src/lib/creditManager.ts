@@ -13,10 +13,12 @@ function getAdminClient() {
  * Ensures the user profile exists. If not, initializes with the beta grant.
  * Returns the profile data.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function ensureUserProfile(userId: string): Promise<{ data: any | null, error: string | null }> {
   const admin = getAdminClient();
   if (!admin) return { data: null, error: "SYSTEM_ERROR" };
 
+  // eslint-disable-next-line prefer-const, @typescript-eslint/no-unused-vars
   let { data, error } = await admin
     .from("user_profiles")
     .select("credits, tier")

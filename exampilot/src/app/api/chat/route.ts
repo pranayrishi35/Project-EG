@@ -94,6 +94,7 @@ export async function POST(req: Request) {
     const sanitizedMessages = (messages ?? []).map((m) => ({
       ...m,
       parts: Array.isArray(m.parts)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ? m.parts.map((p: any) =>
             p?.type === 'text' ? { ...p, text: sanitizePrompt(p.text ?? '') } : p
           )

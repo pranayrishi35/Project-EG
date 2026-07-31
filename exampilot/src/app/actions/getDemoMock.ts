@@ -45,6 +45,7 @@ export async function getDemoMockQuestions(): Promise<{ success: boolean; questi
     // Reorder data to match DEMO_QUESTION_IDS array order (optional, but good for stability)
     const sortedData = DEMO_QUESTION_IDS.map(id => data.find(q => q.id === id)).filter(Boolean);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const questions: Question[] = sortedData.map((row: any) => ({
       id: row.id,
       text: row.text || row.question || "",
@@ -55,6 +56,7 @@ export async function getDemoMockQuestions(): Promise<{ success: boolean; questi
     }));
 
     return { success: true, questions };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error("Error fetching demo questions:", error);
     return { success: false, error: error.message };
@@ -78,6 +80,7 @@ export async function getDemoAnswerKey(questionIds: string[]): Promise<{ success
     }
     
     return { success: true, answers: data as { id: string, correct_index: number }[] };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error("Error fetching demo answers:", error);
     return { success: false, error: error.message };

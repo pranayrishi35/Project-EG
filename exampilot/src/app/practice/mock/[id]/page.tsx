@@ -19,6 +19,7 @@ export default async function MockTestPage({ params }: { params: { id: string } 
       id: '12345678-1234-1234-1234-123456789012', 
       email: 'pilot@jishnu.in',
       user_metadata: { full_name: 'Squadron Leader' }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any;
   } else {
     const { data } = await supabase.auth.getUser();

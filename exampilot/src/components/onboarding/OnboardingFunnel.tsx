@@ -10,6 +10,7 @@ import {
   CheckCircle2,
   ArrowRight,
   ArrowLeft,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   Award,
   Sparkles,
   BookOpen,
@@ -20,6 +21,7 @@ import {
   Compass,
   Zap,
   Check,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   HelpCircle,
 } from "lucide-react";
 
@@ -52,14 +54,14 @@ const FALLBACK_QUESTION: OnboardingQuestion = {
 };
 
 const STEP_TITLES = [
-  "Mission Objective",
-  "Diagnostic Sample",
-  "Target Selection",
-  "Velocity Calibration",
-  "Syllabus Engine",
-  "Telemetry HUD",
-  "Tactical Roadmap",
-  "Portal Launch",
+  "Welcome",
+  "Try a Sample Question",
+  "Choose Your Exam",
+  "Daily Study Time",
+  "How the Plan Is Built",
+  "What You'll Track",
+  "Your 4-Week Plan",
+  "Create Your Account",
 ];
 
 export default function OnboardingFunnel({
@@ -76,10 +78,13 @@ export default function OnboardingFunnel({
   const [demoSubmitted, setDemoSubmitted] = useState<boolean>(false);
 
   // Structured analytics telemetry dispatch hook
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const trackFunnelEvent = (eventName: string, eventData: Record<string, any> = {}) => {
     if (typeof window !== "undefined") {
       const payload = { event: eventName, timestamp: new Date().toISOString(), step: currentStep, stepTitle: STEP_TITLES[currentStep - 1], ...eventData };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (window as any).dataLayer = (window as any).dataLayer || [];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (window as any).dataLayer.push(payload);
       window.dispatchEvent(new CustomEvent("exampilot:analytics", { detail: payload }));
     }
@@ -142,7 +147,7 @@ export default function OnboardingFunnel({
               <Rocket size={20} className="stroke-[2.2]" />
             </div>
             <span className="text-lg font-black tracking-tight text-white">
-              Jishnu <span className="text-brand-accent-500 font-normal text-sm ml-1">Flight Calibration</span>
+              Jishnu <span className="text-brand-accent-500 font-normal text-sm ml-1">Getting Started</span>
             </span>
           </div>
           <div className="text-xs font-semibold px-3 py-1.5 rounded-full bg-brand-bg-elevated border border-brand-border-subtle/30 text-brand-ink-muted">
@@ -172,9 +177,10 @@ export default function OnboardingFunnel({
                 <UserCheck size={24} />
               </div>
               <div>
-                <p className="text-sm font-bold text-white">Welcome back, Pilot!</p>
+                <p className="text-sm font-bold text-white">Welcome back!</p>
                 <p className="text-xs text-slate-300 mt-0.5">
-                  We detected an active session or previous calibration in your cockpit history. You can immediately enter your portal or re-run this walkthrough below.
+                  {/* eslint-disable-next-line react/no-unescaped-entities */}
+                  Looks like you've been here before. You can go straight to your dashboard, or walk through this setup again below.
                 </p>
               </div>
             </div>
@@ -207,13 +213,13 @@ export default function OnboardingFunnel({
             <div id="step-1" className="space-y-8 animate-fade-in">
               <div className="space-y-3">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-500/15 text-brand-accent-500 border border-amber-500/25">
-                  <Compass size={14} /> System Initializer
+                  <Compass size={14} /> Getting Started
                 </div>
                 <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight">
-                  Initialize Your AI Study Flight Deck
+                  Welcome to Your AI Study Planner
                 </h1>
                 <p className="text-sm sm:text-base text-slate-300 leading-relaxed max-w-2xl">
-                  Prepare for military competitive selection with structured discipline and tactical pacing. In this quick 8-step calibration, we will tune your exam specifications and test our real-time diagnostic engine.
+                  Get ready for your defense exam with a personalized day-by-day study plan. This quick 8-step setup will customize your exam preparation and show you how our AI works.
                 </p>
               </div>
 
@@ -222,27 +228,27 @@ export default function OnboardingFunnel({
                   <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center">
                     <Layers size={22} />
                   </div>
-                  <h3 className="font-bold text-white text-sm">Zero Manual Planning</h3>
+                  <h3 className="font-bold text-white text-sm">Automatic Planning</h3>
                   <p className="text-xs text-slate-300 leading-relaxed">
-                    Automatically converts complex exam syllabus PDF files into manageable daily study milestones.
+                    Upload your exam syllabus PDF and get a complete day-by-day study schedule instantly.
                   </p>
                 </div>
                 <div className="bg-slate-900/60 p-5 rounded-2xl border border-slate-800 space-y-2">
                   <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-brand-accent-500 flex items-center justify-center">
                     <Terminal size={22} />
                   </div>
-                  <h3 className="font-bold text-white text-sm">Instant Diagnostics</h3>
+                  <h3 className="font-bold text-white text-sm">Instant Feedback</h3>
                   <p className="text-xs text-slate-300 leading-relaxed">
-                    Evaluates mock responses instantaneously with deep conceptual reasoning and formula breakdown.
+                    Get detailed explanations for every practice question, with step-by-step reasoning.
                   </p>
                 </div>
                 <div className="bg-slate-900/60 p-5 rounded-2xl border border-slate-800 space-y-2">
                   <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
                     <Gauge size={22} />
                   </div>
-                  <h3 className="font-bold text-white text-sm">Readiness Telemetry</h3>
+                  <h3 className="font-bold text-white text-sm">Progress Tracking</h3>
                   <p className="text-xs text-slate-300 leading-relaxed">
-                    Monitors your pacing and flags weaker topics for automatic spaced-repetition reinforcements.
+                    Track your progress daily and see which topics need more practice with spaced repetition.
                   </p>
                 </div>
               </div>
@@ -256,20 +262,20 @@ export default function OnboardingFunnel({
             <div id="step-2" className="space-y-6 animate-fade-in">
               <div className="space-y-2">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-500/15 text-blue-400 border border-blue-500/25">
-                  <Zap size={14} /> Live Engine Simulation
+                  <Zap size={14} /> Try It Out
                 </div>
                 <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
-                  Test Your AI Diagnostic Engine
+                  Try a Sample Question
                 </h2>
                 <p className="text-sm text-slate-300 leading-relaxed">
-                  Before setting your schedule, test our instant diagnostic telemetry. Answer this live sample check from our question bank below:
+                  Before we build your study plan, try out our instant AI feedback. Answer this sample question from our question bank:
                 </p>
               </div>
 
               <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 sm:p-6 space-y-5 shadow-inner">
                 <div className="flex items-center justify-between text-xs text-slate-400 border-b border-slate-800 pb-3">
                   <span className="font-mono text-amber-400 font-bold">{question.subject || "Defense General Knowledge"}</span>
-                  <span className="px-2 py-0.5 bg-slate-800 rounded text-slate-300">Live Sample</span>
+                  <span className="px-2 py-0.5 bg-slate-800 rounded text-slate-300">Sample Question</span>
                 </div>
                 <p className="text-sm sm:text-base font-semibold text-white leading-relaxed">
                   {question.question || question.text || "Where is the headquarters of the International Court of Justice located?"}
@@ -310,7 +316,7 @@ export default function OnboardingFunnel({
                 {demoSubmitted && (
                   <div className="mt-4 p-4 rounded-xl bg-slate-800/90 border border-amber-500/40 text-xs sm:text-sm text-slate-200 space-y-2 animate-fade-in">
                     <div className="flex items-center gap-2 font-bold text-amber-400">
-                      <Sparkles size={16} /> Diagnostic Telemetry Explanation:
+                      <Sparkles size={16} /> Explanation:
                     </div>
                     <p className="leading-relaxed text-slate-300">
                       {question.explanation || "Lift is generated primarily via aerodynamic pressure differentiation according to Bernoulli's Principle, where airspeed above the cambered wing exceeds below wing velocity, creating an upward dynamic pressure differential."}
@@ -328,13 +334,13 @@ export default function OnboardingFunnel({
             <div id="step-3" className="space-y-6 animate-fade-in">
               <div className="space-y-2">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-purple-500/15 text-purple-400 border border-purple-500/25">
-                  <Target size={14} /> Target Acquisition
+                  <Target size={14} /> Choose Your Exam
                 </div>
                 <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
-                  Select Your Mission Target
+                  Which Exam Are You Preparing For?
                 </h2>
                 <p className="text-sm text-slate-300 leading-relaxed">
-                  Identify your upcoming competitive military selection examination to tune all practice syllabi and mock test parameters accordingly:
+                  Pick your exam so we can build your study plan and practice tests around the right syllabus:
                 </p>
               </div>
 
@@ -343,7 +349,7 @@ export default function OnboardingFunnel({
                   { id: "AFCAT", title: "AFCAT", desc: "Air Force Common Admission Test — Flying, Technical & Ground Duty Branches." },
                   { id: "CDS", title: "CDS Exam", desc: "Combined Defence Services — Indian Military, Naval, and Air Force Academies." },
                   { id: "NDA", title: "NDA & NA", desc: "National Defence Academy & Naval Academy Examination entry track." },
-                  { id: "CUSTOM", title: "Custom Defense Syllabus", desc: "Upload any specialized official notification PDF for direct AI parsing and schedule mapping." },
+                  { id: "CUSTOM", title: "Other / Custom", desc: "Upload any official exam notification PDF and we'll build a study plan from it." },
                 ].map((item) => {
                   const active = selectedExam === item.id;
                   return (
@@ -370,7 +376,7 @@ export default function OnboardingFunnel({
                         <p className="text-xs text-slate-300 leading-relaxed">{item.desc}</p>
                       </div>
                       <span className={`text-[11px] font-bold tracking-wider uppercase mt-3 ${active ? "text-brand-accent-500" : "text-slate-500"}`}>
-                        {active ? "Target Locked" : "Click to select"}
+                        {active ? "Selected" : "Tap to select"}
                       </span>
                     </button>
                   );
@@ -386,21 +392,22 @@ export default function OnboardingFunnel({
             <div id="step-4" className="space-y-6 animate-fade-in">
               <div className="space-y-2">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/25">
-                  <Clock size={14} /> Velocity Calibration
+                  <Clock size={14} /> Daily Study Time
                 </div>
                 <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
-                  Calibrate Daily Study Velocity
+                  How Much Time Can You Study Each Day?
                 </h2>
                 <p className="text-sm text-slate-300 leading-relaxed">
-                  Consistent daily execution beats sporadic cramming sessions. Select a realistic preparation velocity to scale your daily topic checklists:
+                  {/* eslint-disable-next-line react/no-unescaped-entities */}
+                  Pick a realistic daily study time. We'll build your plan around it so you can stay consistent:
                 </p>
               </div>
 
               <div className="space-y-4 pt-2">
                 {[
-                  { id: "30m", time: "30 Minutes / Day", badge: "Steady Recon", desc: "Optimal for students with heavy academic coursework or active duties. Covers 2 focused topics plus daily current affairs review." },
-                  { id: "60m", time: "60 Minutes / Day", badge: "Standard Pacing", desc: "Recommended balanced trajectory. Complete concept breakdowns, 15 practice drills, and daily vocabulary retention sessions." },
-                  { id: "120m", time: "120+ Minutes / Day", badge: "Intense Sprint", desc: "High-velocity immersion designed for upcoming examination deadlines. Intensive timed problem sets and daily sectional mocks." },
+                  { id: "30m", time: "30 Minutes / Day", badge: "Light Pace", desc: "Good for students with a full schedule or other commitments. Covers 2 focused topics plus daily current affairs." },
+                  { id: "60m", time: "60 Minutes / Day", badge: "Balanced", desc: "Recommended for most students. Complete concept lessons, 15 practice questions, and daily vocabulary review." },
+                  { id: "120m", time: "2+ Hours / Day", badge: "Intensive", desc: "For students with an exam coming soon. Includes timed problem sets and daily practice tests." },
                 ].map((velo) => {
                   const active = studyDuration === velo.id;
                   return (
@@ -443,27 +450,27 @@ export default function OnboardingFunnel({
             <div id="step-5" className="space-y-6 animate-fade-in">
               <div className="space-y-2">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-500/15 text-brand-accent-500 border border-amber-500/25">
-                  <Sparkles size={14} /> Autonomous Ingestion
+                  <Sparkles size={14} /> How It Works
                 </div>
                 <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
-                  AI Syllabus Ingestion Engine
+                  How Your Study Plan Is Built
                 </h2>
                 <p className="text-sm text-slate-300 leading-relaxed">
-                  When you upload official exam circulars or select standard defense packages, Gemini AI ingests and breaks down the syllabus into modular milestones:
+                  When you upload an official exam notification or pick a standard exam, our AI reads the syllabus and breaks it into daily study targets:
                 </p>
               </div>
 
               <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 sm:p-6 space-y-4 font-mono text-xs">
                 <div className="flex items-center justify-between text-slate-400 border-b border-slate-800 pb-3 font-sans">
                   <span className="font-bold text-white flex items-center gap-2">
-                    <Terminal size={16} className="text-brand-accent-500" /> Syllabus Parser Simulation: <span className="text-amber-400 font-mono">{selectedExam}</span> <span className="text-[11px] text-slate-400 font-normal italic ml-1">(Illustrative Schedule)</span>
+                    <Terminal size={16} className="text-brand-accent-500" /> Syllabus breakdown: <span className="text-amber-400 font-mono">{selectedExam}</span> <span className="text-[11px] text-slate-400 font-normal italic ml-1">(Illustrative Schedule)</span>
                   </span>
                   <span className="text-emerald-400 font-bold uppercase text-[11px]">Ready</span>
                 </div>
 
                 <div className="space-y-2 pt-1 text-slate-300 font-mono">
                   <p className="flex items-center gap-2 text-emerald-400">
-                    <Check size={14} /> [SUCCESS] Ingested 4 Primary Sectional Pillars for {selectedExam}
+                    <Check size={14} /> Found 4 main sections for {selectedExam}
                   </p>
                   <div className="pl-5 space-y-1 text-slate-300">
                     <p>&bull; General Awareness (Defense Current Affairs, Strategic Geography, Indian Polity)</p>
@@ -472,14 +479,14 @@ export default function OnboardingFunnel({
                     <p>&bull; Reasoning and Military Aptitude (Spatial Orientation, Venn Diagrams)</p>
                   </div>
                   <p className="flex items-center gap-2 text-brand-accent-500 pt-2">
-                    <Check size={14} /> [CALCULATED] 84 High-Yield Conceptual Modules scheduled at {studyDuration}/day velocity.
+                    <Check size={14} /> Created 84 study topics, scheduled for {studyDuration}/day.
                   </p>
                 </div>
               </div>
 
               <div className="p-4 rounded-2xl bg-slate-900/40 border border-slate-800 flex items-center gap-3 text-xs text-slate-300">
                 <Shield size={20} className="text-emerald-400 shrink-0" />
-                <span>Every topic is continuously updated against recent PYQ frequency trends from the past 5 examination years. Module allocation adjusts after your initial diagnostic drill.</span>
+                <span>Topics are prioritized using question trends from the last 5 years of past papers. Your plan adjusts after your first practice test.</span>
               </div>
             </div>
           )}
@@ -491,49 +498,51 @@ export default function OnboardingFunnel({
             <div id="step-6" className="space-y-6 animate-fade-in">
               <div className="space-y-2">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-500/15 text-blue-400 border border-blue-500/25">
-                  <Gauge size={14} /> Readiness Telemetry Demo
+                  <Gauge size={14} /> Your Dashboard
                 </div>
                 <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
-                  Real-Time Combat Readiness HUD
+                  {/* eslint-disable-next-line react/no-unescaped-entities */}
+                  What You'll Track
                 </h2>
                 <p className="text-sm text-slate-300 leading-relaxed">
-                  Here is a live working demonstration of the telemetry you will unlock in your command center after completing your initial practice drills:
+                  {/* eslint-disable-next-line react/no-unescaped-entities */}
+                  Here's a preview of the progress stats you'll see on your dashboard after you complete a few practice tests:
                 </p>
               </div>
 
               <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-3 flex items-center justify-between text-xs text-blue-300">
                 <span className="flex items-center gap-2 font-medium">
                   <Sparkles size={16} className="text-blue-400 shrink-0" />
-                  Illustrative Pilot Sample Telemetry &mdash; Values calibrate after your first completed drill.
+                  Sample numbers for illustration only &mdash; your real stats appear after your first practice test.
                 </span>
                 <span className="font-mono uppercase text-[10px] bg-blue-500/20 px-2 py-0.5 rounded text-blue-300 border border-blue-500/30">Demo Mode</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Mission Accuracy</span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Accuracy</span>
                   <div className="mt-3 text-3xl font-black text-emerald-400">88.4%</div>
-                  <span className="text-[11px] text-slate-400 mt-2 italic">Example: Pacing above threshold</span>
+                  <span className="text-[11px] text-slate-400 mt-2 italic">Example only</span>
                 </div>
                 <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Primary Weakness</span>
-                  <div className="mt-3 text-lg font-bold text-amber-400 truncate">Spatial Aptitude</div>
-                  <span className="text-[11px] text-slate-400 mt-2 italic">Example: Auto-scheduled drill</span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Weakest Topic</span>
+                  <div className="mt-3 text-lg font-bold text-amber-400 truncate">Spatial Reasoning</div>
+                  <span className="text-[11px] text-slate-400 mt-2 italic">Example only</span>
                 </div>
                 <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Projected Rank</span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Estimated Rank</span>
                   <div className="mt-3 text-2xl font-black text-purple-400">Top 5%</div>
-                  <span className="text-[11px] text-slate-400 mt-2 italic">Example: National modeling</span>
+                  <span className="text-[11px] text-slate-400 mt-2 italic">Example only</span>
                 </div>
               </div>
 
               <div className="bg-gradient-to-r from-slate-900 to-slate-900/80 border border-slate-800 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="space-y-1">
                   <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                    <BookOpen size={16} className="text-brand-accent-500" /> Automatic Spaced-Repetition Decks
+                    <BookOpen size={16} className="text-brand-accent-500" /> Automatic Revision Flashcards
                   </h3>
                   <p className="text-xs text-slate-300 leading-relaxed">
-                    Any mock question answered incorrectly is immediately transmuted into high-yield review flashcards for daily maintenance.
+                    Any practice question you get wrong is automatically turned into a flashcard, so you can review it later.
                   </p>
                 </div>
                 <div className="px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-xs font-mono font-bold text-amber-400 shrink-0">
@@ -550,22 +559,23 @@ export default function OnboardingFunnel({
             <div id="step-7" className="space-y-6 animate-fade-in">
               <div className="space-y-2">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/25">
-                  <Layers size={14} /> Tactical Roadmap
+                  <Layers size={14} /> Your Plan
                 </div>
                 <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
-                  Your Personalized Flight Plan
+                  Your First 4 Weeks
                 </h2>
                 <p className="text-sm text-slate-300 leading-relaxed">
-                  Based on your selection of <span className="text-amber-400 font-bold">{selectedExam}</span> at <span className="text-emerald-400 font-bold">{studyDuration}/day</span> velocity, here is your foundational 4-week preparation trajectory:
+                  {/* eslint-disable-next-line react/no-unescaped-entities */}
+                  Based on <span className="text-amber-400 font-bold">{selectedExam}</span> at <span className="text-emerald-400 font-bold">{studyDuration}/day</span>, here's how your first 4 weeks of study will be organized:
                 </p>
               </div>
 
               <div className="space-y-4 relative before:absolute before:inset-0 before:left-3.5 before:w-0.5 before:bg-slate-800 pl-8">
                 {[
-                  { week: "Week 1", title: "Baseline Diagnostics & Core Foundations", desc: "Complete diagnostic practice test; calibrate syllabus baseline and commence high-yield static awareness concepts." },
-                  { week: "Week 2", title: "Intensive Sectional Drills & Velocity Training", desc: "Targeted numerical problem sets, English vocabulary assimilation, and reasoned spatial puzzles under strict timer limits." },
-                  { week: "Week 3", title: "Full-Length Combat Simulation & Weakness Triage", desc: "Execute timed mock trials replicating real examination center constraints and stress factors." },
-                  { week: "Week 4", title: "Peak Readiness Polish & Final Revision Sprints", desc: "Spaced-repetition card sweeps, rapid formulas recall, and high-confidence revision before examination deployment." },
+                  { week: "Week 1", title: "Starting Test & Basics", desc: "Take a starting practice test to find your level, then begin the most important general knowledge topics." },
+                  { week: "Week 2", title: "Topic Practice & Timing", desc: "Practice math problems, build English vocabulary, and solve reasoning puzzles under a timer." },
+                  { week: "Week 3", title: "Full Practice Tests", desc: "Take full-length timed practice tests that match the real exam, and focus on your weak areas." },
+                  { week: "Week 4", title: "Final Revision", desc: "Review your flashcards, practice recalling formulas quickly, and do final revision before the exam." },
                 ].map((phase, idx) => (
                   <div key={idx} className="relative bg-slate-900/80 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-sm space-y-1.5">
                     <div className="absolute -left-[31px] top-5 w-7 h-7 rounded-full bg-slate-900 border-2 border-brand-accent-500 flex items-center justify-center text-[11px] font-bold text-white shadow-sm">
@@ -590,34 +600,36 @@ export default function OnboardingFunnel({
             <div id="step-8" className="space-y-8 animate-fade-in text-center sm:text-left">
               <div className="space-y-3">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-500/15 text-brand-accent-500 border border-amber-500/25">
-                  <Rocket size={14} /> Cockpit Launch Ready
+                  {/* eslint-disable-next-line react/no-unescaped-entities */}
+                  <Rocket size={14} /> You're All Set
                 </div>
                 <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight">
-                  All Systems Operational: Launch Portal
+                  {/* eslint-disable-next-line react/no-unescaped-entities */}
+                  You're Ready to Start
                 </h2>
                 <p className="text-sm sm:text-base text-slate-300 leading-relaxed">
-                  Your study flight deck parameters are locked in. Attach this mission configuration to your account to begin your daily preparation trajectory.
+                  Your study preferences are set. Create a free account to save them and start your daily study plan.
                 </p>
               </div>
 
               {/* Summary Configuration Card */}
               <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 space-y-4 text-left shadow-inner">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800 pb-2">
-                  Mission Configuration Summary
+                  Your Setup Summary
                 </h3>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                   <div>
-                    <span className="text-xs text-slate-400 block">Target Exam:</span>
+                    <span className="text-xs text-slate-400 block">Your Exam:</span>
                     <span className="text-base sm:text-lg font-black text-white">{selectedExam}</span>
                   </div>
                   <div>
-                    <span className="text-xs text-slate-400 block">Daily Velocity:</span>
+                    <span className="text-xs text-slate-400 block">Daily Study Time:</span>
                     <span className="text-base sm:text-lg font-black text-emerald-400">{studyDuration} / Day</span>
                   </div>
                   <div className="col-span-2 sm:col-span-1">
-                    <span className="text-xs text-slate-400 block">System Status:</span>
+                    <span className="text-xs text-slate-400 block">Status:</span>
                     <span className="text-base sm:text-lg font-black text-brand-accent-500 flex items-center gap-1.5">
-                      <CheckCircle2 size={18} /> Operational
+                      <CheckCircle2 size={18} /> Ready
                     </span>
                   </div>
                 </div>
@@ -631,7 +643,7 @@ export default function OnboardingFunnel({
                     href={`/login?target=${selectedExam}&duration=${studyDuration}&mode=register`}
                     className="w-full text-center py-4 px-6 rounded-xl bg-brand-accent-500 hover:bg-brand-accent-600 text-brand-ink-primary font-black text-sm sm:text-base transition-all shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 active:scale-[0.99]"
                   >
-                    <span>Create Free Account &amp; Launch</span>
+                    <span>Create Free Account &amp; Start</span>
                     <Rocket size={18} />
                   </Link>
                   <Link
@@ -649,7 +661,7 @@ export default function OnboardingFunnel({
                     href="/"
                     className="text-xs text-slate-400 hover:text-slate-200 underline underline-offset-4 transition-colors inline-flex items-center gap-1 font-medium"
                   >
-                    <span>Explore cockpit immediately in temporary guest preview</span>
+                    <span>Just look around first as a guest</span>
                     <ArrowRight size={12} />
                   </Link>
                 </div>

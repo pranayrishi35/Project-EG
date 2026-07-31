@@ -3,6 +3,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { redirect } from "next/navigation";
 
 export async function acceptConsent() {

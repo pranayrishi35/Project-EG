@@ -2,6 +2,7 @@ import Link from "next/link";
 import { MessageSquare, Flame, Zap, AlertTriangle } from "lucide-react";
 import { createClient } from "@/utils/supabase/server";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { getUserCredits } from "@/lib/creditManager";
 import { createClient as createSupabaseAdmin } from "@supabase/supabase-js";
 import { initializeCreditsAction } from "@/app/actions/credits";

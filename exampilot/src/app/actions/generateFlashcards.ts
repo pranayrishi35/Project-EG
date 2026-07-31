@@ -103,10 +103,10 @@ export async function generateFlashcards(): Promise<GenerateFlashcardsResult> {
     prompt += `\n\nCRITICAL: You must return valid JSON only. You must properly escape all internal double quotes using a backslash (\\"). Do not use markdown wrappers.`;
 
     const result = await model.generateContent(prompt);
-    let rawText = result.response.text();
+    const rawText = result.response.text();
 
     // 3. Failsafe cleaning for rogue markdown and trailing commas
-    let flashcards = robustJsonParse(rawText, []);
+    const flashcards = robustJsonParse(rawText, []);
 
     if (!Array.isArray(flashcards) || flashcards.length === 0) {
       throw new Error("AI returned invalid data format.");
@@ -125,6 +125,7 @@ export async function generateFlashcards(): Promise<GenerateFlashcardsResult> {
 
     return { success: true, flashcards: finalFlashcards, focusedSubjects: weakSubjects };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error("[generateFlashcards] Error:", error);
     return { success: false, error: "AI_SERVICE_UNAVAILABLE" };

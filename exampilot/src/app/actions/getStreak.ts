@@ -15,6 +15,7 @@ import { createClient } from "@/utils/supabase/server";
 export async function getStreak(): Promise<number> {
   const supabase = createClient();
   try {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (!user) return 0;
@@ -42,7 +43,7 @@ export async function getStreak(): Promise<number> {
     const todayIST = getISTDateString(now);
     
     // Default values if user has no streak data yet
-    let currentStreak = profile?.current_streak || 0;
+    const currentStreak = profile?.current_streak || 0;
     const lastActiveDateStr = profile?.last_active_date 
       ? getISTDateString(new Date(profile.last_active_date)) 
       : null;

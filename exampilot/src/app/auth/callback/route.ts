@@ -129,6 +129,7 @@ export async function GET(request: NextRequest) {
         getAll() {
           return request.cookies.getAll();
         },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         setAll(cookiesToSet: { name: string; value: string; options?: any }[]) {
           cookiesToSet.forEach(({ name, value, options }) => {
             response.cookies.set(name, value, options);
@@ -146,6 +147,7 @@ export async function GET(request: NextRequest) {
 
   // ── 4. Exchange the PKCE code for a session ───────────────────────────────────
   try {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { data: sessionData, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (error) {

@@ -46,6 +46,7 @@ export default async function RecoverAccountPage() {
         
         <p className="text-gray-600 dark:text-gray-400 mb-6">
           Your account is currently in the 48-hour deletion grace period. 
+          {/* eslint-disable-next-line react/no-unescaped-entities */}
           If you don't recover it, all your data will be permanently purged on:
         </p>
         

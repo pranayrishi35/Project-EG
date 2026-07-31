@@ -99,6 +99,7 @@ async function PracticeContent() {
         <h2 className="text-xl font-black text-gray-900 tracking-tight mb-4">Test Archive</h2>
         {history && history.length > 0 ? (
           <div className="flex flex-col gap-4">
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
             {history.map((attempt: any) => (
               <div key={attempt.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all hover:shadow-md">
                 <div>

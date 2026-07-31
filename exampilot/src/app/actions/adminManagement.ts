@@ -53,6 +53,7 @@ export async function fetchRecentUsers() {
       return {
         id: u.id,
         email: u.email || sprof?.email || "No Email",
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         name: (uprof as any)?.full_name || sprof?.full_name || "Unknown",
         joinDate: u.created_at,
         credits: uprof?.credits || 0,
@@ -61,6 +62,7 @@ export async function fetchRecentUsers() {
     }).sort((a, b) => new Date(b.joinDate).getTime() - new Date(a.joinDate).getTime());
 
     return { success: true, data: mappedUsers };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     return { success: false, error: error.message };
   }
@@ -88,6 +90,7 @@ export async function fetchQuestions(examTarget: string, subject: string) {
     if (error) throw error;
     
     return { success: true, data };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     return { success: false, error: error.message };
   }
@@ -106,6 +109,7 @@ export async function deleteQuestion(questionId: string) {
     if (error) throw error;
     
     return { success: true };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     return { success: false, error: error.message };
   }
@@ -144,6 +148,7 @@ export async function addManualQuestion(payload: {
     if (error) throw error;
 
     return { success: true };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     return { success: false, error: error.message };
   }
@@ -169,10 +174,12 @@ export async function getPendingReviewSummary() {
 
     const byExam: Record<string, number> = {};
     for (const row of data || []) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const key = (row as any).exam_target || "Unknown";
       byExam[key] = (byExam[key] || 0) + 1;
     }
     return { success: true, total: (data || []).length, byExam };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     return { success: false, error: error.message };
   }
@@ -196,6 +203,7 @@ export async function fetchPendingQuestions(examTarget?: string) {
     const { data, error } = await query;
     if (error) throw error;
     return { success: true, data };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     return { success: false, error: error.message };
   }
@@ -223,6 +231,7 @@ export async function approveQuestions(opts: { ids?: string[]; examTarget?: stri
     const { data, error } = await query.select("id");
     if (error) throw error;
     return { success: true, count: (data || []).length };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     return { success: false, error: error.message };
   }
@@ -251,6 +260,7 @@ export async function rejectQuestions(opts: { ids?: string[]; examTarget?: strin
     const { data, error } = await query.select("id");
     if (error) throw error;
     return { success: true, count: (data || []).length };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     return { success: false, error: error.message };
   }

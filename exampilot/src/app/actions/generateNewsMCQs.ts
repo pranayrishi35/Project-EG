@@ -45,6 +45,7 @@ export async function generateNewsMCQs() {
     }
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const allQuestions: any[] = [];
   
   // Process news in chunks of 5 articles to prevent context bloat
@@ -82,6 +83,7 @@ CRITICAL: You must return valid JSON only. You must properly escape all internal
       if (Array.isArray(parsed)) {
         allQuestions.push(...parsed);
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
       console.error("News-to-MCQ failed for a batch:", e.message);
     }
@@ -92,6 +94,7 @@ CRITICAL: You must return valid JSON only. You must properly escape all internal
   }
 
   // Map to robust strict payload
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const structuredPayload = allQuestions.map((q: any) => ({
     question: q.question || q.question_text || q.text,
     options: Array.isArray(q.options) ? q.options : [q.optionA, q.optionB, q.optionC, q.optionD],

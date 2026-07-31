@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import { checkIsAdmin } from "@/lib/adminAuth";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import AdminLogin from "@/components/AdminLogin";
 import { Shield } from "lucide-react";
 

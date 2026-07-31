@@ -2,18 +2,23 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import {
   Route, FileCheck2, Zap, Plane, Newspaper, BookOpen, ArrowRight,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   UploadCloud, CalendarRange, Target, Shield, CheckCircle2, Award,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   Activity, Gauge, BarChart3, Clock, Sparkles, type LucideIcon,
 } from "lucide-react";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Section, Container } from "@/components/ui/Layout";
 import { Badge } from "@/components/ui/Badge";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { FeatureCard } from "@/components/ui/Card";
 import { Icon } from "@/components/ui/Icon";
 import { Reveal } from "@/components/landing/Reveal";
 import MarketingNav from "@/components/landing/MarketingNav";
 import MarketingFooter from "@/components/landing/MarketingFooter";
 import Hero3D from "@/components/landing/Hero3D";
+import ScrollProgress from "@/components/ui/ScrollProgress";
 
 /**
  * GuestLanding — Logged-out marketing landing surface (Master Prompt v5).
@@ -95,6 +100,7 @@ const ctaSecondaryDark =
 export default function GuestLanding({ spotlightSlot }: GuestLandingProps) {
   return (
     <div className="bg-brand-bg-canvas overflow-x-hidden w-full text-brand-ink-inverse selection:bg-brand-accent-500/30 selection:text-brand-accent-500">
+      <ScrollProgress />
       <MarketingNav />
 
       {/* ── 1. Hero Module (Flight Deck Mission Control) ───────────────── */}
@@ -148,7 +154,7 @@ export default function GuestLanding({ spotlightSlot }: GuestLandingProps) {
       </section>
 
       {/* ── 2. Mission Control Preview (Honest Product Glimpse) ────────── */}
-      <section className="bg-gradient-to-b from-brand-bg-canvas via-slate-950 to-brand-bg-canvas py-16 md:py-24 border-y border-brand-ink-inverse/10 relative overflow-hidden">
+      <section className="bg-gradient-to-b from-brand-bg-canvas via-slate-950 to-brand-bg-canvas py-16 md:py-24 border-y border-brand-ink-inverse/10 relative overflow-hidden scroll-mt-[72px]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <Reveal>
             <div className="text-center max-w-2xl mx-auto mb-12">
@@ -241,7 +247,7 @@ export default function GuestLanding({ spotlightSlot }: GuestLandingProps) {
       </section>
 
       {/* ── 3. Cohesive Feature Modules (Flight Deck Styling) ────────────── */}
-      <section className="bg-brand-bg-canvas py-24 md:py-32">
+      <section className="bg-brand-bg-canvas py-24 md:py-32 scroll-mt-[72px]">
         <Container>
           <Reveal>
             <div className="text-center max-w-3xl mx-auto mb-16">
@@ -273,7 +279,7 @@ export default function GuestLanding({ spotlightSlot }: GuestLandingProps) {
       </section>
 
       {/* ── 4. How It Works (Aviation Navigation Steps) ───────────────────── */}
-      <section className="bg-slate-950 py-24 md:py-32 border-t border-brand-ink-inverse/10">
+      <section className="bg-slate-950 py-24 md:py-32 border-t border-brand-ink-inverse/10 scroll-mt-[72px]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <Reveal>
             <div className="text-center max-w-2xl mx-auto mb-16">
@@ -310,7 +316,7 @@ export default function GuestLanding({ spotlightSlot }: GuestLandingProps) {
       </section>
 
       {/* ── 5. Tejas Wingman Spotlight Slot ─────────────────────────────── */}
-      <section className="bg-brand-bg-canvas py-16 md:py-24 border-t border-brand-ink-inverse/10">
+      <section className="bg-brand-bg-canvas py-16 md:py-24 border-t border-brand-ink-inverse/10 scroll-mt-[72px]">
         <Container>
           {spotlightSlot}
         </Container>

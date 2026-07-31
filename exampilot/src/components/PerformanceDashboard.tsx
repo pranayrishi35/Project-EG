@@ -6,6 +6,7 @@ import { fetchAggregateStats } from "@/app/actions/mockAttempts";
 
 export default function PerformanceDashboard() {
   const [filter, setFilter] = useState("ALL");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -83,6 +84,7 @@ export default function PerformanceDashboard() {
       <div>
         <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">Accuracy Trend {stats?.trendData?.length ? `(Last ${stats.trendData.length})` : ''}</h3>
         <div className="h-40 flex items-end justify-between gap-1 sm:gap-2 border-b border-slate-800 pb-2 relative">
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
           {stats?.trendData?.length > 0 ? stats.trendData.map((attempt: any) => (
             <div key={attempt.id} className="relative group flex-1 flex flex-col items-center justify-end h-full">
               <div 

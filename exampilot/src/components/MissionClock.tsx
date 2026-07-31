@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Timer } from "lucide-react";
 
 interface MissionClockProps {
@@ -19,6 +19,15 @@ export default function MissionClock({ examDate, initialSeconds, onTick, onTimeU
   const [testSecondsLeft, setTestSecondsLeft] = useState(initialSeconds || 0);
   const [isMounted, setIsMounted] = useState(false);
 
+  const onTickRef = useRef(onTick);
+  const onTimeUpRef = useRef(onTimeUp);
+
+  useEffect(() => {
+    onTickRef.current = onTick;
+    onTimeUpRef.current = onTimeUp;
+  }, [onTick, onTimeUp]);
+
+
   useEffect(() => {
     setIsMounted(true);
     
@@ -34,13 +43,13 @@ export default function MissionClock({ examDate, initialSeconds, onTick, onTimeU
         
         setTestSecondsLeft(remaining);
         
-        if (onTick) {
-           onTick(remaining);
+        if (onTickRef.current) {
+           onTickRef.current(remaining);
         }
         
         if (remaining <= 0) {
           clearInterval(timer);
-          if (onTimeUp) onTimeUp();
+          if (onTimeUpRef.current) onTimeUpRef.current();
         }
       }, 1000);
       
@@ -67,7 +76,7 @@ export default function MissionClock({ examDate, initialSeconds, onTick, onTimeU
       const timer = setInterval(calculateTimeLeft, 1000);
       return () => clearInterval(timer);
     }
-  }, [examDate, isTestMode]); // omitted testSecondsLeft to avoid re-triggering interval
+  }, [examDate, isTestMode, initialSeconds]); // Safe: callbacks use stable refs
 
   if (!isMounted) return null; // Hydration safe
 

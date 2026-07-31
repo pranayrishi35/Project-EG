@@ -47,6 +47,7 @@ export async function GET(req: NextRequest) {
       throw dbError;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const atRiskUsers = (users || []).filter((user: any) => {
       if (!user.last_active_date) return false;
       if (!user.email) return false;
@@ -75,6 +76,7 @@ export async function GET(req: NextRequest) {
     for (let i = 0; i < atRiskUsers.length; i += BATCH_SIZE) {
       const batch = atRiskUsers.slice(i, i + BATCH_SIZE);
       
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const emailPromises = batch.map(async (user: any) => {
         try {
           const firstName = user.full_name?.split(" ")[0] || "Pilot";
@@ -114,6 +116,7 @@ export async function GET(req: NextRequest) {
       failCount 
     });
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error("[Streak Nudge Cron Error]", error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });

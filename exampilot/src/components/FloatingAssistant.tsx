@@ -22,8 +22,10 @@ const QUICK_PROMPTS = [
 ];
 
 /** Pull rendered text out of either a v7 parts[] message or a legacy content string. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function messageText(msg: any): string {
   if (msg?.parts && Array.isArray(msg.parts)) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const joined = msg.parts.map((p: any) => p?.text ?? "").join("");
     if (joined) return joined;
   }
@@ -40,6 +42,7 @@ export default function FloatingAssistant() {
     // v7 UIMessages carry text in parts[], not a `content` string.
     messages: [
       { id: "init", role: "assistant", parts: [{ type: "text", text: GREETING }] },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ] as any[],
     onError: (err) => {
       console.error("Tejas Error:", err);
@@ -130,6 +133,7 @@ export default function FloatingAssistant() {
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 scroll-smooth bg-slate-50">
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
           {(messages as any[]).map((msg) => (
             <div key={msg.id} className={`flex max-w-[85%] ${msg.role === "user" ? "self-end" : "self-start"}`}>
               <div

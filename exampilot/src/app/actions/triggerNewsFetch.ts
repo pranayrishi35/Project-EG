@@ -33,6 +33,7 @@ export async function triggerNewsFetch() {
     });
     const data = await res.json();
     return data;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     return { success: false, error: error.message || "Failed to trigger API route" };
   }

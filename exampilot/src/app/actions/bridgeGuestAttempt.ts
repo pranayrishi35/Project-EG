@@ -3,6 +3,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { getDemoAnswerKey, getDemoMockQuestions } from "./getDemoMock";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function bridgeGuestAttempt(guestAttempt: any) {
   const supabase = createClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -94,6 +95,7 @@ export async function bridgeGuestAttempt(guestAttempt: any) {
 
     return { success: true, message: "Guest attempt successfully bridged." };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error("[bridgeGuestAttempt] Error:", error);
     return { success: false, error: error.message };

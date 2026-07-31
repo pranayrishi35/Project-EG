@@ -178,6 +178,41 @@ export async function generateStudyPlan(
     };
   }
 
+  // ── 2.25 Single Active Plan Limit (Part 1) ─────────────────────────────────
+  // Non-premium users may keep only ONE active study plan. This is enforced
+  // server-side (not just in the UI) so a client-side bypass can't create extra
+  // plans. Premium users and admins are unlimited. Existing multi-plan users are
+  // grandfathered — this blocks NEW creation past the limit, it never deletes or
+  // hides plans they already have. Checked before credits are spent so a blocked
+  // request costs the user nothing.
+  {
+    const { data: profile } = await supabase
+      .from("user_profiles")
+      .select("premium, tier")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    const isUnlimited = profile?.premium === true || profile?.tier === "admin";
+
+    if (!isUnlimited) {
+      const { count, error: countError } = await supabase
+        .from("study_plans")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id);
+
+      // Fail open only on a genuine query error (don't lock users out over a
+      // transient DB blip); enforce whenever we have a reliable count.
+      if (!countError && typeof count === "number" && count >= 1) {
+        return {
+          success: false,
+          error: "PLAN_LIMIT_REACHED",
+          message:
+            "You've got one active plan. Upgrade to run multiple exam tracks at once — your current plan stays exactly as it is.",
+        };
+      }
+    }
+  }
+
   // ── 2.5 Rate Limits & Credits ──────────────────────────────────────────────
   // Per-user AI rate limit: shared 20 req/min ceiling across all AI surfaces
   // (chat, coach, cheat sheet, flashcards, test strategy, study plan). One

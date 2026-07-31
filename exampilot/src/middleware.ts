@@ -58,7 +58,7 @@ export async function middleware(request: NextRequest) {
               );
             }
           }
-        } catch (e) {
+        } catch {
           // Fail open if KV network request errors out in edge routing
         }
       }
@@ -73,7 +73,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next({ request });
   }
 
-  let supabaseResponse = NextResponse.next({ request });
+  const supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -83,7 +83,7 @@ export async function middleware(request: NextRequest) {
         getAll() {
           return request.cookies.getAll();
         },
-        setAll(cookiesToSet: { name: string; value: string; options: any }[]) {
+        setAll(cookiesToSet: { name: string; value: string; options: Record<string, unknown> }[]) {
           // Supabase sets cookies on the response only; no mutation of the request
           cookiesToSet.forEach(({ name, value, options }) => {
             supabaseResponse.cookies.set(name, value, options);
@@ -107,12 +107,12 @@ export async function middleware(request: NextRequest) {
   if (hasSupabaseCookie) {
     const testCookie = request.cookies.getAll().find(c => c.value.includes('mock-access-token'));
     if (testCookie && isMockAuthAllowed()) {
-      user = { id: '12345678-1234-1234-1234-123456789012', email: 'test@example.com' } as any;
+      user = { id: '12345678-1234-1234-1234-123456789012', email: 'test@example.com' } as unknown as import('@supabase/supabase-js').User;
     } else {
       try {
         const { data } = await supabase.auth.getUser();
         user = data.user;
-      } catch (e) {
+      } catch {
         // Ignore refresh token errors – treat as unauthenticated
         user = null;
       }

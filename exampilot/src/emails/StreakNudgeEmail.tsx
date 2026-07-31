@@ -31,12 +31,14 @@ export const StreakNudgeEmail = ({
         <Body className="bg-slate-50 my-auto mx-auto font-sans">
           <Container className="bg-white border border-slate-200 rounded-xl my-[40px] mx-auto p-[30px] max-w-[500px] shadow-sm">
             <Heading className="text-slate-900 text-[24px] font-black text-center p-0 my-[10px] mx-0">
+              {/* eslint-disable-next-line react/no-unescaped-entities */}
               Don't lose your progress!
             </Heading>
             <Text className="text-slate-700 text-[16px] leading-[24px]">
               Hi {firstName},
             </Text>
             <Text className="text-slate-700 text-[16px] leading-[24px]">
+              {/* eslint-disable-next-line react/no-unescaped-entities */}
               You've built an impressive <strong>{streakCount}-day study streak</strong>, but it's about to break at midnight! 
             </Text>
             <Text className="text-slate-700 text-[16px] leading-[24px]">
@@ -53,6 +55,7 @@ export const StreakNudgeEmail = ({
             </Section>
             
             <Text className="text-slate-500 text-[12px] leading-[24px] mt-[10px]">
+              {/* eslint-disable-next-line react/no-unescaped-entities */}
               You're receiving this because you're crushing it on Jishnu. Keep pushing!
             </Text>
           </Container>

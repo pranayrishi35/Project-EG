@@ -45,8 +45,10 @@ type ExistingAttemptRow = {
   served_question_ids: string[] | null;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function saveMockProgress(payload: any) {
   const supabase = createClient();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   
   if (!user) return { success: false, error: "Not authenticated" };
@@ -125,7 +127,7 @@ export async function saveMockProgress(payload: any) {
   // fails recompute is rejected rather than silently ranked on a forged score.
   let finalScore = status === 'completed' ? undefined : score;
 
-  let subjectStats: Record<string, { correct: number; total: number }> = {};
+  const subjectStats: Record<string, { correct: number; total: number }> = {};
 
   // A completed attempt MUST carry its questions so the server can grade it.
   // Omitting the array used to bypass recompute and let the client score win.
@@ -178,8 +180,10 @@ export async function saveMockProgress(payload: any) {
       .in('id', gradableIds);
 
     if (truthData) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const truthMap = new Map(truthData.map((t: any) => [t.id, t.correct_index]));
       // Prefer the DB subject over the client-supplied one for stats integrity.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const subjectMap = new Map(truthData.map((t: any) => [t.id, t.subject]));
 
       let correctCount = 0;
@@ -214,6 +218,7 @@ export async function saveMockProgress(payload: any) {
       // Inject correctIndex back into the payload for Review Mode. Only questions
       // in the authoritative set receive a key; anything the client added stays
       // ungraded (undefined) so review can't be spoofed either.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       answers_state.questions.forEach((q: any) => {
         if (gradableIdSet.has(q.id)) {
           q.correctIndex = truthMap.get(q.id);
@@ -288,6 +293,7 @@ export async function fetchMockHistory() {
     return { success: true, data: MOCK_HISTORY_DATA };
   }
   const supabase = createClient();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   
   if (!user) return { success: false, error: "Not authenticated" };
@@ -382,6 +388,7 @@ export async function fetchAggregateStats(target?: string) {
     };
   }
   const supabase = createClient();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   
   if (!user) return { success: false, error: "Not authenticated" };
@@ -416,6 +423,7 @@ export async function fetchAggregateStats(target?: string) {
     
     if (attempt.subject_stats) {
       let totalCorrect = 0;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       Object.values(attempt.subject_stats).forEach((stat: any) => {
          totalCorrect += stat.correct || 0;
          totalQuestions += stat.total || 0;

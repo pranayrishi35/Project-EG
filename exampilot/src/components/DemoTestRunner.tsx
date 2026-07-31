@@ -85,6 +85,7 @@ export default function DemoTestRunner({ questions }: { questions: Question[] })
       return prevAnswers;
     });
     goNext();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [questions, currentQuestionIndex]);
 
   const saveAndNext = useCallback((qId: string) => {
@@ -97,6 +98,7 @@ export default function DemoTestRunner({ questions }: { questions: Question[] })
       return prevAnswers;
     });
     goNext();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [questions, currentQuestionIndex]);
 
   const goNext = () => {

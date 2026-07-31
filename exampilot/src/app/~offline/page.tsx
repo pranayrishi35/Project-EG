@@ -11,7 +11,9 @@ export default function OfflineFallback() {
       </div>
       <h1 className="text-3xl font-black text-slate-900 mb-4 tracking-tight">You are offline</h1>
       <p className="text-slate-600 mb-8 max-w-md mx-auto leading-relaxed font-medium">
+        {/* eslint-disable-next-line react/no-unescaped-entities */}
         It looks like you've lost your internet connection. 
+        {/* eslint-disable-next-line react/no-unescaped-entities */}
         Don't worry, your active exams are securely cached on your device.
       </p>
       <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">

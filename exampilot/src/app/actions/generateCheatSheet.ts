@@ -91,7 +91,7 @@ export async function generateCheatSheet(planId: string): Promise<GenerateCheatS
     CRITICAL: You must return valid JSON only. You must properly escape all internal double quotes using a backslash (\\"). Do not use markdown wrappers.`;
 
     const result = await model.generateContent(prompt);
-    let rawText = result.response.text();
+    const rawText = result.response.text();
 
     // Aggressively strip out markdown code blocks just in case Gemini hallucinates them
     const parsedData = robustJsonParse(rawText, { cheatSheet: [] });

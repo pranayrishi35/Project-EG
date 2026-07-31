@@ -1,14 +1,15 @@
 import React from "react";
 import type { Metadata } from "next";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 import OnboardingFunnel, { OnboardingQuestion } from "@/components/onboarding/OnboardingFunnel";
 import { getDemoMockQuestions } from "@/app/actions/getDemoMock";
 
 export const metadata: Metadata = {
-  title: "Initialize Your AI Study Wingman | Jishnu Flight Calibration",
+  title: "Get Started with Your AI Study Planner | Jishnu",
   description:
-    "Calibrate your study parameter telemetry, select your target defense exam (AFCAT, CDS, NDA), and test our instantaneous diagnostic scoring engine.",
+    "Set up your study plan in a few quick steps: choose your defense exam (AFCAT, CDS, NDA), pick your daily study time, and try a sample question with instant AI feedback.",
 };
 
 export default async function WelcomePage() {
@@ -27,14 +28,16 @@ export default async function WelcomePage() {
     });
     const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 1200));
     
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const res: any = await Promise.race([fetchPromise, timeoutPromise]);
     if (res?.success && res?.questions && res.questions.length > 0) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       initialQuestions = res.questions.map((q: any) => ({
         id: q.id || "demo-db",
         question: q.question || q.text || "Where is the headquarters of the International Court of Justice located?",
         options: q.options || ["Geneva", "The Hague (Correct)", "New York", "Paris"],
         subject: q.subject || "Defense General Awareness & Polity",
-        explanation: "Correct! The International Court of Justice (ICJ), the principal judicial organ of the United Nations, is permanently seated at the Peace Palace in The Hague, Netherlands. Our real-time evaluation telemetry matches answers against authenticated PYQ archives immediately.",
+        explanation: "Correct! The International Court of Justice (ICJ), the main judicial body of the United Nations, is based at the Peace Palace in The Hague, Netherlands. In the app, you get instant feedback like this on every practice question.",
       }));
     }
   } catch (err) {

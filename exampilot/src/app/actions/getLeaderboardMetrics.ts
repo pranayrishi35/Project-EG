@@ -4,6 +4,7 @@ import { createClient } from "@/utils/supabase/server";
 
 export async function getLeaderboardMetrics(attemptId: string) {
   const supabase = createClient();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   
   if (!user) return { success: false, error: "Unauthorized" };

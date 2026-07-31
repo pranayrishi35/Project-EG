@@ -9,6 +9,7 @@ import * as THREE from "three";
 // (like data-reticle-source or data-testid) onto virtual JSX components, which R3F's
 // applyProps reconciler otherwise splits into instance.data.reticle or instance.data.testid.
 if (typeof window !== "undefined") {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const applyShield = (proto: any) => {
     if (proto && !Object.prototype.hasOwnProperty.call(proto, "data")) {
       Object.defineProperty(proto, "data", {
@@ -52,6 +53,7 @@ function JetGeometry({ isIntersecting }: SceneProps) {
     // ── EMPIRICAL PROOF HOOK ────────────────────────────────────────────────
     // Increment global window frame counter for automated Playwright suspension proof
     if (typeof window !== "undefined") {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const win = window as any;
       win.__HERO_FRAME_COUNT = (win.__HERO_FRAME_COUNT || 0) + 1;
     }

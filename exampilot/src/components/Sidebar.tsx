@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, CalendarDays, FileCheck2, Newspaper, BookOpen, ShieldCheck } from "lucide-react";
+import { Home, CalendarDays, FileCheck2, Newspaper, BookOpen, MessagesSquare, ShieldCheck } from "lucide-react";
 
 const navItems = [
   { href: "/",         label: "Home",     Icon: Home },
   { href: "/planner",  label: "Planner",  Icon: CalendarDays },
   { href: "/practice", label: "Practice", Icon: FileCheck2 },
+  { href: "/doubts",   label: "Doubts",   Icon: MessagesSquare },
   { href: "/news",     label: "News",     Icon: Newspaper },
   { href: "/booklets", label: "Booklets", Icon: BookOpen },
   { href: "/admin",    label: "Admin",    Icon: ShieldCheck },

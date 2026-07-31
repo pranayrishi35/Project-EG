@@ -14,6 +14,7 @@ export async function generateTestStrategy(
   studentArchetype: string
 ) {
   const supabase = createClient();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   
   

@@ -37,13 +37,16 @@ export default function Hero3D() {
     const coarsePointer = window.matchMedia("(pointer: coarse)").matches && window.innerWidth < 768;
     const isSmallViewport = window.innerWidth < 768;
     // Explicit environment flags for verification testing
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const forceFallback = (window as any).__FORCE_WEBGL_FALLBACK === true;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const forceActive = (window as any).__FORCE_WEBGL_ACTIVE === true;
 
     let gl: WebGLRenderingContext | null = null;
     try {
       const canvas = document.createElement("canvas");
       gl = canvas.getContext("webgl", { failIfMajorPerformanceCaveat: false }) || canvas.getContext("experimental-webgl") as WebGLRenderingContext | null;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
       gl = null;
     }

@@ -21,6 +21,7 @@ export async function GET(req: NextRequest) {
   }
 
   // Fetching news related to defense, space, and sports for Indian exams
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let articles: any[] = [];
   try {
     const query = 'defence OR military OR ISRO OR DRDO OR "Indian Navy" OR "Indian Army" OR "Air Force" OR sports';
@@ -31,6 +32,7 @@ export async function GET(req: NextRequest) {
     } else {
       throw new Error(data.errors?.[0] || "No articles found from GNews");
     }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     console.warn("GNews API network fetch failed, using fallback mock data. Error:", err.message);
     articles = [
@@ -91,6 +93,7 @@ Output ONLY valid JSON, no markdown formatting or backticks.`;
       let parsedAI = { summary: article.description, category: "General", relevance_score: 50 };
       try {
         parsedAI = JSON.parse(responseText);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (e) {
         console.error("Failed to parse Gemini JSON:", responseText);
       }

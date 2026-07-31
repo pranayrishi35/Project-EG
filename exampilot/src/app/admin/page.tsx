@@ -9,7 +9,8 @@ import { triggerNewsFetch } from "@/app/actions/triggerNewsFetch";
 import { getMockAttempts, deleteMockAttempt } from "@/app/actions/mockAttemptsAdmin";
 import { fetchRecentUsers, fetchQuestions, deleteQuestion, addManualQuestion, getPendingReviewSummary, fetchPendingQuestions, approveQuestions, rejectQuestions } from "@/app/actions/adminManagement";
 import { exportMockPdf } from "@/app/actions/exportMockPdf";
-import { Brain, Target, Zap, Newspaper, Wrench, BarChart2, Settings, Trash2, Users, Search, Rocket, Plus, CheckCircle, AlertTriangle, Sparkles, ChevronDown, ChevronRight, RefreshCw, Check, X, Download, FileText } from "lucide-react";
+import { fetchModerationQueue, getModerationQueueCount, resolveReport, restoreContent, type ModerationReport } from "@/app/actions/doubtModeration";
+import { Brain, Target, Zap, Newspaper, Wrench, BarChart2, Settings, Trash2, Users, Search, Rocket, Plus, CheckCircle, AlertTriangle, Sparkles, ChevronDown, ChevronRight, RefreshCw, Check, X, Download, FileText, ShieldAlert, Flag, EyeOff, RotateCcw } from "lucide-react";
 
 const subjectsByExam: Record<string, string[]> = {
   AFCAT: ["English", "General Awareness", "Numerical Ability", "Reasoning"],
@@ -19,7 +20,7 @@ const subjectsByExam: Record<string, string[]> = {
 };
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<"Config" | "Questions" | "Review" | "Export" | "Users">("Config");
+  const [activeTab, setActiveTab] = useState<"Config" | "Questions" | "Review" | "Export" | "Users" | "Moderation">("Config");
 
   const [config, setConfig] = useState<AppConfig[]>([]);
   const [insights, setInsights] = useState<SystemInsights | null>(null);
@@ -76,7 +77,12 @@ export default function AdminDashboard() {
   const [exportCount, setExportCount] = useState(50);
   const [exportAnswers, setExportAnswers] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
-  
+
+  // Moderation State (doubt board reports)
+  const [moderationReports, setModerationReports] = useState<ModerationReport[]>([]);
+  const [loadingModeration, setLoadingModeration] = useState(false);
+  const [moderationBusy, setModerationBusy] = useState<string | null>(null);
+  const [moderationCount, setModerationCount] = useState(0);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newQuestion, setNewQuestion] = useState({
     exam_target: "AFCAT",
@@ -108,6 +114,7 @@ export default function AdminDashboard() {
     if (activeTab === "Users" && users.length === 0) {
       loadUsers();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
 
   // Fetch questions when Questions tab is active or filters change
@@ -115,6 +122,7 @@ export default function AdminDashboard() {
     if (activeTab === "Questions") {
       loadQuestions();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, questionExam, questionSubject]);
 
   // Load the AI review queue when the Review tab is active
@@ -122,18 +130,34 @@ export default function AdminDashboard() {
     if (activeTab === "Review") {
       loadReview();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, reviewExam]);
+
+  // Load the doubt-board moderation queue when the Moderation tab is active
+  useEffect(() => {
+    if (activeTab === "Moderation") {
+      loadModerationQueue();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
+
+  // Keep the Moderation tab badge count fresh on mount
+  useEffect(() => {
+    getModerationQueueCount().then((r) => setModerationCount(r.count));
+  }, []);
 
   useEffect(() => {
     if (subjectsByExam[questionExam] && !subjectsByExam[questionExam].includes(questionSubject)) {
       setQuestionSubject(subjectsByExam[questionExam][0]);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [questionExam]);
 
   useEffect(() => {
     if (subjectsByExam[newQuestion.exam_target] && !subjectsByExam[newQuestion.exam_target].includes(newQuestion.subject)) {
       setNewQuestion(prev => ({ ...prev, subject: subjectsByExam[prev.exam_target][0] }));
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [newQuestion.exam_target]);
 
   const loadUsers = async () => {
@@ -192,6 +216,55 @@ export default function AdminDashboard() {
       showToast(`Action failed: ${res.error}`, "error");
     }
     setReviewBusy(false);
+  };
+
+  const loadModerationQueue = async () => {
+    setLoadingModeration(true);
+    const [queueRes, countRes] = await Promise.all([
+      fetchModerationQueue(),
+      getModerationQueueCount(),
+    ]);
+    if (queueRes.success && queueRes.reports) {
+      setModerationReports(queueRes.reports);
+    } else if (!queueRes.success) {
+      showToast(`Failed to load moderation queue: ${queueRes.error}`, "error");
+    }
+    setModerationCount(countRes.count);
+    setLoadingModeration(false);
+  };
+
+  const handleResolveReport = async (reportId: string, action: "hide" | "dismiss") => {
+    setModerationBusy(reportId);
+    const res = await resolveReport({ reportId, action });
+    if (res.success) {
+      showToast(action === "hide" ? "Content hidden & report resolved" : "Report dismissed", "success");
+      // Drop the handled report locally and decrement the badge.
+      setModerationReports(prev => prev.filter(r => r.id !== reportId));
+      setModerationCount(c => Math.max(0, c - 1));
+    } else {
+      showToast(`Action failed: ${res.error}`, "error");
+    }
+    setModerationBusy(null);
+  };
+
+  const handleRestoreContent = async (report: ModerationReport) => {
+    if (!report.target) return;
+    setModerationBusy(report.id);
+    const res = await restoreContent({ kind: report.target.kind, id: report.target.id });
+    if (res.success) {
+      showToast("Content restored to the board", "success");
+      // Reflect the un-hidden state inline.
+      setModerationReports(prev =>
+        prev.map(r =>
+          r.id === report.id && r.target
+            ? { ...r, target: { ...r.target, isHidden: false } }
+            : r
+        )
+      );
+    } else {
+      showToast(`Restore failed: ${res.error}`, "error");
+    }
+    setModerationBusy(null);
   };
 
   const handleExportPdf = async () => {
@@ -397,7 +470,7 @@ export default function AdminDashboard() {
             <Wrench size={26} strokeWidth={1.75} className="text-brand-accent-500" aria-hidden="true" /> Command Center
           </h1>
           <div className="flex bg-slate-900 rounded-lg p-1 border border-slate-800">
-            {(["Config", "Questions", "Review", "Export", "Users"] as const).map(tab => (
+            {(["Config", "Questions", "Review", "Export", "Users", "Moderation"] as const).map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -411,6 +484,11 @@ export default function AdminDashboard() {
                 {tab === "Review" && (reviewSummary?.total ?? 0) > 0 && (
                   <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-amber-500 text-slate-950 text-[10px] font-black flex items-center justify-center">
                     {(reviewSummary?.total ?? 0) > 99 ? "99+" : reviewSummary?.total}
+                  </span>
+                )}
+                {tab === "Moderation" && moderationCount > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-black flex items-center justify-center">
+                    {moderationCount > 99 ? "99+" : moderationCount}
                   </span>
                 )}
               </button>
@@ -1137,6 +1215,131 @@ export default function AdminDashboard() {
                   {isExporting ? "Generating PDF..." : <><Download size={16} strokeWidth={1.75} aria-hidden="true" /> Download PDF</>}
                 </button>
               </div>
+            </section>
+          </div>
+        )}
+
+        {/* TAB 6: DOUBT-BOARD MODERATION */}
+        {activeTab === "Moderation" && (
+          <div className="space-y-8">
+            <section>
+              <h2 className="text-xl font-black text-slate-100 mb-2 flex items-center gap-3">
+                <span className="bg-rose-500/10 text-rose-400 p-2 rounded-lg"><ShieldAlert size={20} strokeWidth={1.75} aria-hidden="true" /></span>
+                Doubt Board Moderation
+              </h2>
+              <p className="text-sm text-slate-400 mb-6 max-w-2xl">
+                Community reports land here. <span className="text-rose-400 font-bold">Hide</span> removes the
+                content from the public board and marks the report resolved; <span className="text-slate-200 font-bold">Dismiss</span> keeps
+                it live (false alarm). Hidden content can be restored.
+              </p>
+
+              <div className="flex items-center gap-3 mb-6">
+                <button
+                  onClick={loadModerationQueue}
+                  disabled={loadingModeration}
+                  className="px-4 py-2 rounded-xl text-sm font-bold bg-slate-800 text-slate-200 hover:bg-slate-700 transition-colors disabled:opacity-50"
+                >
+                  {loadingModeration ? "Loading..." : <span className="flex items-center gap-1.5"><RefreshCw size={14} strokeWidth={2} /> Refresh</span>}
+                </button>
+                <span className="text-sm text-slate-500 font-medium">
+                  {moderationReports.length} pending report{moderationReports.length === 1 ? "" : "s"}
+                </span>
+              </div>
+
+              {loadingModeration ? (
+                <div className="p-8 text-center text-slate-400 font-medium">Loading moderation queue...</div>
+              ) : moderationReports.length === 0 ? (
+                <div className="p-12 text-center bg-slate-900/50 border border-slate-800 rounded-3xl">
+                  <div className="mb-3 opacity-60 flex justify-center"><CheckCircle size={36} strokeWidth={1.75} aria-hidden="true" /></div>
+                  <p className="text-slate-300 font-bold">Nothing to review</p>
+                  <p className="text-slate-500 text-sm mt-1">No pending reports on the doubt board.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {moderationReports.map((r) => (
+                    <div key={r.id} className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+                      <div className="flex items-start justify-between gap-4 mb-3">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-[10px] font-bold uppercase tracking-widest bg-rose-500/15 text-rose-400 px-2 py-1 rounded-md flex items-center gap-1">
+                            <Flag size={11} strokeWidth={2.5} aria-hidden="true" /> {r.reason}
+                          </span>
+                          <span className="text-[10px] font-bold uppercase tracking-widest bg-slate-800 text-slate-300 px-2 py-1 rounded-md">
+                            {r.target?.kind ?? "unknown"}
+                          </span>
+                          {r.target?.isHidden && (
+                            <span className="text-[10px] font-bold uppercase tracking-widest bg-amber-500/15 text-amber-400 px-2 py-1 rounded-md flex items-center gap-1">
+                              <EyeOff size={11} strokeWidth={2.5} aria-hidden="true" /> Hidden
+                            </span>
+                          )}
+                          <span className="text-[11px] text-slate-500">
+                            reported by <span className="text-slate-400 font-semibold">{r.reporterHandle}</span>
+                          </span>
+                        </div>
+                        <div className="flex gap-2 shrink-0">
+                          {r.target?.isHidden ? (
+                            <button
+                              onClick={() => handleRestoreContent(r)}
+                              disabled={moderationBusy === r.id}
+                              className="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-700 text-slate-100 hover:bg-slate-600 transition-colors disabled:opacity-40 flex items-center gap-1"
+                            >
+                              <RotateCcw size={13} strokeWidth={2.25} aria-hidden="true" /> Restore
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleResolveReport(r.id, "hide")}
+                              disabled={moderationBusy === r.id || !r.target}
+                              className="px-3 py-1.5 rounded-lg text-xs font-bold bg-rose-600/80 text-white hover:bg-rose-600 transition-colors disabled:opacity-40 flex items-center gap-1"
+                            >
+                              <EyeOff size={13} strokeWidth={2.25} aria-hidden="true" /> Hide
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleResolveReport(r.id, "dismiss")}
+                            disabled={moderationBusy === r.id}
+                            className="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-slate-200 hover:bg-slate-700 transition-colors disabled:opacity-40 flex items-center gap-1"
+                          >
+                            <X size={13} strokeWidth={2.25} aria-hidden="true" /> Dismiss
+                          </button>
+                        </div>
+                      </div>
+
+                      {r.details && (
+                        <p className="text-xs text-slate-400 mb-3 italic">
+                          Reporter note: &ldquo;{r.details}&rdquo;
+                        </p>
+                      )}
+
+                      {r.target ? (
+                        <div className="bg-slate-950 border border-slate-800 rounded-xl p-4">
+                          {r.target.title && (
+                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
+                              {r.target.kind === "answer" ? "On question:" : "Question:"} <span className="text-slate-300 normal-case tracking-normal">{r.target.title}</span>
+                            </p>
+                          )}
+                          <p className="text-sm text-slate-100 whitespace-pre-wrap">{r.target.body}</p>
+                          <div className="flex items-center justify-between mt-3">
+                            <span className="text-[11px] text-slate-500">
+                              by <span className="text-slate-400 font-semibold">{r.target.authorHandle}</span>
+                            </span>
+                            <a
+                              href={`/doubts/${r.target.postId}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[11px] font-bold text-brand-accent-400 hover:text-brand-accent-300 flex items-center gap-1"
+                            >
+                              <Search size={11} strokeWidth={2.5} aria-hidden="true" /> View on board
+                            </a>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 text-sm text-slate-500 italic">
+                          The reported content no longer exists (deleted by its author).
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </section>
           </div>
         )}

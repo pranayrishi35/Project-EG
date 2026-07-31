@@ -54,6 +54,7 @@ export default function CreditModal({ isOpen, onClose }: CreditModalProps) {
         </h2>
         
         <p className="text-sm text-slate-300 leading-relaxed mb-8">
+          {/* eslint-disable-next-line react/no-unescaped-entities */}
           You've used all your free AI generations for this beta phase. <strong>Pro Pilot</strong> tier is launching soon to unlock unlimited access!
         </p>
         

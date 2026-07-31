@@ -120,7 +120,7 @@ export default function SmoothScrollProvider() {
         // Only update angle when moving significantly to prevent rotation jitter
         if (dist > 0.5) {
           const rad = Math.atan2(dy, dx);
-          let deg = rad * (180 / Math.PI);
+          const deg = rad * (180 / Math.PI);
 
           // Shortest path delta angle calculation prevents 360deg snap artifacts
           let deltaAngle = deg - angleRef.current;

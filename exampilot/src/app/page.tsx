@@ -6,9 +6,12 @@ import Link from "next/link";
 import { Suspense } from "react";
 // Removed OnboardingTrigger import
 import GuestAttemptBridge from "@/components/GuestAttemptBridge";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { BookOpen, Target, Newspaper, BookMarked, Zap, Map, Plane, Check, Hourglass } from "lucide-react";
 import TejasSpotlight from "@/components/TejasSpotlight";
 import GuestLanding from "@/components/landing/GuestLanding";
+import TodaysFocusCard from "@/components/TodaysFocusCard";
+import { getTodaysFocus } from "@/app/actions/getTodaysFocus";
 
 const CreatePlanForm = dynamic(() => import("@/components/CreatePlanForm"), {
   ssr: false,
@@ -108,12 +111,58 @@ async function FlashcardStatusLoader() {
   );
 }
 
+// Today's Focus — the single "here's what to cover today" block, derived from
+// the user's most-recent plan. Highest-leverage daily-habit surface, so it sits
+// first. Empty state (no plan) renders an explicit create-a-plan prompt rather
+// than a blank space. SSR-guarded like the other home loaders.
+async function TodaysFocusLoader() {
+  let result: Awaited<ReturnType<typeof getTodaysFocus>>;
+  try {
+    result = await getTodaysFocus();
+  } catch (err) {
+    console.error("[TodaysFocusLoader] getTodaysFocus threw:", err);
+    return null; // Fail soft — never crash the dashboard over the focus block.
+  }
+
+  if (result.status === "ok") {
+    return <TodaysFocusCard data={result.data} />;
+  }
+
+  if (result.status === "empty") {
+    return (
+      <section
+        aria-labelledby="focus-empty-heading"
+        className="bg-gradient-to-br from-amber-50 to-yellow-50/60 rounded-3xl border border-amber-100 shadow-sm p-6 md:p-8 flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left animate-fade-in"
+      >
+        <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center shadow-sm flex-shrink-0">
+          <Target size={28} strokeWidth={1.75} className="text-brand-accent-500" aria-hidden="true" />
+        </div>
+        <div className="flex-1">
+          <h2 id="focus-empty-heading" className="text-lg font-black text-amber-900">
+            No study plan yet
+          </h2>
+          <p className="text-sm text-amber-700 font-medium mt-1">
+            Generate your first plan below and your daily focus — exactly what to study today — will appear right here.
+          </p>
+        </div>
+        <a href="#generate-plan" className="w-full sm:w-auto ep-btn-primary flex-shrink-0 text-center">
+          Create a plan
+        </a>
+      </section>
+    );
+  }
+
+  // unauthenticated / error → render nothing (page already guards auth).
+  return null;
+}
+
 async function RecentPlansLoader() {
   const supabase = createClient();
 
   // Guarded for the same reason as FlashcardStatusLoader: a transient Supabase
   // failure during SSR must not abort the Suspense boundary. On error we treat
   // it as "no plans" and render the existing empty state.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let plans: any[] = [];
   try {
     const { data: recentPlans } = await supabase
@@ -302,6 +351,10 @@ export default async function HomePage() {
           <ResumeMockLoader />
         </Suspense>
 
+        <Suspense fallback={<div className="h-[220px] bg-gray-50 rounded-3xl animate-pulse" />}>
+          <TodaysFocusLoader />
+        </Suspense>
+
         <Suspense fallback={<div className="h-[100px] bg-gray-50 rounded-3xl animate-pulse" />}>
           <FlashcardStatusLoader />
         </Suspense>
@@ -315,7 +368,7 @@ export default async function HomePage() {
           </Suspense>
         </div>
 
-        <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 md:p-8 flex flex-col">
+        <div id="generate-plan" className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 md:p-8 flex flex-col scroll-mt-24">
           <div className="mb-6 border-b border-gray-100 pb-4">
             <h2 className="text-xl font-black text-gray-900 tracking-tight">Generate Study Plan</h2>
             <p className="text-sm text-slate-700 font-medium mt-1">Powered by Gemini AI — tailored to your exact syllabus.</p>
