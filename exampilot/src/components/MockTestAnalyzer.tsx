@@ -337,6 +337,7 @@ export default function MockTestAnalyzer({
                 <input
                   id={id}
                   type="number"
+                  inputMode="numeric"
                   min="0"
                   step="1"
                   value={value}
@@ -356,6 +357,7 @@ export default function MockTestAnalyzer({
               <input
                 id="mock-marks-correct"
                 type="number"
+                inputMode="decimal"
                 min="0.5"
                 step="0.5"
                 value={marksPerCorrect}
@@ -370,6 +372,7 @@ export default function MockTestAnalyzer({
               <input
                 id="mock-penalty-incorrect"
                 type="number"
+                inputMode="decimal"
                 min="0"
                 step="0.25"
                 value={penaltyPerIncorrect}

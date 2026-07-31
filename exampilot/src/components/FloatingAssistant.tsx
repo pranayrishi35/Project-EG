@@ -95,7 +95,7 @@ export default function FloatingAssistant() {
   };
 
   return (
-    <div className="print:hidden fixed bottom-20 md:bottom-6 right-4 md:right-6 z-50 flex flex-col items-end">
+    <div className="print:hidden fixed right-4 md:right-6 z-50 flex flex-col items-end bottom-[calc(var(--nav-height)+env(safe-area-inset-bottom)+1rem)] md:bottom-6">
       {/* Chat Window */}
       <div
         role="dialog"

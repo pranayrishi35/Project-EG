@@ -636,7 +636,7 @@ const ResultsView = memo(function ResultsView({ type, questions, scoringMap, isR
   };
 
   return (
-    <div className="fixed inset-0 z-[100] bg-slate-900 flex flex-col items-center justify-start pt-12 pb-24 px-6 text-white overflow-y-auto animate-fade-in print:static print:bg-white print:text-black print:h-auto print:overflow-visible print:p-0">
+    <div className="fixed inset-0 z-[100] bg-slate-900 flex flex-col items-center justify-start pt-12 pb-[calc(6rem+env(safe-area-inset-bottom))] px-6 text-white overflow-y-auto animate-fade-in print:static print:bg-white print:text-black print:h-auto print:overflow-visible print:p-0">
       <div className="w-full max-w-2xl bg-slate-800 rounded-3xl p-8 shadow-2xl border border-slate-700 print:bg-transparent print:border-none print:shadow-none print:p-0 print:max-w-none">
         <h2 className="text-3xl font-black text-center mb-2 print:text-black">{isReviewMode ? "Review Mode" : "Results Summary"}</h2>
         <p className="text-slate-400 text-center mb-8 font-medium uppercase tracking-widest text-sm print:text-black">{type}</p>

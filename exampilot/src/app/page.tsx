@@ -324,7 +324,7 @@ export default async function HomePage() {
       </div>
 
       {/* ── Hub Navigation Cards ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         <Link href="/planner" aria-label="Navigate to Study Planner" className="group flex flex-col items-center text-center gap-2 p-5 rounded-3xl bg-amber-50 border border-amber-100 hover:border-amber-300 hover:shadow-md transition-all active:scale-[0.98] min-h-[120px]">
           <span className="w-12 h-12 rounded-xl bg-white flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform"><BookOpen size={22} strokeWidth={1.75} className="text-amber-600" /></span>
           <span className="text-sm font-black text-amber-900 tracking-tight">Planner</span>
@@ -333,11 +333,17 @@ export default async function HomePage() {
           <span className="w-12 h-12 rounded-xl bg-white flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform"><Target size={22} strokeWidth={1.75} className="text-emerald-600" /></span>
           <span className="text-sm font-black text-emerald-900 tracking-tight">Practice</span>
         </Link>
+        <Link href="/doubts" aria-label="Navigate to Doubts Board" className="group flex flex-col items-center text-center gap-2 p-5 rounded-3xl bg-indigo-50 border border-indigo-100 hover:border-indigo-300 hover:shadow-md transition-all active:scale-[0.98] min-h-[120px]">
+          <span className="w-12 h-12 rounded-xl bg-white flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-600"><path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4c0-1.1.9-2 2-2h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2h-4.38L14 22Z"/></svg>
+          </span>
+          <span className="text-sm font-black text-indigo-900 tracking-tight">Doubts</span>
+        </Link>
         <Link href="/news" aria-label="Navigate to Defense News" className="group flex flex-col items-center text-center gap-2 p-5 rounded-3xl bg-sky-50 border border-sky-100 hover:border-sky-300 hover:shadow-md transition-all active:scale-[0.98] min-h-[120px]">
           <span className="w-12 h-12 rounded-xl bg-white flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform"><Newspaper size={22} strokeWidth={1.75} className="text-sky-600" /></span>
           <span className="text-sm font-black text-sky-900 tracking-tight">News</span>
         </Link>
-        <Link href="/booklets" aria-label="Navigate to Study Booklets" className="group flex flex-col items-center text-center gap-2 p-5 rounded-3xl bg-amber-50 border border-amber-100 hover:border-amber-300 hover:shadow-md transition-all active:scale-[0.98] min-h-[120px]">
+        <Link href="/booklets" aria-label="Navigate to Study Booklets" className="group flex flex-col items-center text-center gap-2 p-5 rounded-3xl bg-amber-50 border border-amber-100 hover:border-amber-300 hover:shadow-md transition-all active:scale-[0.98] min-h-[120px] col-span-2 md:col-span-1 lg:col-span-1">
           <span className="w-12 h-12 rounded-xl bg-white flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform"><BookMarked size={22} strokeWidth={1.75} className="text-amber-600" /></span>
           <span className="text-sm font-black text-amber-900 tracking-tight">Booklets</span>
         </Link>

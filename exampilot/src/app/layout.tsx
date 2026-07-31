@@ -98,7 +98,7 @@ export default async function RootLayout({
                 <div className="flex-1 flex flex-col min-w-0 w-full">
                   <Header />
                   <main id="main-content" className="w-full relative">
-                    <div className="pb-24 md:pb-0 min-h-[calc(100vh-var(--header-height))] flex flex-col">
+                    <div className="pb-[calc(var(--nav-height)+env(safe-area-inset-bottom)+24px)] md:pb-0 min-h-[calc(100vh-var(--header-height))] flex flex-col">
                       <div className="flex-1 w-full relative">{children}</div>
                       <LegalFooter />
                     </div>

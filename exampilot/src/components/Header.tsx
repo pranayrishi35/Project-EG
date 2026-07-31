@@ -133,40 +133,40 @@ export default async function Header() {
 
         {/* ── Auth area ──────────────────────────────────────────── */}
         {userEmail ? (
-          <div className="flex items-center gap-2.5 overflow-x-auto no-scrollbar pl-4">
+          <div className="flex items-center justify-end gap-3 pl-4">
             <a 
               href="mailto:support@exampilot.in?subject=[Beta%20Feedback]%20Jishnu"
-              className="hidden sm:flex items-center gap-1.5 h-9 px-3.5 bg-amber-100 border-[0.5px] border-amber-200 rounded-full text-xs font-bold text-amber-700 shadow-sm hover:bg-amber-200 transition-colors focus-visible:ring-2 focus-visible:ring-amber-400 outline-none whitespace-nowrap shrink-0"
+              className="hidden sm:flex items-center justify-center gap-1.5 h-12 px-4 bg-amber-100 border-[0.5px] border-amber-200 rounded-full text-sm font-bold text-amber-700 shadow-sm hover:bg-amber-200 transition-colors focus-visible:ring-2 focus-visible:ring-amber-400 outline-none whitespace-nowrap shrink-0"
             >
-              <MessageSquare width={14} height={14} strokeWidth={1.75} aria-hidden="true" className="flex-shrink-0" />
+              <MessageSquare width={16} height={16} strokeWidth={1.75} aria-hidden="true" className="flex-shrink-0" />
               Give Feedback
             </a>
 
             {upcomingExam && (
-              <div className="flex items-center gap-1.5 h-9 px-3.5 bg-orange-50 border-[0.5px] border-orange-200 rounded-full text-xs font-bold text-orange-700 shadow-sm transition-colors whitespace-nowrap shrink-0">
-                <Flame width={14} height={14} strokeWidth={1.75} aria-hidden="true" className="flex-shrink-0" />
+              <div className="hidden sm:flex items-center justify-center gap-1.5 h-12 px-4 bg-orange-50 border-[0.5px] border-orange-200 rounded-full text-sm font-bold text-orange-700 shadow-sm transition-colors whitespace-nowrap shrink-0">
+                <Flame width={16} height={16} strokeWidth={1.75} aria-hidden="true" className="flex-shrink-0" />
                 {upcomingExam.daysLeft === 0 ? `Today is ${upcomingExam.name}!` : `${upcomingExam.daysLeft} Days to ${upcomingExam.name}`}
               </div>
             )}
             
             {userCredits !== null && (
-              <div className={`flex items-center gap-1.5 h-9 px-3.5 border-[0.5px] rounded-full text-xs font-bold shadow-sm transition-colors whitespace-nowrap shrink-0 ${
+              <div className={`hidden sm:flex items-center justify-center gap-1.5 h-12 px-4 border-[0.5px] rounded-full text-sm font-bold shadow-sm transition-colors whitespace-nowrap shrink-0 ${
                 userCredits < LOW_CREDIT_THRESHOLD
                   ? "bg-rose-50 border-rose-200 text-rose-700"
                   : "bg-amber-50 border-amber-100 text-brand-accent-500"
               }`}>
                 {userCredits < LOW_CREDIT_THRESHOLD ? (
-                  <AlertTriangle width={14} height={14} strokeWidth={1.75} aria-hidden="true" className="flex-shrink-0" />
+                  <AlertTriangle width={16} height={16} strokeWidth={1.75} aria-hidden="true" className="flex-shrink-0" />
                 ) : (
-                  <Zap width={14} height={14} strokeWidth={1.75} aria-hidden="true" className="flex-shrink-0" />
+                  <Zap width={16} height={16} strokeWidth={1.75} aria-hidden="true" className="flex-shrink-0" />
                 )}
-                {userCredits} <span className="hidden sm:inline">Credits</span>
+                {userCredits} Credits
               </div>
             )}
 
             {streak > 0 && (
-              <div className="flex items-center gap-1.5 h-9 px-3.5 bg-amber-50 border-[0.5px] border-amber-100 rounded-full text-xs font-bold text-orange-600 shadow-sm whitespace-nowrap shrink-0">
-                <Flame width={14} height={14} strokeWidth={1.75} className="flex-shrink-0 text-orange-500" aria-hidden="true" />
+              <div className="hidden sm:flex items-center justify-center gap-1.5 h-12 px-4 bg-amber-50 border-[0.5px] border-amber-100 rounded-full text-sm font-bold text-orange-600 shadow-sm whitespace-nowrap shrink-0">
+                <Flame width={16} height={16} strokeWidth={1.75} className="flex-shrink-0 text-orange-500" aria-hidden="true" />
                 <span
                   style={{
                     background: "linear-gradient(135deg, #F59E0B 0%, #EA580C 100%)",
@@ -185,15 +185,29 @@ export default async function Header() {
               data-testid="header-settings-link"
               href="/settings"
               aria-label={`Account settings for ${userEmail}`}
-              className="flex items-center outline-none focus-visible:ring-2 focus-visible:ring-brand-accent-500 rounded-full shrink-0 ml-1"
+              className="flex items-center justify-center outline-none focus-visible:ring-2 focus-visible:ring-brand-accent-500 rounded-full shrink-0 min-w-[48px] min-h-[48px] relative"
             >
               <div
-                className="w-9 h-9 shrink-0 rounded-full flex items-center justify-center text-white text-xs font-bold transition-opacity duration-150 hover:opacity-80"
+                className="w-10 h-10 shrink-0 rounded-full flex items-center justify-center text-white text-sm font-bold transition-opacity duration-150 hover:opacity-80 shadow-sm"
                 style={{ background: "linear-gradient(135deg, #F5A623 0%, #D98A0F 100%)" }}
                 aria-hidden="true"
               >
                 {userInitial}
               </div>
+              
+              {/* Minimal Credits Badge for Mobile */}
+              {userCredits !== null && (
+                <div className="sm:hidden absolute -bottom-1 -right-1 flex items-center justify-center bg-white rounded-full p-0.5 shadow-sm border border-gray-100">
+                  <div className={`flex items-center justify-center h-5 px-1.5 rounded-full text-[10px] font-black ${
+                    userCredits < LOW_CREDIT_THRESHOLD
+                      ? "bg-rose-100 text-rose-700"
+                      : "bg-amber-100 text-amber-700"
+                  }`}>
+                    <Zap width={10} height={10} strokeWidth={2.5} className="mr-0.5" aria-hidden="true" />
+                    {userCredits}
+                  </div>
+                </div>
+              )}
             </Link>
           </div>
         ) : (
