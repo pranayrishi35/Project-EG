@@ -1,6 +1,6 @@
 # Disaster Recovery & Incident Response Plan
 
-**Project:** ExamPilot Platform  
+**Project:** Jishnu Platform  
 **Owner:** Principal Security Architect & Data Governance Officer  
 **Date:** July 15, 2026  
 
@@ -13,7 +13,7 @@ This protocol defines our immediate, step-by-step actions for mitigating critica
 ### Scenario A: Supabase Database Outage
 **Trigger:** Database connection timeouts, failed R/W operations reported by Vercel edge functions.
 **Response Steps:**
-1. **Verify Status:** Check the Supabase status page and internal Datadog metrics to confirm a database-level outage vs. an application networking error.
+1. **Verify Status:** Check the Supabase status page and Sentry dashboard metrics to confirm a database-level outage vs. an application networking error.
 2. **Enable Maintenance Mode:** Toggle the Vercel environment variable `NEXT_PUBLIC_MAINTENANCE_MODE=true` to gracefully degrade the UI for users and halt all database write attempts.
 3. **Escalate:** Open an urgent support ticket with Supabase if the outage is internal to their infrastructure.
 4. **Monitor & Resume:** Once Supabase signals stability, perform a rolling health check on read/write endpoints before disabling Maintenance Mode.
@@ -40,28 +40,22 @@ This protocol defines our immediate, step-by-step actions for mitigating critica
 
 The Disaster Recovery plan ensures business continuity and data integrity in the event of catastrophic data corruption.
 
-### A. Point-in-Time Recovery (PITR) Strategy
-ExamPilot relies heavily on **Supabase's Point-in-Time Recovery (PITR)** infrastructure to protect against accidental data deletion or corruption (e.g., a botched migration).
-- PITR allows us to restore the entire database state to any exact second within our backup retention window.
+### A. Automated Daily Backups
+Jishnu utilizes an automated database backup script (`scripts/pg_dump_backup.sh`) scheduled via GitHub Actions.
+- This script connects via the `DATABASE_URL` (Postgres connection string) and performs a full schema and data dump to a timestamped `.sql` file.
+- These `.sql` files are retained as GitHub Actions artifacts (and optionally synced to an off-site S3 bucket) providing a 7-day rolling window of database snapshots.
+- *Note:* Supabase also natively provides automatic backups on Pro plans, serving as a secondary recovery mechanism.
 
 ### B. Restoring Critical Tables
 In the event that specific tables (such as `mock_attempts` and `question_bank`) are corrupted, we execute the following procedure:
-1. **Spin up a Recovery DB:** Provision a parallel Supabase project restored to a PITR timestamp immediately preceding the corruption event.
-2. **Extract Data:** Use `pg_dump` to export the pristine `mock_attempts` and `question_bank` tables from the recovery database.
-3. **Restore to Production:** Safely apply the exported SQL dump to the production database, verifying foreign key constraints and RLS policies remain intact. 
+1. **Locate Backup:** Download the most recent pristine `.sql` backup file from GitHub Actions artifacts or S3.
+2. **Spin up a Recovery DB:** Provision a temporary scratch Postgres database.
+3. **Extract Data:** Restore the `.sql` dump into the scratch database, and use `pg_dump` to extract the specific uncorrupted tables.
+4. **Restore to Production:** Safely apply the exported SQL to the production database, verifying foreign key constraints and RLS policies remain intact. 
 
 > [!IMPORTANT]
-> **Data Loss Window:** Users who submitted mock attempts between the PITR timestamp and the corruption event will lose that specific data. Communication protocols must be initiated to inform affected users.
+> **Data Loss Window:** Users who submitted mock attempts between the last successful daily backup and the corruption event will lose that specific data. Communication protocols must be initiated to inform affected users.
 
 ---
 
-## 3. Infrastructure Stability: The Circuit Breaker
 
-To prevent our own scalable serverless architecture from overwhelming our database or third-party APIs (self-inflicted DDoS), we implement a strict circuit breaker pattern.
-
-> [!TIP]
-> **30-Second Exponential Backoff Circuit Breaker**
-> - If Vercel functions detect three consecutive connection timeouts or 5xx errors from either Supabase or the Gemini API, the circuit breaker **trips open**.
-> - Once tripped, all subsequent requests to the failing service instantly return a 503 Service Unavailable to the client to shed load.
-> - The system waits for an initial 30 seconds before allowing a single "probe" request through (half-open state). 
-> - If the probe fails, the wait time increases exponentially (60s, 120s, up to 5 minutes) before the next probe. If it succeeds, the circuit closes and normal traffic resumes.

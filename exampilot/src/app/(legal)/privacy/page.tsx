@@ -3,8 +3,8 @@ import fs from "fs";
 import path from "path";
 
 export const metadata = {
-  title: "Privacy Policy | ExamPilot",
-  description: "ExamPilot Privacy Policy",
+  title: "Privacy Policy | Jishnu",
+  description: "Jishnu Privacy Policy",
 };
 
 export default async function PrivacyPage() {

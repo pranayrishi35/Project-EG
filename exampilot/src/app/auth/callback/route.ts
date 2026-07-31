@@ -108,7 +108,7 @@ export async function GET(request: NextRequest) {
           <h1 class="title">Secure Session Verified</h1>
           <p class="subtitle">Your identity has been confirmed.</p>
           <!-- MANUAL TAP BRIDGE: Defeats ITP by forcing a top-level user interaction -->
-          <a href="${origin}${next}" class="btn">Enter ExamPilot</a>
+          <a href="${origin}${next}" class="btn">Enter Jishnu</a>
         </div>
       </body>
     </html>

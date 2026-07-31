@@ -5,6 +5,7 @@ import { createClient } from "@/utils/supabase/server";
 import { checkAndDeductCredits } from "@/lib/creditManager";
 import { sanitizePrompt } from "@/lib/sanitizer";
 import { robustJsonParse } from "@/lib/robustJsonParse";
+import { checkAiRateLimit } from "@/lib/aiRateLimit";
 
 export async function generateTestStrategy(
   score: number,
@@ -21,6 +22,15 @@ export async function generateTestStrategy(
       success: false,
       strategy: "Please sign in to use the AI Coach."
     };
+  }
+
+  // Per-user AI rate limit: shared 20 req/min ceiling across all AI surfaces
+  // (chat, coach, cheat sheet, flashcards, test strategy, study plan). One
+  // shared budget per user intentionally — prevents billing exhaustion regardless
+  // of which surface is hammered.
+  const aiRate = await checkAiRateLimit(user.id);
+  if (!aiRate.success) {
+    return { success: false, strategy: "AI_RATE_LIMIT_EXCEEDED" };
   }
 
   const creditCheck = await checkAndDeductCredits(user.id, user.email, 1);
@@ -48,9 +58,9 @@ export async function generateTestStrategy(
       maxOutputTokens: 800
     },
     systemInstruction: [
-      "You are the ExamPilot Tactical Intelligence — a proprietary assessment engine built exclusively for defense exam candidates.",
+      "You are the Jishnu Tactical Intelligence — a proprietary assessment engine built exclusively for defense exam candidates.",
       "Under NO circumstances should you mention Google, Gemini, OpenAI, or that you are a large language model.",
-      "If asked about your identity, state only: 'I am ExamPilot's proprietary assessment engine.'"
+      "If asked about your identity, state only: 'I am Jishnu's proprietary assessment engine.'"
     ].join(" ")
   });
 
@@ -92,11 +102,11 @@ CRITICAL: You must return valid JSON only. You must properly escape all internal
     return { success: true, strategy: strategyData };
   } catch (error) {
     // White-Label Protocol: Log raw error server-side only.
-    console.error("[ExamPilot Coach] Strategy generation failed:", error);
+    console.error("[Jishnu Coach] Strategy generation failed:", error);
     return {
       success: false,
       error: 'AI_SERVICE_UNAVAILABLE',
-      message: 'The ExamPilot Coach is currently analyzing too many student profiles. Please try again in a moment.'
+      message: 'The Jishnu Coach is currently analyzing too many student profiles. Please try again in a moment.'
     };
   }
 }

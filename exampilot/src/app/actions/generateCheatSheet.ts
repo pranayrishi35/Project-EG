@@ -4,6 +4,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { createClient } from "@/utils/supabase/server";
 import { checkAndDeductCredits } from "@/lib/creditManager";
 import { robustJsonParse } from "@/lib/robustJsonParse";
+import { checkAiRateLimit } from "@/lib/aiRateLimit";
 
 export interface CheatSheetSection {
   subject: string;
@@ -21,6 +22,15 @@ export async function generateCheatSheet(planId: string): Promise<GenerateCheatS
 
   if (authError || !user) {
     return { success: false, error: "You must be signed in." };
+  }
+
+  // Per-user AI rate limit: shared 20 req/min ceiling across all AI surfaces
+  // (chat, coach, cheat sheet, flashcards, test strategy, study plan). One
+  // shared budget per user intentionally — prevents billing exhaustion regardless
+  // of which surface is hammered.
+  const aiRate = await checkAiRateLimit(user.id);
+  if (!aiRate.success) {
+    return { success: false, error: "AI_RATE_LIMIT_EXCEEDED" };
   }
 
   // Fetch the specific study plan

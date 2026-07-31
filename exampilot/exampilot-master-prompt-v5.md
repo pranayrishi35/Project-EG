@@ -1,4 +1,4 @@
-# ExamPilot — Master Prompt v5: Immersive Landing, Onboarding Funnel & Trust Layer
+# Jishnu — Master Prompt v5: Immersive Landing, Onboarding Funnel & Trust Layer
 
 This document extends v4 (do not discard it — the design system, color tokens, cursor/3D specs, and CBT motion-exclusion rule from v4 remain in force). v5 covers three new workstreams: a landing page reset toward one immersive theme with better scrolling craft, a from-scratch onboarding funnel to replace the embedded demo mock test, and a trust/credibility + language-accessibility layer the site currently lacks.
 
@@ -63,7 +63,7 @@ A first-time user should be able to walk, step by step, through every core featu
 - A dedicated route (e.g. `/welcome` or `/start`), entered via a clear landing-page CTA ("See how it works" / "Take the guided tour") — separate from a direct "Sign in" path, so returning users aren't forced through it.
 - A visible step indicator (e.g. "Step 3 of 7") so users always know how much is left — critical for a walkthrough; open-ended tours lose people.
 - Each step demonstrates exactly one feature with real (seeded/sample, not live database) data: e.g.
-  1. Welcome + what ExamPilot is, in plain language
+  1. Welcome + what Jishnu is, in plain language
   2. Sample practice test — answer 2–3 real questions, see instant scoring (this is where the old demo mock's job lives now, properly framed as "try it yourself" rather than competing for hero-section attention)
   3. AI study planner — show a sample generated plan
   4. Dashboard — show sample progress/analytics

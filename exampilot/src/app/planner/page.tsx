@@ -10,7 +10,7 @@ import { getStreak } from "@/app/actions/getStreak";
 import { isGuestUser } from "@/lib/guestShield";
 
 export const metadata: Metadata = {
-  title: "My Plans — ExamPilot",
+  title: "My Plans — Jishnu",
   description: "View and manage all your AI-generated study plans.",
 };
 

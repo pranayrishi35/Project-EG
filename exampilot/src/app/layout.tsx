@@ -22,8 +22,8 @@ const SmoothScrollProvider = dynamic(() => import('@/components/ui/SmoothScrollP
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://exampilot-delta.vercel.app'),
-  title: "ExamPilot | Smart AI Study Planner for Competitive Exams",
-  description: "ExamPilot helps students plan, track, and ace competitive defense exams with an intelligent, personalized AI study planner and mock tests.",
+  title: "Jishnu | Smart AI Study Planner for Competitive Exams",
+  description: "Jishnu helps students plan, track, and ace competitive defense exams with an intelligent, personalized AI study planner and mock tests.",
   alternates: {
     canonical: '/',
   },
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "ExamPilot",
+    title: "Jishnu",
   },
   // Standard, non-deprecated PWA install hint. Next injects the legacy
   // apple-mobile-web-app-capable tag via appleWebApp above; this adds the
@@ -44,9 +44,9 @@ export const metadata: Metadata = {
     apple: "/icons/icon-192x192.png",
   },
   openGraph: {
-    title: "ExamPilot | Smart AI Study Planner for Competitive Exams",
+    title: "Jishnu | Smart AI Study Planner for Competitive Exams",
     description: "Elite AI Defense Exam Preparation and Mock Tests",
-    siteName: "ExamPilot",
+    siteName: "Jishnu",
     url: "https://exampilot-delta.vercel.app",
     type: "website",
     images: [
@@ -54,13 +54,13 @@ export const metadata: Metadata = {
         url: "/icons/icon-512x512.png",
         width: 512,
         height: 512,
-        alt: "ExamPilot Logo",
+        alt: "Jishnu Logo",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "ExamPilot — Smart Study Planner",
+    title: "Jishnu — Smart Study Planner",
     description: "Elite AI Defense Exam Preparation",
     images: ["/icons/icon-512x512.png"],
   },

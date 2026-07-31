@@ -249,7 +249,7 @@ export default function GuestLanding({ spotlightSlot }: GuestLandingProps) {
                 Everything required to conquer the exam without guesswork
               </h2>
               <p className="text-body-md text-brand-ink-muted mt-3">
-                Traditional exam preparation relies on scattered PDF books and overwhelming video lectures. ExamPilot automates your timeline so you focus 100% of your energy on practicing and succeeding.
+                Traditional exam preparation relies on scattered PDF books and overwhelming video lectures. Jishnu automates your timeline so you focus 100% of your energy on practicing and succeeding.
               </p>
             </div>
           </Reveal>

@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 /**
  * DeviceFrame — hero/section device chrome with PLACEHOLDER SLOTS (Phase 3).
  *
- * Renders realistic device bezels (phone-first, since ExamPilot is mobile-first)
+ * Renders realistic device bezels (phone-first, since Jishnu is mobile-first)
  * with an empty, clearly-marked slot where a real product screenshot gets dropped
  * in later. We deliberately do NOT fabricate fake CSS/SVG UI mockups — the slot
  * shows a labelled placeholder until a real asset is supplied via `children` or

@@ -2,7 +2,7 @@
 
 **Effective Date:** July 15, 2026
 
-Welcome to **ExamPilot**. This Privacy Policy explains how ExamPilot ("we," "our," or "us") collects, uses, protects, and discloses your information when you use our EdTech SaaS platform designed for Indian defense exam preparation (AFCAT, NDA, CDS). As an organization, we are committed to respecting your privacy and protecting your personal data in alignment with industry best practices and global data protection principles.
+Welcome to **Jishnu**. This Privacy Policy explains how Jishnu ("we," "our," or "us") collects, uses, protects, and discloses your information when you use our EdTech SaaS platform designed for Indian defense exam preparation (AFCAT, NDA, CDS). As an organization, we are committed to respecting your privacy and protecting your personal data in alignment with industry best practices and global data protection principles.
 
 ---
 
@@ -18,23 +18,25 @@ To provide you with highly personalized exam preparation tools, we collect speci
 - **Performance Metrics:** Your mock test scores, incorrect test answers, study plans, and historical performance tracking data.
 
 ### C. Financial Information
-- We use a third-party payment processor, **Razorpay**, to handle transactions. ExamPilot does not directly collect or store your sensitive payment details (such as full credit card numbers or UPI PINs).
+- We use a third-party payment processor, **Razorpay**, to handle transactions. Jishnu does not directly collect or store your sensitive payment details (such as full credit card numbers or UPI PINs).
 
 ---
 
 ## 2. Data Minimization & Purpose Limitation
 
-In strict adherence to OWASP privacy guidelines and the principle of data minimization, we only collect data that is strictly necessary for the operation of ExamPilot. 
+In strict adherence to OWASP privacy guidelines and the principle of data minimization, we only collect data that is strictly necessary for the operation of Jishnu. 
 - **Purpose Limitation:** Your data is used exclusively for generating personalized study plans, tracking your exam performance, providing our "Tactical Coach" analytics, and maintaining your account security. We do not sell your personal data to data brokers or third-party marketers.
 
 ---
 
 ## 3. Artificial Intelligence (AI) Processing
 
-To deliver our advanced educational features, ExamPilot utilizes third-party Large Language Models (LLMs), specifically the **Google Gemini API**.
+To deliver our advanced educational features, Jishnu utilizes third-party Large Language Models (LLMs), specifically the **Google Gemini API**.
 - **How it Works:** User-uploaded syllabi and data concerning incorrect test answers are securely transmitted to and processed by Google Gemini.
-- **PII Sanitization & Limitations:** We employ a regex-based sanitization utility to strip structured personal identifiers (such as email addresses and phone numbers) from your inputs before they are sent to the Gemini API. However, please be aware that this automated filter cannot reliably catch unstructured personal information (such as your name typed in free-text). We strongly advise against uploading sensitive personal documents (e.g., identity cards) masquerading as syllabi.
-- **Data Protection:** ExamPilot utilizes the standard Google Gemini Developer API. Data sent via these standard API keys is subject to Google's standard developer terms. 
+- **Model Training:** We explicitly opt out of data sharing for model training. **Your personal data and uploaded content are never used to train Google's foundation models.**
+- **PII Sanitization & Limitations:** We employ an NLP (Natural Language Processing) utility along with regex-based sanitization to strip both structured personal identifiers (such as email addresses and phone numbers) and unstructured proper names from your inputs before they are sent to the Gemini API. 
+- **Important NLP Limitation:** While the NLP filter removes many proper nouns, it is probabilistic and may fail to redact certain names (especially isolated Indian first names without surnames or titles). We strongly advise against uploading sensitive personal documents (e.g., identity cards) masquerading as syllabi.
+- **Data Protection:** Jishnu utilizes the standard Google Gemini Developer API. Data sent via these standard API keys is subject to Google's standard developer terms. 
 
 ---
 
@@ -49,16 +51,16 @@ We employ enterprise-grade security architecture to ensure your data is protecte
 
 ## 5. Your User Rights
 
-You retain full control over your personal data. ExamPilot provides you with the following rights, which you can exercise at any time:
+You retain full control over your personal data. Jishnu provides you with the following rights, which you can exercise at any time:
 
 ### A. The Right to Access
-You have the right to request a comprehensive copy of all personal and educational data ExamPilot holds about you. You can export this data directly from your account settings or by contacting our Data Privacy Officer.
+You have the right to request a comprehensive copy of all personal and educational data Jishnu holds about you. You can export this data directly from your account settings or by contacting our Data Privacy Officer.
 
 ### B. The Right to Delete (The Right to be Forgotten) & Backup Retention
 You have the right to request the complete and permanent deletion of your account and all associated personal and educational data. 
 
 - **48-Hour Grace Period:** When you request account deletion, your account enters a 48-hour grace window. During this time, your account is temporarily deactivated but your data remains cached. You can cancel the deletion and recover your account simply by logging back in within this 48-hour period. If not recovered, all active PII (Name, Email) and educational data will be permanently expunged from our production databases at the conclusion of the 48 hours.
-- **Backup Retention Disclosure:** For disaster-recovery purposes, ExamPilot maintains encrypted, point-in-time database backups for a rolling retention window of 7 days. During this window, your data may continue to exist within these backups; it is not accessed, processed, or used for any purpose other than restoring service in the event of a technical failure, and is automatically and permanently purged at the end of the retention window.
+- **Backup Retention Disclosure:** For disaster-recovery purposes, Jishnu maintains encrypted, point-in-time database backups for a rolling retention window of 7 days. During this window, your data may continue to exist within these backups; it is not accessed, processed, or used for any purpose other than restoring service in the event of a technical failure, and is automatically and permanently purged at the end of the retention window.
 
 ### C. Right to Nominate
 You have the right to nominate another individual who shall, in the event of your death or incapacity, be entitled to exercise your rights under this Privacy Policy and applicable data protection law on your behalf. To register a nominee, please contact our Data Privacy Officer at atpr3105@gmail.com.
@@ -87,6 +89,6 @@ In accordance with the Consumer Protection (E-Commerce) Rules, 2020 and the Info
 **Name:** Pranay Rishi
 **Designation:** Grievance Officer
 **Email:** atpr3105@gmail.com
-**Address:** ExamPilot Registered Office, Bengaluru, Karnataka, India
+**Address:** Jishnu Registered Office, Bengaluru, Karnataka, India
 
 The Grievance Officer will acknowledge your complaint within 48 hours of receipt and endeavor to resolve it within one (1) month from the date of receipt, in accordance with applicable law.

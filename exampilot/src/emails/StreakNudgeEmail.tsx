@@ -53,7 +53,7 @@ export const StreakNudgeEmail = ({
             </Section>
             
             <Text className="text-slate-500 text-[12px] leading-[24px] mt-[10px]">
-              You're receiving this because you're crushing it on ExamPilot. Keep pushing!
+              You're receiving this because you're crushing it on Jishnu. Keep pushing!
             </Text>
           </Container>
         </Body>

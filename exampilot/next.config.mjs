@@ -1,5 +1,6 @@
 import withPWAInit from "@ducanh2912/next-pwa";
 import { withReticle } from "@reticlehq/next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const withPWA = withPWAInit({
   dest: "public",
@@ -150,6 +151,7 @@ const nextConfig = {
     ],
   },
   experimental: {
+    instrumentationHook: true,
     outputFileTracingIncludes: {
       '/(legal)/**': ['./docs/legal/**/*'],
       '/terms': ['./docs/legal/**/*'],
@@ -221,4 +223,33 @@ baseConfig.webpack = (config, ctx) => {
   return res;
 };
 
-export default baseConfig;
+// Export the final config wrapped by Sentry
+export default withSentryConfig(baseConfig, {
+  // For all available options, see:
+  // https://github.com/getsentry/sentry-webpack-plugin#options
+
+  org: "lovely-professional-univers-w5",
+  project: "jishnu",
+
+  // Only print logs for uploading source maps in CI
+  silent: true,
+
+  // For all available options, see:
+  // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
+
+  // Upload a larger set of source maps for prettier stack traces (increases build time)
+  widenClientFileUpload: true,
+
+  // Route browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers.
+  // This can increase your server load as well as your hosting bill.
+  tunnelRoute: "/monitoring",
+
+  // Hides source maps from generated client bundles
+  hideSourceMaps: true,
+
+  // Automatically tree-shake Sentry logger statements to reduce bundle size
+  disableLogger: true,
+
+  // Enables automatic instrumentation of Vercel Cron Monitors. (Does not yet work with App Router route handlers.)
+  automaticVercelMonitors: true,
+});

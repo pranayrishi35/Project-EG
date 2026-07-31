@@ -6,7 +6,7 @@ import OnboardingFunnel, { OnboardingQuestion } from "@/components/onboarding/On
 import { getDemoMockQuestions } from "@/app/actions/getDemoMock";
 
 export const metadata: Metadata = {
-  title: "Initialize Your AI Study Wingman | ExamPilot Flight Calibration",
+  title: "Initialize Your AI Study Wingman | Jishnu Flight Calibration",
   description:
     "Calibrate your study parameter telemetry, select your target defense exam (AFCAT, CDS, NDA), and test our instantaneous diagnostic scoring engine.",
 };

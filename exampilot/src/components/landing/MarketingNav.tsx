@@ -30,7 +30,7 @@ export default function MarketingNav() {
         {/* Logo */}
         <Link
           href="/"
-          aria-label="ExamPilot home"
+          aria-label="Jishnu home"
           className="flex items-center gap-2 outline-none focus-visible:ring-2 focus-visible:ring-brand-accent-400 rounded-lg shrink-0"
         >
           <div
@@ -48,7 +48,7 @@ export default function MarketingNav() {
               scrolled ? "text-brand-ink-primary" : "text-brand-ink-inverse",
             ].join(" ")}
           >
-            Exam<span className="text-brand-accent-500">Pilot</span>
+            Jishnu
           </span>
         </Link>
 

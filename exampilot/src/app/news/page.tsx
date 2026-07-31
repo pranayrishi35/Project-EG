@@ -1,7 +1,7 @@
 import { fetchDefenseNews } from "@/app/actions/fetchDefenseNews";
 import NewsFeed from "@/components/NewsFeed";
 
-export const metadata = { title: "Defense News | ExamPilot" };
+export const metadata = { title: "Defense News | Jishnu" };
 export const revalidate = 3600;
 
 const MOCK_DEFENSE_NEWS = [

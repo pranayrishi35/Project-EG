@@ -2,7 +2,7 @@
 
 **Effective Date:** July 15, 2026
 
-Thank you for choosing **ExamPilot**. This policy governs the cancellation and refund terms for our premium subscription tier, **"Pro Pilot"**, which provides unlimited mock tests and advanced AI features. Please read this policy carefully before purchasing a subscription.
+Thank you for choosing **Jishnu**. This policy governs the cancellation and refund terms for our premium subscription tier, **"Pro Pilot"**, which provides unlimited mock tests and advanced AI features. Please read this policy carefully before purchasing a subscription.
 
 ---
 
@@ -18,7 +18,7 @@ We believe in giving you full control over your subscription.
 
 ## 2. Strict Refund Policy
 
-Due to the nature of our digital services and the significant costs associated with our AI integrations, ExamPilot enforces a strict refund policy.
+Due to the nature of our digital services and the significant costs associated with our AI integrations, Jishnu enforces a strict refund policy.
 
 > [!WARNING]
 > **No Refunds for Partial Use:** All payments processed via Razorpay are final. We do not provide refunds, prorated refunds, or credits for any partial-month subscription periods, unused accounts, or if you simply change your mind after the billing cycle has started.
@@ -42,7 +42,7 @@ Due to the nature of our digital services and the significant costs associated w
 ## 4. Payment Disputes & Chargebacks
 
 We encourage you to contact our billing team before initiating any dispute or chargeback with your bank or credit card provider.
-- Fraudulent chargebacks or disputes filed while you actively consumed the services will be vigorously contested and may result in the permanent ban of your account and email address from the ExamPilot platform.
+- Fraudulent chargebacks or disputes filed while you actively consumed the services will be vigorously contested and may result in the permanent ban of your account and email address from the Jishnu platform.
 
 ## 5. Contact Us
 

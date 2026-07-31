@@ -86,6 +86,7 @@ function LoginForm() {
   const [emailInput, setEmailInput] = useState("");
   const [passwordInput, setPasswordInput] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [ageConsent, setAgeConsent] = useState(false);
 
   // OTP / Magic link state
   const [isOtpPending, startOtpTransition] = useTransition();
@@ -99,6 +100,7 @@ function LoginForm() {
 
   function handleEmailContinue(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (!ageConsent) return;
     if (!emailInput || !emailInput.includes("@")) return;
     setStep("password");
   }
@@ -139,10 +141,33 @@ function LoginForm() {
   if (step === "email") {
     return (
       <div className="flex flex-col gap-5 animate-fade-in">
-        <div className="flex flex-col gap-3">
+        
+        <div className="flex items-start gap-3 bg-slate-50 border border-slate-200 p-4 rounded-xl">
+          <input
+            type="checkbox"
+            id="age-consent"
+            checked={ageConsent}
+            onChange={(e) => setAgeConsent(e.target.checked)}
+            className="mt-1 w-4 h-4 text-brand-accent-600 rounded border-gray-300 focus:ring-brand-accent-500 cursor-pointer"
+          />
+          <label htmlFor="age-consent" className="text-xs text-gray-700 leading-relaxed cursor-pointer select-none">
+            I confirm that I am <strong>18 years or older</strong>, or I have <strong>parental consent</strong> to use this platform. I also agree to the <a href="/terms" target="_blank" className="text-brand-accent-600 hover:underline">Terms of Service</a> and <a href="/privacy" target="_blank" className="text-brand-accent-600 hover:underline">Privacy Policy</a>.
+          </label>
+        </div>
+
+        <div className="flex flex-col gap-3 relative">
+          {!ageConsent && (
+            <div className="absolute inset-0 z-30 cursor-not-allowed" title="Please check the consent box above to continue" />
+          )}
           <a
-            href="/auth/login"
-            className="w-full flex items-center justify-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3.5 text-sm font-semibold text-gray-700 shadow-sm transition-all duration-150 hover:border-gray-300 hover:bg-gray-50 hover:shadow-md active:scale-[0.98] z-20 relative"
+            href={ageConsent ? "/auth/login" : "#"}
+            onClick={(e) => {
+              if (!ageConsent) e.preventDefault();
+            }}
+            className={`w-full flex items-center justify-center gap-3 rounded-xl border px-4 py-3.5 text-sm font-semibold shadow-sm transition-all duration-150 relative
+              ${ageConsent 
+                ? 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50 hover:shadow-md active:scale-[0.98] z-20' 
+                : 'border-gray-100 bg-gray-50 text-gray-400 opacity-60 z-10'}`}
             style={{ minHeight: "52px" }}
           >
             <GoogleIcon />
@@ -171,16 +196,16 @@ function LoginForm() {
 
           <button
             type="submit"
-            disabled={!emailInput || !emailInput.includes("@")}
-            className="ep-btn-primary w-full py-3.5 text-base disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!emailInput || !emailInput.includes("@") || !ageConsent}
+            className={`w-full py-3.5 text-base rounded-xl font-bold transition-all ${
+              !ageConsent || !emailInput || !emailInput.includes("@")
+                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                : "ep-btn-primary"
+            }`}
           >
             Continue with Email
           </button>
         </form>
-
-        <p className="text-xs text-center text-gray-600 mt-2 leading-relaxed">
-          By continuing, you agree to our <a href="/terms" target="_blank" className="text-brand-accent-600 hover:underline">Terms of Service</a>, <a href="/privacy" target="_blank" className="text-brand-accent-600 hover:underline">Privacy Policy</a>, and confirm you are 18 or older.
-        </p>
       </div>
     );
   }
@@ -307,7 +332,7 @@ export default function LoginPage() {
         <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full opacity-20 pointer-events-none" style={{ background: "radial-gradient(circle, #FFB800, transparent 70%)" }} aria-hidden="true" />
         <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full opacity-15 pointer-events-none" style={{ background: "radial-gradient(circle, #F5A623, transparent 70%)" }} aria-hidden="true" />
         <p className="relative text-xs font-semibold uppercase tracking-widest opacity-70 mb-1">Welcome back</p>
-        <h1 className="relative text-2xl font-bold leading-tight mb-1">Sign in to ExamPilot</h1>
+        <h1 className="relative text-2xl font-bold leading-tight mb-1">Sign in to Jishnu</h1>
         <p className="relative text-sm opacity-75">Your personalised study planner awaits.</p>
       </div>
 

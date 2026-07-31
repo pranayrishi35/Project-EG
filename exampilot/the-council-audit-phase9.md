@@ -1,8 +1,8 @@
-# ExamPilot — The Council: Full-Spectrum Risk & Failure Audit
+# Jishnu — The Council: Full-Spectrum Risk & Failure Audit
 
 ## Purpose
 
-Identify every meaningful way ExamPilot could break, be exploited, lose a user's trust, or create legal exposure — across security, data privacy, UI/UX, error handling, legal/compliance, and business continuity. This is a standalone audit phase, separate from and complementary to the v5 feature phases (5–8). Treat it as **Phase 9 — Risk & Resilience Audit**, run either alongside Phase 7 or immediately after it.
+Identify every meaningful way Jishnu could break, be exploited, lose a user's trust, or create legal exposure — across security, data privacy, UI/UX, error handling, legal/compliance, and business continuity. This is a standalone audit phase, separate from and complementary to the v5 feature phases (5–8). Treat it as **Phase 9 — Risk & Resilience Audit**, run either alongside Phase 7 or immediately after it.
 
 **Ground rule that overrides everything else in this document: every finding must be grounded in something actually found in the repository — a specific file, a specific line, a reproducible test, or an actual screenshot — not a generic security-checklist statement.** If a persona wants to raise "SQL injection risk" or "missing rate limiting" as a concern, it must first grep/read the actual code and either (a) point to the specific vulnerable line, or (b) explicitly label the finding `[UNVERIFIED HYPOTHESIS — requires codebase check]` and then go check it before it reaches the Chairman. Findings that are just restated best-practice checklists without evidence get discarded, not passed up — five generic lists is worse than one grounded one.
 
@@ -35,7 +35,7 @@ Identify every meaningful way ExamPilot could break, be exploited, lose a user's
 
 ### 🌱 The Expansionist — find the gaps nobody's filled yet
 **Mandate:** Look for what's structurally *missing*, not what's broken — the absence of something a regulator, a competitor, or a careful user would expect to exist.
-- Legal/compliance gaps: is there a real Privacy Policy and Terms of Service, and do they accurately describe what the app actually does (not boilerplate)? Given this targets Indian defense-exam aspirants, does it need to address India's Digital Personal Data Protection Act (DPDP) obligations? Is there a clear disclaimer that ExamPilot is an independent prep tool, **not affiliated with or endorsed by** the UPSC, Indian Air Force, Army, or Navy (trademark/misrepresentation exposure if this isn't explicit)?
+- Legal/compliance gaps: is there a real Privacy Policy and Terms of Service, and do they accurately describe what the app actually does (not boilerplate)? Given this targets Indian defense-exam aspirants, does it need to address India's Digital Personal Data Protection Act (DPDP) obligations? Is there a clear disclaimer that Jishnu is an independent prep tool, **not affiliated with or endorsed by** the UPSC, Indian Air Force, Army, or Navy (trademark/misrepresentation exposure if this isn't explicit)?
 - Age/minor considerations: aspirants for NDA can be as young as 16–17. Does anything in data collection, marketing language, or account creation need special handling for users who may be minors?
 - Monitoring/observability gaps: if the production auth-bypass guard, rate limiter, or payment flow (if any) silently failed in production right now, would anyone find out, or would it just quietly stop working? Is there any error-tracking/alerting service wired in at all?
 - Business continuity: single points of failure (Supabase, Vercel, the AI provider) — if any one of these has an outage or the AI API key hits a billing cap, what does the user actually see? A graceful message, or a raw crash?

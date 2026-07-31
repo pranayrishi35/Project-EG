@@ -5,6 +5,7 @@ import { createClient } from "@/utils/supabase/server";
 import { checkAndDeductCredits } from "@/lib/creditManager";
 import { robustJsonParse } from "@/lib/robustJsonParse";
 import { getWeakestSubjects } from "@/lib/weakSubjects";
+import { checkAiRateLimit } from "@/lib/aiRateLimit";
 
 export interface Flashcard {
   question: string;
@@ -22,6 +23,15 @@ export async function generateFlashcards(): Promise<GenerateFlashcardsResult> {
 
   if (authError || !user) {
     return { success: false, error: "You must be signed in." };
+  }
+
+  // Per-user AI rate limit: shared 20 req/min ceiling across all AI surfaces
+  // (chat, coach, cheat sheet, flashcards, test strategy, study plan). One
+  // shared budget per user intentionally — prevents billing exhaustion regardless
+  // of which surface is hammered.
+  const aiRate = await checkAiRateLimit(user.id);
+  if (!aiRate.success) {
+    return { success: false, error: "AI_RATE_LIMIT_EXCEEDED" };
   }
 
   // Fetch the most recent study plan for context

@@ -1,18 +1,18 @@
 # Internal Privacy Impact Assessment (PIA)
 
-**Project:** ExamPilot Platform  
+**Project:** Jishnu Platform  
 **Owner:** Principal Security Architect & Data Governance Officer  
 **Date:** July 15, 2026  
 
 ---
 
 ## 1. Executive Summary
-This Privacy Impact Assessment (PIA) evaluates the data lifecycle and privacy risks associated with the ExamPilot EdTech SaaS platform. Our architecture utilizes a Next.js frontend hosted on Vercel Edge, a Supabase PostgreSQL backend, and external integrations with the Google Gemini API. This document focuses heavily on protecting Personally Identifiable Information (PII) and mitigating risks tied to third-party LLM processing.
+This Privacy Impact Assessment (PIA) evaluates the data lifecycle and privacy risks associated with the Jishnu EdTech SaaS platform. Our architecture utilizes a Next.js frontend hosted on Vercel Edge, a Supabase PostgreSQL backend, and external integrations with the Google Gemini API. This document focuses heavily on protecting Personally Identifiable Information (PII) and mitigating risks tied to third-party LLM processing.
 
 ---
 
 ## 2. Data Catalog
-The following data elements are collected, processed, and stored within the ExamPilot ecosystem:
+The following data elements are collected, processed, and stored within the Jishnu ecosystem:
 
 - **Identifiable Data (PII):** 
   - User Full Name (via Google OAuth)
@@ -47,8 +47,8 @@ Our "Tactical Coach" relies on the Google Gemini API to parse syllabi and incorr
 ### Mitigation Strategies
 
 > [!CAUTION]
-> **PII Stripping Protocol:** ExamPilot employs a regex-based `sanitizePrompt()` utility before Vercel backend routes dispatch payloads to the Gemini API.
+> **PII Stripping Protocol:** Jishnu employs a regex-based `sanitizePrompt()` utility before Vercel backend routes dispatch payloads to the Gemini API.
 > - This utility reliably strips structured identifiers, specifically **email addresses** and **phone numbers**, replacing them with `[REDACTED_EMAIL]` and `[REDACTED_PHONE]`.
 > - **Limitation Acknowledgment:** This regex layer does **not** reliably catch unstructured PII, such as free-text names (e.g., "Rahul" or "Priya Sharma") that a user might type into the chat box. Full name-redaction would require a complex Named Entity Recognition (NER) approach, which is scoped for a future improvement.
 
-- **Standard Developer API Usage:** ExamPilot utilizes the standard Google Gemini Developer API. We do not currently have a negotiated Vertex AI enterprise agreement. While we take steps to limit the exposure of PII, data sent via standard API keys is subject to Google's standard developer terms. We recommend users do not upload highly sensitive personal documents (e.g., identity cards) masquerading as syllabi.
+- **Standard Developer API Usage:** Jishnu utilizes the standard Google Gemini Developer API. We do not currently have a negotiated Vertex AI enterprise agreement. While we take steps to limit the exposure of PII, data sent via standard API keys is subject to Google's standard developer terms. We recommend users do not upload highly sensitive personal documents (e.g., identity cards) masquerading as syllabi.

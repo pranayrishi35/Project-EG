@@ -1,6 +1,6 @@
-# ExamPilot v5 — Claude Code Handoff & Governing Protocols (Phase 6 Complete -> Phase 7 Transfer)
+# Jishnu v5 — Claude Code Handoff & Governing Protocols (Phase 6 Complete -> Phase 7 Transfer)
 
-Welcome, Claude Code. You are taking over engineering and verification for **ExamPilot v5**, an AI-powered study flight deck for defense and competitive examinations. 
+Welcome, Claude Code. You are taking over engineering and verification for **Jishnu v5**, an AI-powered study flight deck for defense and competitive examinations. 
 
 You are picking up at the boundary between **Phase 6 (Onboarding Funnel Complete & Verified)** and **Phase 7 (Trust Layer Hardening & Token Discipline Cleanup)**. Before making a single edit for Phase 7, you are required to conduct an independent, cold-slate rebuild and empirical re-verification of the project to ensure no artifacts, dev cache contention, or hidden regressions persist.
 
@@ -8,7 +8,7 @@ You are picking up at the boundary between **Phase 6 (Onboarding Funnel Complete
 
 ## 1. Governing Documents & Required Reading
 Before taking any action, you must read the actual governing specification and infrastructure files directly. Do not rely on chat history or verbal summaries:
-1. **`exampilot-master-prompt-v5.md`**: The supreme governing specification for Phases 5 through 8, detailing the language accessibility pass, single theme commitments, onboarding funnel requirements, trust layer elements, and the canonical Definition of Done.
+1. **`Jishnu-master-prompt-v5.md`**: The supreme governing specification for Phases 5 through 8, detailing the language accessibility pass, single theme commitments, onboarding funnel requirements, trust layer elements, and the canonical Definition of Done.
 2. **`CLAUDE.md`, `DESIGN_SYSTEM.md`, and `context.md`**: Foundational repository rules, style token definitions, and technology constraints (pure Tailwind, zero external UI libraries like Shadcn/MUI, no React 19 hooks, NodeJS runtime enforcement for middleware).
 3. **`next.config.mjs` & `playwright.prod.config.ts`**: The edge runtime sanitizer configuration and zero-eval production test runner.
 4. **`verify-prod-infra.mjs`**: The automated rate-limiting N+1 burst and mock-auth leak scenario audit script.
@@ -73,7 +73,7 @@ npx -y kill-port 3001
 ---
 
 ## 4. Upcoming Scope: Phase 7 (Trust Layer & Token Hardening)
-Once your cold-audit report is reviewed and signed off by the user, proceed to execute Phase 7 as outlined in Part 5, Part 6, and Part 7 of `exampilot-master-prompt-v5.md`:
+Once your cold-audit report is reviewed and signed off by the user, proceed to execute Phase 7 as outlined in Part 5, Part 6, and Part 7 of `Jishnu-master-prompt-v5.md`:
 1. **Token Discipline Audit:** Run a comprehensive ripgrep survey across `src/` for ad-hoc opacity utilities and arbitrary hex values (e.g. `bg-slate-900/40`, `border-slate-800/60`). Reconcile and clean up these ad-hoc modifiers by mapping them to standardized canonical design system tokens in `DESIGN_SYSTEM.md` and `tailwind.config.ts`.
 2. **Trust Layer Enhancements:** Review site-wide trust signals, credibility explanations ("who built this and why"), findable support/FAQ accordions, data/privacy transparency notes, and clear differentiation statements without removing or impairing your strongest conversion driver—the interactive diagnostic mock test integrated into Step 2 of the `/welcome` onboarding funnel.
 3. **Chairman Verdict Gate:** Submit your completed Phase 7 changes to a merciless, honest Chairman verdict scoring pass against the canonical six categories. Ensure all findings are backed by verbatim diagnostic logs and personally verified screenshot photography.

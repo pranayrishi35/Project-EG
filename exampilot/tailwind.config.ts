@@ -1,7 +1,7 @@
 import type { Config } from "tailwindcss";
 
 /**
- * ExamPilot design tokens (Phase 1 — Foundation).
+ * Jishnu design tokens (Phase 1 — Foundation).
  *
  * The new design-system tokens live under the `brand` color namespace and the
  * `display`/`body`/`mono` font families so they cannot collide with any of the

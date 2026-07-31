@@ -12,7 +12,7 @@ const PerformanceDashboard = dynamic(() => import("@/components/PerformanceDashb
   loading: () => <div className="w-full h-[320px] animate-pulse bg-slate-200 dark:bg-slate-800 rounded-xl mb-6" />
 });
 export const metadata = {
-  title: "Practice Hub | ExamPilot",
+  title: "Practice Hub | Jishnu",
   description: "Mock Tests, Mini-Tests, and Daily Flashcards",
 };
 

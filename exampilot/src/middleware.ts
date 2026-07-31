@@ -22,7 +22,15 @@ export async function middleware(request: NextRequest) {
       if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
         try {
           // Pure Edge HTTP fetch to Vercel KV / Upstash REST API (zero Node.js dependencies in Edge Runtime)
-          const ip = request.ip ?? request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip") ?? "127.0.0.1";
+          // In production (Vercel), trust only the proxy-injected request.ip — it
+          // cannot be spoofed via headers. The x-forwarded-for / x-real-ip fallbacks
+          // are kept for local dev only where request.ip is typically undefined.
+          // IMPORTANT: Verify request.ip is populated in Vercel deployment logs
+          // before marking Finding #11 resolved in PROJECT_STATUS.md.
+          const ip =
+            process.env.NODE_ENV === "production"
+              ? (request.ip ?? "127.0.0.1")
+              : (request.ip ?? request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip") ?? "127.0.0.1");
           const windowKey = `ratelimit_auth_${ip}_${Math.floor(Date.now() / 900000)}`;
           const url = `${process.env.KV_REST_API_URL}/pipeline`;
           const token = process.env.KV_REST_API_TOKEN;
@@ -166,7 +174,8 @@ export const config = {
      * - _next/image   (image optimisation)
      * - favicon.ico, sitemap.xml, robots.txt
      * - public folder assets (icons, manifest, sw.js)
+     * - monitoring (Sentry tunnel)
      */
-    "/((?!_next/static|_next/image|favicon.ico|icons|manifest.json|sw.js|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|icons|manifest.json|sw.js|monitoring|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

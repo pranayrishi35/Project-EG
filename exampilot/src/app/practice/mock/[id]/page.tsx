@@ -7,7 +7,7 @@ import { cookies } from "next/headers";
 import { isMockAuthAllowed } from "@/lib/testAuthGuard";
 
 export const metadata = {
-  title: "Mock Test Environment | ExamPilot",
+  title: "Mock Test Environment | Jishnu",
 };
 
 export default async function MockTestPage({ params }: { params: { id: string } }) {
@@ -17,7 +17,7 @@ export default async function MockTestPage({ params }: { params: { id: string } 
   if (testCookie && isMockAuthAllowed()) {
     user = { 
       id: '12345678-1234-1234-1234-123456789012', 
-      email: 'pilot@exampilot.com',
+      email: 'pilot@jishnu.in',
       user_metadata: { full_name: 'Squadron Leader' }
     } as any;
   } else {

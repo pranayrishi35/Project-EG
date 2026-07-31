@@ -1,7 +1,7 @@
-# ExamPilot — Comprehensive Motion System & Animation Architecture (MOTION_SYSTEM.md)
+# Jishnu — Comprehensive Motion System & Animation Architecture (MOTION_SYSTEM.md)
 
 ## Purpose & Core Philosophy
-The ExamPilot motion system operates on a cohesive **Tactical Aviation Flight Deck / Mission Control metaphor**. Motion across the platform is designed to feel **precise, responsive, buoyant, and deeply intentional**, never superfluous or distracting. Every hover effect, section transition, navigation bar transformation, and modal surface must derive from a single unified physics language rather than disconnected ad-hoc effects.
+The Jishnu motion system operates on a cohesive **Tactical Aviation Flight Deck / Mission Control metaphor**. Motion across the platform is designed to feel **precise, responsive, buoyant, and deeply intentional**, never superfluous or distracting. Every hover effect, section transition, navigation bar transformation, and modal surface must derive from a single unified physics language rather than disconnected ad-hoc effects.
 
 ---
 

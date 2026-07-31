@@ -3,8 +3,8 @@ import fs from "fs";
 import path from "path";
 
 export const metadata = {
-  title: "Acceptable Usage Policy | ExamPilot",
-  description: "ExamPilot Acceptable Usage Policy",
+  title: "Acceptable Usage Policy | Jishnu",
+  description: "Jishnu Acceptable Usage Policy",
 };
 
 export default async function AupPage() {

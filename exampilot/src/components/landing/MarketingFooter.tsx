@@ -12,7 +12,7 @@ export default function MarketingFooter() {
         {/* Logo */}
         <Link
           href="/"
-          aria-label="ExamPilot home"
+          aria-label="Jishnu home"
           className="flex items-center gap-2 outline-none focus-visible:ring-2 focus-visible:ring-brand-accent-400 rounded-lg"
         >
           <div
@@ -25,7 +25,7 @@ export default function MarketingFooter() {
             </svg>
           </div>
           <span className="text-sm font-bold tracking-tight text-brand-ink-primary">
-            Exam<span className="text-brand-accent-500">Pilot</span>
+            Jishnu
           </span>
         </Link>
 
@@ -49,12 +49,12 @@ export default function MarketingFooter() {
 
         <div className="w-full text-center py-4 border-t border-brand-border-subtle my-2 text-xs text-brand-ink-muted leading-relaxed">
           <p>
-            <strong>Disclaimer:</strong> ExamPilot is an independent educational platform and is <strong>not affiliated with, endorsed by, or sponsored by</strong> the Union Public Service Commission (UPSC), the Indian Air Force, the Indian Army, the Indian Navy, or any government examination authority. All exam names and acronyms (e.g., AFCAT, CDS, NDA) belong solely to their respective formal institutions and are used for identification purposes only.
+            <strong>Disclaimer:</strong> Jishnu is an independent educational platform and is <strong>not affiliated with, endorsed by, or sponsored by</strong> the Union Public Service Commission (UPSC), the Indian Air Force, the Indian Army, the Indian Navy, or any government examination authority. All exam names and acronyms (e.g., AFCAT, CDS, NDA) belong solely to their respective formal institutions and are used for identification purposes only.
           </p>
         </div>
 
         <p className="text-xs text-brand-ink-muted">
-          &copy; {new Date().getFullYear()} ExamPilot
+          &copy; {new Date().getFullYear()} Jishnu
         </p>
       </div>
     </footer>

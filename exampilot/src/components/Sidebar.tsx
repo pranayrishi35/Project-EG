@@ -50,9 +50,9 @@ export default function Sidebar({ isAdmin }: { isAdmin?: boolean }) {
       <div className="p-6 border-t border-brand-border-subtle">
         <div className="flex items-center gap-3 opacity-60">
           <div className="w-8 h-8 rounded-lg bg-brand-accent-500/20 flex items-center justify-center">
-            <span className="text-brand-accent-500 font-black text-xs">EP</span>
+            <span className="text-brand-accent-500 font-black text-xs">J</span>
           </div>
-          <span className="text-sm font-bold tracking-widest text-brand-ink-inverse uppercase">ExamPilot</span>
+          <span className="text-sm font-bold tracking-widest text-brand-ink-inverse uppercase">Jishnu</span>
         </div>
       </div>
     </aside>

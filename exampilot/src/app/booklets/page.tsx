@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { getBookletDirectory } from "@/app/actions/getBooklets";
 import { Newspaper, Inbox, FileText } from "lucide-react";
 
-export const metadata = { title: "Study Booklets | ExamPilot" };
+export const metadata = { title: "Study Booklets | Jishnu" };
 export const revalidate = 3600;
 
 async function DirectoryContent() {

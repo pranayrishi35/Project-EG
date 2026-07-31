@@ -3,8 +3,8 @@ import fs from "fs";
 import path from "path";
 
 export const metadata = {
-  title: "Cookie Policy | ExamPilot",
-  description: "ExamPilot Cookie Policy",
+  title: "Cookie Policy | Jishnu",
+  description: "Jishnu Cookie Policy",
 };
 
 export default async function CookiesPage() {

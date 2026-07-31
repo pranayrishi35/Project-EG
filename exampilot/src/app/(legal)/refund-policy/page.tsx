@@ -3,8 +3,8 @@ import fs from "fs";
 import path from "path";
 
 export const metadata = {
-  title: "Refund Policy | ExamPilot",
-  description: "ExamPilot Refund & Cancellation Policy",
+  title: "Refund Policy | Jishnu",
+  description: "Jishnu Refund & Cancellation Policy",
 };
 
 export default async function RefundPolicyPage() {

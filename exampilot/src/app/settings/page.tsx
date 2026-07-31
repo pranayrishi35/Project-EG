@@ -7,8 +7,8 @@ import DeleteAccountForm from "@/components/DeleteAccountForm";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Settings — ExamPilot",
-  description: "Manage your ExamPilot account and preferences.",
+  title: "Settings — Jishnu",
+  description: "Manage your Jishnu account and preferences.",
 };
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
@@ -193,7 +193,7 @@ export default async function SettingsPage() {
       </Section>
 
       <p className="text-center text-xs text-slate-700 -mt-2">
-        ExamPilot · Powered by Google Gemini
+        Jishnu · Powered by Google Gemini
       </p>
     </div>
   );

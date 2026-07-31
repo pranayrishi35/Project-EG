@@ -9,7 +9,7 @@ import type { Metadata } from "next";
 // ─── Metadata ──────────────────────────────────────────────────────────────────
 
 export const metadata: Metadata = {
-  title: "Study Plan — ExamPilot",
+  title: "Study Plan — Jishnu",
   description: "Your AI-generated day-by-day study schedule.",
 };
 

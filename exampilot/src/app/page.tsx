@@ -16,7 +16,7 @@ const CreatePlanForm = dynamic(() => import("@/components/CreatePlanForm"), {
 });
 
 export const metadata: Metadata = {
-  title: "ExamPilot — AI Study Planner",
+  title: "Jishnu — AI Study Planner",
   description:
     "Upload your syllabus and get a personalised day-by-day study schedule powered by Gemini AI.",
 };

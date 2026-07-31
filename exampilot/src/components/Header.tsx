@@ -105,7 +105,7 @@ export default async function Header() {
           href="/"
           data-testid="header-title"
           className="flex items-center gap-2 outline-none focus-visible:ring-2 focus-visible:ring-brand-accent-400 rounded-lg shrink-0"
-          aria-label="ExamPilot home"
+          aria-label="Jishnu home"
         >
           <div
             className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
@@ -126,7 +126,7 @@ export default async function Header() {
             </svg>
           </div>
           <span className="text-lg font-bold tracking-tight text-gray-900 hidden sm:block">
-            Exam<span className="text-brand-accent-500">Pilot</span>
+            Jishnu
           </span>
         </Link>
 
@@ -134,7 +134,7 @@ export default async function Header() {
         {userEmail ? (
           <div className="flex items-center gap-2.5 overflow-x-auto no-scrollbar pl-4">
             <a 
-              href="mailto:support@exampilot.in?subject=[Beta%20Feedback]%20ExamPilot"
+              href="mailto:support@exampilot.in?subject=[Beta%20Feedback]%20Jishnu"
               className="hidden sm:flex items-center gap-1.5 h-9 px-3.5 bg-amber-100 border-[0.5px] border-amber-200 rounded-full text-xs font-bold text-amber-700 shadow-sm hover:bg-amber-200 transition-colors focus-visible:ring-2 focus-visible:ring-amber-400 outline-none whitespace-nowrap shrink-0"
             >
               <MessageSquare width={14} height={14} strokeWidth={1.75} aria-hidden="true" className="flex-shrink-0" />

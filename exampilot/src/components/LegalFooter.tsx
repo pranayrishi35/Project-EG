@@ -26,17 +26,17 @@ export function LegalFooter() {
               <div className="text-sm text-gray-600 space-y-1">
                 <p><strong>Name:</strong> Pranay Rishi</p>
                 <p><strong>Email:</strong> atpr3105@gmail.com</p>
-                <p><strong>Address:</strong> ExamPilot Registered Office, Bengaluru, Karnataka, India</p>
+                <p><strong>Address:</strong> Jishnu Registered Office, Bengaluru, Karnataka, India</p>
               </div>
             </div>
           </div>
           <div className="pt-6 border-t border-gray-100 text-center text-xs text-gray-500 mb-6 leading-relaxed">
             <p>
-              <strong>Disclaimer:</strong> ExamPilot is an independent educational platform and is <strong>not affiliated with, endorsed by, or sponsored by</strong> the Union Public Service Commission (UPSC), the Indian Air Force, the Indian Army, the Indian Navy, or any government examination authority. All exam names and acronyms (e.g., AFCAT, CDS, NDA) belong solely to their respective formal institutions and are used for identification purposes only.
+              <strong>Disclaimer:</strong> Jishnu is an independent educational platform and is <strong>not affiliated with, endorsed by, or sponsored by</strong> the Union Public Service Commission (UPSC), the Indian Air Force, the Indian Army, the Indian Navy, or any government examination authority. All exam names and acronyms (e.g., AFCAT, CDS, NDA) belong solely to their respective formal institutions and are used for identification purposes only.
             </p>
           </div>
           <div className="pt-4 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-gray-500">
-            <p>&copy; {new Date().getFullYear()} ExamPilot. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} Jishnu. All rights reserved.</p>
             <button 
               onClick={() => setIsCookieModalOpen(true)} 
               className="hover:text-gray-900 hover:underline"
@@ -64,7 +64,7 @@ export function LegalFooter() {
               </button>
             </div>
             <p className="text-sm text-gray-600 mb-6 leading-relaxed">
-              ExamPilot currently uses only strictly necessary authentication cookies. No non-essential tracking or advertising cookies are active, so no preferences need to be managed at this time.
+              Jishnu currently uses only strictly necessary authentication cookies. No non-essential tracking or advertising cookies are active, so no preferences need to be managed at this time.
             </p>
             <button 
               onClick={() => setIsCookieModalOpen(false)}

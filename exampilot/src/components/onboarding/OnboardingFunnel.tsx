@@ -142,7 +142,7 @@ export default function OnboardingFunnel({
               <Rocket size={20} className="stroke-[2.2]" />
             </div>
             <span className="text-lg font-black tracking-tight text-white">
-              ExamPilot <span className="text-brand-accent-500 font-normal text-sm ml-1">Flight Calibration</span>
+              Jishnu <span className="text-brand-accent-500 font-normal text-sm ml-1">Flight Calibration</span>
             </span>
           </div>
           <div className="text-xs font-semibold px-3 py-1.5 rounded-full bg-brand-bg-elevated border border-brand-border-subtle/30 text-brand-ink-muted">

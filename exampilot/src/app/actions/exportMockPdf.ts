@@ -131,7 +131,7 @@ export async function exportMockPdf(examTarget: string): Promise<ExportResult> {
   const state: DrawState = { doc, page: doc.addPage([PAGE_W, PAGE_H]), y: PAGE_H - MARGIN, font, bold };
 
   // Title block
-  drawWrapped(state, `ExamPilot — ${examTarget} Full Mock Test`, { font: bold, size: 18 });
+  drawWrapped(state, `Jishnu — ${examTarget} Full Mock Test`, { font: bold, size: 18 });
   state.y -= 4;
   drawWrapped(state, `${questions.length} questions  •  ${config.marks_per_correct} marks each  •  ${config.negative_marking} negative  •  ${Math.round(config.duration_seconds / 60)} min`, { size: 10 });
   state.y -= 10;
@@ -164,7 +164,7 @@ export async function exportMockPdf(examTarget: string): Promise<ExportResult> {
 
   return {
     success: true,
-    filename: `exampilot-${stamp}-full-mock.pdf`,
+    filename: `jishnu-${stamp}-full-mock.pdf`,
     base64,
     count: questions.length,
   };

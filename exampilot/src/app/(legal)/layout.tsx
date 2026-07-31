@@ -12,7 +12,7 @@ export default function LegalLayout({
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-amber-600 to-amber-800">
-              ExamPilot
+              Jishnu
             </span>
           </Link>
           <Link href="/login" className="text-sm font-medium text-gray-600 hover:text-brand-accent-600">

@@ -1,6 +1,6 @@
-# ExamPilot Design System
+# Jishnu Design System
 
-Living reference for the ExamPilot UI makeover (Units-inspired: calm authority,
+Living reference for the Jishnu UI makeover (Units-inspired: calm authority,
 editorial confidence, restrained saffron-on-navy palette, scroll-driven craft).
 Update this file as components are built so the system doesn't drift.
 

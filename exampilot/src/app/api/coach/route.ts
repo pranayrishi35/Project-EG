@@ -54,9 +54,9 @@ export async function POST(req: Request) {
     }
 
     // White-Label AI Protocol: Persona override — identity must never leak to client.
-    const systemInstruction = `You are the ExamPilot Tactical Intelligence — a proprietary assessment engine built exclusively for defense exam candidates.
+    const systemInstruction = `You are the Jishnu Tactical Intelligence — a proprietary assessment engine built exclusively for defense exam candidates.
     Under NO circumstances should you mention Google, Gemini, OpenAI, or that you are a large language model.
-    If asked about your identity, state only: "I am ExamPilot's proprietary assessment engine."
+    If asked about your identity, state only: "I am Jishnu's proprietary assessment engine."
     Analyze the specific test result provided. The prompt contains the exam type, the score, an accuracy figure, the subjects missed, a per-subject performance breakdown, and any pacing (unattempted) signal — ground every observation in THESE numbers, never generic advice.
     You must output a structured debrief in Markdown with exactly two sections:
     ### Critical Weaknesses
@@ -79,7 +79,7 @@ export async function POST(req: Request) {
     // The credit was spent but no analysis was delivered — return it.
     if (chargedUserId) await refundCredits(chargedUserId, 1);
     return new Response(
-      'The ExamPilot Coach is currently analyzing too many student profiles. Please try again in a moment.',
+      'The Jishnu Coach is currently analyzing too many student profiles. Please try again in a moment.',
       { status: 500 }
     );
   }

@@ -88,7 +88,7 @@ export default function CheatSheetView({ planId, onClose }: { planId: string; on
         {/* Print Header */}
         <div className="hidden print:block mb-8 border-b-2 border-black pb-4">
           <h1 className="text-3xl font-black">AI Cheat Sheet</h1>
-          <p className="text-sm font-bold text-gray-500 mt-1">ExamPilot Revision Notes</p>
+          <p className="text-sm font-bold text-gray-500 mt-1">Jishnu Revision Notes</p>
         </div>
 
         {/* Masonry Grid */}

@@ -1,0 +1,74 @@
+name: Automated Database Backup
+
+on:
+  schedule:
+    - cron: '0 2 * * *' # Daily at 2 AM UTC
+  workflow_dispatch: # Allow manual trigger for testing
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Run backup script
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: bash scripts/pg_dump_backup.sh
+
+      - name: Upload backup artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: db-backup-${{ github.run_id }}
+          path: backups/*.sql
+          retention-days: 7
+
+  verify_backup:
+    needs: backup
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: scratch_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Download backup artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: db-backup-${{ github.run_id }}
+          path: backups/
+
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Restore and Verify
+        env:
+          PGPASSWORD: test_password
+        run: |
+          BACKUP_FILE=$(ls backups/*.sql | head -n 1)
+          echo "Restoring $BACKUP_FILE into scratch DB..."
+          psql -h localhost -U test_user -d scratch_db -f "$BACKUP_FILE" > /dev/null
+          
+          echo "Running sanity checks..."
+          # Check if key tables exist and have at least the expected schema/rows
+          TABLE_COUNT=$(psql -h localhost -U test_user -d scratch_db -t -c "SELECT count(*) FROM information_schema.tables WHERE table_schema = 'public';")
+          if [ "$TABLE_COUNT" -lt "2" ]; then
+            echo "Verification failed: Expected at least 2 tables, found $TABLE_COUNT."
+            exit 1
+          fi
+          
+          echo "Backup restore verification passed successfully!"

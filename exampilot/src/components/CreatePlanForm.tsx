@@ -199,7 +199,7 @@ export default function CreatePlanForm({ streak, compact = false }: { streak: nu
             <div>
               <p className="text-xs font-semibold uppercase tracking-widest opacity-70 mb-1">New Plan</p>
               <h1 id="create-plan-heading" className="text-2xl font-bold leading-tight mb-1">Create Study Plan</h1>
-              <p className="text-sm opacity-75 leading-relaxed">Upload your syllabus and let ExamPilot craft a personalised day-by-day schedule.</p>
+              <p className="text-sm opacity-75 leading-relaxed">Upload your PDF syllabus or image and let Jishnu craft a personalised, day-by-day plan so you know exactly what to study when.</p>
             </div>
             {/* Streak badge — top-right of hero */}
             <div className="flex-shrink-0 mt-0.5">

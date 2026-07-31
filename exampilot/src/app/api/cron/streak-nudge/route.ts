@@ -80,7 +80,7 @@ export async function GET(req: NextRequest) {
           const firstName = user.full_name?.split(" ")[0] || "Pilot";
           
           await resend!.emails.send({
-            from: "ExamPilot <notifications@exampilot.in>",
+            from: 'Jishnu <notifications@exampilot.in>',
             to: [user.email],
             subject: `Your ${user.current_streak}-day streak ends at midnight!`,
             react: StreakNudgeEmail({ firstName, streakCount: user.current_streak }),

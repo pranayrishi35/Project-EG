@@ -2,7 +2,7 @@
 
 **Effective Date:** July 15, 2026
 
-This Acceptable Usage Policy ("AUP") outlines the strict rules and behavioral standards required when using the **ExamPilot** platform. This AUP is incorporated by reference into our Terms of Service. By using ExamPilot, you agree to comply with this policy at all times.
+This Acceptable Usage Policy ("AUP") outlines the strict rules and behavioral standards required when using the **Jishnu** platform. This AUP is incorporated by reference into our Terms of Service. By using Jishnu, you agree to comply with this policy at all times.
 
 ---
 
@@ -24,7 +24,7 @@ Any attempt to compromise the integrity of our platform infrastructure will resu
 - Attempt to bypass, exploit, or breach our **Supabase Row Level Security (RLS)** architecture.
 - Access, view, or modify another user's data by any means, including manipulating identifiers, tokens, session data, or API requests (IDOR attacks).
 - Reverse-engineer or decompile client-side application code to extract non-public API contracts, scoring logic, or answer keys.
-- Probe, scan, or test the vulnerability of the ExamPilot system or Vercel hosting environment.
+- Probe, scan, or test the vulnerability of the Jishnu system or Vercel hosting environment.
 - Interfere with or disrupt the access of any user, host, or network (e.g., DDoS attacks).
 
 ### D. Account Abuse
@@ -35,12 +35,12 @@ Any attempt to compromise the integrity of our platform infrastructure will resu
 
 ## 2. Enforcement and Termination
 
-ExamPilot employs automated and manual monitoring to ensure compliance with this AUP. 
+Jishnu employs automated and manual monitoring to ensure compliance with this AUP. 
 
 > [!IMPORTANT]
 > **Zero Tolerance Policy:** We reserve the right to immediately suspend or permanently terminate your account **without prior notice and without refund** if you are found to be in violation of any clause in this Acceptable Usage Policy.
 
-Where applicable, ExamPilot also reserves the right to report malicious activities (such as severe data theft or security breaches) to relevant law enforcement authorities.
+Where applicable, Jishnu also reserves the right to report malicious activities (such as severe data theft or security breaches) to relevant law enforcement authorities.
 
 ---
 

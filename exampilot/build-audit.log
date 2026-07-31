@@ -1,0 +1,101 @@
+﻿
+> jishnu@0.1.0 build
+> next build
+
+  ▲ Next.js 14.2.35
+  - Environments: .env.local
+
+   Creating an optimized production build ...
+ ✓ (pwa) Compiling for server...
+=== WEBPACK COMPILATION [name: unknown, runtime: nodejs, dev: false] devtool before: false
+=== WEBPACK COMPILATION [name: unknown] devtool after: false
+ ✓ (pwa) Compiling for server...
+=== WEBPACK COMPILATION [name: unknown, runtime: edge, dev: false] devtool before: false
+=== WEBPACK COMPILATION [name: unknown] devtool after: false
+ ✓ (pwa) Compiling for client (static)...
+ ○ (pwa) Service worker: P:\Project-EG\exampilot\public\sw.js
+ ○ (pwa)   URL: /sw.js
+ ○ (pwa)   Scope: /
+ ○ (pwa) This app will fallback to these precached routes when fetching from the cache and the network fails:
+ ○ (pwa)   Documents (pages): /~offline
+ ○ (pwa) Custom runtimeCaching array found, using it instead of the default one.
+=== WEBPACK COMPILATION [name: unknown, runtime: none, dev: false] devtool before: false
+=== WEBPACK COMPILATION [name: unknown] devtool after: false
+node.exe : <w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (106kiB) impacts deserialization 
+performance (consider using Buffer instead and decode when needed)
+At C:\Program Files\nodejs\npm.ps1:29 char:3
++   & $NODE_EXE $NPM_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (<w> [webpack.ca...de when needed):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (253kiB) impacts deserialization performance 
+(consider using Buffer instead and decode when needed)
+ ⚠ Compiled with warnings
+
+./node_modules/@supabase/supabase-js/dist/index.mjs
+A Node.js API is used (process.version at line: 27) which is not supported in the Edge Runtime.
+Learn more: https://nextjs.org/docs/api-reference/edge-runtime
+
+Import trace for requested module:
+./node_modules/@supabase/supabase-js/dist/index.mjs
+./node_modules/@supabase/ssr/dist/module/createBrowserClient.js
+./node_modules/@supabase/ssr/dist/module/index.js
+
+   Skipping linting
+   Checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/30) ...
+   Generating static pages (7/30) 
+   Generating static pages (14/30) 
+   Generating static pages (22/30) 
+ ✓ Generating static pages (30/30)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                              Size     First Load JS
+┌ ƒ /                                    49.1 kB         197 kB
+├ ƒ /_not-found                          179 B          90.4 kB
+├ ƒ /~offline                            1.75 kB         101 kB
+├ ƒ /admin                               12.5 kB         103 kB
+├ ƒ /api/chat                            0 B                0 B
+├ ƒ /api/coach                           0 B                0 B
+├ ƒ /api/cron/fetch-news                 0 B                0 B
+├ ƒ /api/cron/generate-mocks             0 B                0 B
+├ ƒ /api/cron/purge                      0 B                0 B
+├ ƒ /api/cron/streak-nudge               0 B                0 B
+├ ƒ /aup                                 179 B          90.4 kB
+├ ƒ /auth/callback                       0 B                0 B
+├ ƒ /auth/login                          0 B                0 B
+├ ƒ /booklets                            865 B          99.8 kB
+├ ƒ /booklets/[exam]/[subject]           2.94 kB         102 kB
+├ ƒ /consent                             1.31 kB        91.5 kB
+├ ƒ /cookies                             179 B          90.4 kB
+├ ƒ /flashcards                          2.97 kB         102 kB
+├ ƒ /login                               177 B          95.4 kB
+├ ƒ /news                                4.13 kB        99.5 kB
+├ ƒ /planner                             2.92 kB         107 kB
+├ ƒ /planner/[id]                        13.5 kB         104 kB
+├ ƒ /practice                            3.15 kB         102 kB
+├ ƒ /practice/current-affairs            3 kB           93.2 kB
+├ ƒ /practice/mock/[id]                  14.5 kB         218 kB
+├ ƒ /privacy                             179 B          90.4 kB
+├ ƒ /refund-policy                       179 B          90.4 kB
+├ ○ /robots.txt                          0 B                0 B
+├ ƒ /settings                            1.61 kB         106 kB
+├ ƒ /settings/recover                    747 B          90.9 kB
+├ ○ /sitemap.xml                         0 B                0 B
+├ ƒ /terms                               179 B          90.4 kB
+└ ƒ /welcome                             9.62 kB         109 kB
++ First Load JS shared by all            90.2 kB
+  ├ chunks/6997-e21a5cdf98428d43.js      34.1 kB
+  ├ chunks/fd9d1056-192ae99d857d0a0c.js  53.6 kB
+  └ other shared chunks (total)          2.44 kB
+
+
+ƒ Middleware                             84.1 kB
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+BUILD_EXIT_CODE=0

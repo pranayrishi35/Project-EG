@@ -30,7 +30,7 @@ export default function ConsentPage() {
       <div className="max-w-md w-full bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Legal Updates</h1>
         <p className="text-gray-600 mb-6 text-sm">
-          Before you can access ExamPilot, please review and accept our updated Terms of Service and Privacy Policy.
+          Before you can access Jishnu, please review and accept our updated Terms of Service and Privacy Policy.
         </p>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">

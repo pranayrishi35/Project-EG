@@ -4,6 +4,7 @@ import { GoogleGenerativeAI, Part } from "@google/generative-ai";
 import { createClient } from "@/utils/supabase/server";
 import { checkAndDeductCredits, refundCredits } from "@/lib/creditManager";
 import { checkRateLimit } from "@/lib/rateLimit";
+import { checkAiRateLimit } from "@/lib/aiRateLimit";
 import { sanitizePrompt } from "@/lib/sanitizer";
 import { robustJsonParse } from "@/lib/robustJsonParse";
 import { isGuestUser } from "@/lib/guestShield";
@@ -76,9 +77,9 @@ function daysUntilExam(examDateStr: string): number {
 
 function buildSystemPrompt(examName: string, examDate: string, daysLeft: number): string {
   return `
-You are the ExamPilot Study Intelligence — a proprietary academic planning engine built exclusively for Indian defense exam candidates.
+You are the Jishnu Study Intelligence — a proprietary academic planning engine built exclusively for Indian defense exam candidates.
 Under NO circumstances should you mention Google, Gemini, OpenAI, or that you are a large language model.
-If asked about your identity, state only: "I am ExamPilot's proprietary study planner."
+If asked about your identity, state only: "I am Jishnu's proprietary study planner."
 
 You are an elite academic counselor specializing in Indian competitive exams (AFCAT, NDA, CDS).
 
@@ -178,6 +179,15 @@ export async function generateStudyPlan(
   }
 
   // ── 2.5 Rate Limits & Credits ──────────────────────────────────────────────
+  // Per-user AI rate limit: shared 20 req/min ceiling across all AI surfaces
+  // (chat, coach, cheat sheet, flashcards, test strategy, study plan). One
+  // shared budget per user intentionally — prevents billing exhaustion regardless
+  // of which surface is hammered.
+  const aiRate = await checkAiRateLimit(user.id);
+  if (!aiRate.success) {
+    return { success: false, error: "AI_RATE_LIMIT_EXCEEDED" };
+  }
+
   const rateLimitCheck = await checkRateLimit(user.id, "generateStudyPlan", 5, 60);
   if (!rateLimitCheck.success) {
     return { success: false, error: "You are generating plans too quickly! Please wait a minute." };
@@ -265,12 +275,12 @@ export async function generateStudyPlan(
     }
   } catch (geminiError: unknown) {
     // White-Label Protocol: Log raw error server-side only — never expose provider names.
-    console.error("[ExamPilot Planner] AI engine error:", geminiError);
+    console.error("[Jishnu Planner] AI engine error:", geminiError);
     await refundCredits(user.id, CHARGED);
     return {
       success: false,
       error: 'AI_SERVICE_UNAVAILABLE',
-      message: 'The ExamPilot Study Intelligence is currently overloaded. Please try again in a few moments.'
+      message: 'The Jishnu Study Intelligence is currently overloaded. Please try again in a few moments.'
     };
   }
 

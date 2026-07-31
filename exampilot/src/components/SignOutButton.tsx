@@ -28,7 +28,7 @@ export default function SignOutButton({ fullWidth = false }: SignOutButtonProps)
         type="button"
         onClick={handleSignOut}
         disabled={isPending}
-        aria-label="Sign out of ExamPilot"
+        aria-label="Sign out of Jishnu"
         className={[
           "w-full flex items-center justify-center gap-2.5 rounded-xl py-3.5 px-6",
           "text-sm font-bold text-red-600 border-2 border-red-100 bg-red-50",
@@ -63,7 +63,7 @@ export default function SignOutButton({ fullWidth = false }: SignOutButtonProps)
       type="button"
       onClick={handleSignOut}
       disabled={isPending}
-      aria-label="Sign out of ExamPilot"
+      aria-label="Sign out of Jishnu"
       className="text-xs font-semibold text-gray-500 hover:text-red-500 transition-colors duration-150 disabled:opacity-50"
     >
       {isPending ? "Signing out…" : "Sign out"}
