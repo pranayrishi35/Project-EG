@@ -29,6 +29,10 @@ export default function DoubtPostClient({ post }: { post: DoubtPostDetail }) {
 
   function submitAnswer() {
     setError(null);
+    if (body.trim().length < 10) {
+      setError("Your answer must be at least 10 characters.");
+      return;
+    }
     startTransition(async () => {
       const res = await createDoubtAnswer({ postId: post.id, body });
       if (res.success) {
@@ -143,7 +147,7 @@ export default function DoubtPostClient({ post }: { post: DoubtPostDetail }) {
           <button
             type="button"
             onClick={submitAnswer}
-            disabled={isPending || body.trim().length < 10}
+            disabled={isPending}
             className="inline-flex items-center gap-2 rounded-xl bg-brand-accent-500 px-4 py-2 text-sm font-bold text-brand-accent-ink hover:bg-brand-accent-400 active:scale-95 disabled:opacity-50"
           >
             {isPending ? <Loader2 size={16} className="animate-spin" /> : <Send size={15} strokeWidth={2} />}

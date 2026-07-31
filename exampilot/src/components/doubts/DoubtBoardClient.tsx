@@ -225,6 +225,14 @@ function AskModal({
 
   function submitPost() {
     setError(null);
+    if (title.trim().length < 10) {
+      setError("Your question title must be at least 10 characters.");
+      return;
+    }
+    if (body.trim().length < 20) {
+      setError("Please add more details (at least 20 characters).");
+      return;
+    }
     startTransition(async () => {
       const res = await createDoubtPost({ examTrack: track, topic, title, body });
       if (res.success) {
@@ -341,7 +349,7 @@ function AskModal({
             <button
               type="button"
               onClick={submitPost}
-              disabled={isPending || title.trim().length < 10 || body.trim().length < 20}
+              disabled={isPending}
               className="ep-btn-primary disabled:opacity-50"
             >
               {isPending ? <Loader2 size={18} className="animate-spin" /> : "Post doubt"}
