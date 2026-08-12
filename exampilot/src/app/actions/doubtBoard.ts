@@ -137,10 +137,11 @@ export async function setUsername(raw: string): Promise<ActionResult> {
     return { success: false, error: "You've already set your username." };
   }
 
-  const { error: updateError } = await supabase
+  const admin = getAdminClient();
+  const { error: updateError, data: updatedData } = await admin
     .from("user_profiles")
-    .update({ username })
-    .eq("user_id", user.id);
+    .upsert({ user_id: user.id, username }, { onConflict: "user_id" })
+    .select();
 
   if (updateError) {
     // Unique-violation → handle taken.
@@ -149,6 +150,11 @@ export async function setUsername(raw: string): Promise<ActionResult> {
     }
     console.error("[doubtBoard] setUsername failed:", updateError);
     return { success: false, error: "Couldn't save your username. Please try again." };
+  }
+
+  if (!updatedData || updatedData.length === 0) {
+    console.error("[doubtBoard] setUsername failed: no profile found for user", user.id);
+    return { success: false, error: "Profile not found. Please contact support." };
   }
 
   return { success: true };
@@ -221,8 +227,9 @@ export async function createDoubtPost(input: {
     };
   }
 
-  // ── Require a public handle (set-once, non-legal-name) ──
-  const { data: profile } = await supabase
+  // 🛡️ Require a public handle (set-once, non-legal-name) 🛡️
+  const admin = getAdminClient();
+  const { data: profile } = await admin
     .from("user_profiles")
     .select("username")
     .eq("user_id", user.id)
@@ -231,8 +238,8 @@ export async function createDoubtPost(input: {
     return { success: false, error: "SET_USERNAME_REQUIRED" };
   }
 
-  // ── Insert the post ──
-  const { data: inserted, error: insertError } = await supabase
+  // 📝 Insert the post 📝
+  const { data: inserted, error: insertError } = await admin
     .from("doubt_posts")
     .insert({
       user_id: user.id,
@@ -306,7 +313,8 @@ export async function createDoubtAnswer(input: {
     return { success: false, error: "You're answering too quickly. Please slow down a little." };
   }
 
-  const { data: profile } = await supabase
+  const admin = getAdminClient();
+  const { data: profile } = await admin
     .from("user_profiles")
     .select("username")
     .eq("user_id", user.id)
@@ -315,7 +323,7 @@ export async function createDoubtAnswer(input: {
     return { success: false, error: "SET_USERNAME_REQUIRED" };
   }
 
-  const { data: inserted, error: insertError } = await supabase
+  const { data: inserted, error: insertError } = await admin
     .from("doubt_answers")
     .insert({ post_id: input.postId, user_id: user.id, body })
     .select("id")
