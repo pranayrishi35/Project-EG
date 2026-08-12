@@ -59,7 +59,7 @@ function FilePill({ file, onRemove, disabled }: { file: UploadedFile; onRemove: 
   return (
     <div id="selected-file-pill" className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mt-4 animate-fade-in">
       <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: isPDF ? "#FEF3C7" : "#F0FDF4" }} aria-hidden="true">
-        // eslint-disable-next-line jsx-a11y/alt-text
+        {/* eslint-disable-next-line jsx-a11y/alt-text */}
         {isPDF ? <FileText size={20} strokeWidth={1.75} className="text-amber-600" /> : <Image size={20} strokeWidth={1.75} className="text-emerald-600" />}
       </div>
       <div className="flex-1 min-w-0">

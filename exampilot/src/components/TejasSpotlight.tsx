@@ -55,7 +55,7 @@ export default function TejasSpotlight() {
     );
     io.observe(el);
     return () => io.disconnect();
-  }, []);
+  }, [reduceMotion]);
 
   // Drive the scripted conversation forward with typing pauses, then loop.
   useEffect(() => {
@@ -95,7 +95,7 @@ export default function TejasSpotlight() {
       cancelled = true;
       timers.forEach(clearTimeout);
     };
-  }, [started]);
+  }, [started, reduceMotion]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });

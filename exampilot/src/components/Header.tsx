@@ -99,7 +99,7 @@ export default async function Header() {
       className="print:hidden sticky top-0 z-50 bg-white/85 backdrop-blur-md border-b border-slate-900/10 shadow-[0_2px_20px_rgba(0,0,0,0.05)] transition-all duration-smooth ease-standard safe-top w-full"
       style={{ height: "var(--header-height)" }}
     >
-      <div className="flex justify-between items-center w-full px-6 py-4 max-w-7xl mx-auto">
+      <div className="flex justify-between items-center w-full h-full px-6 max-w-7xl mx-auto">
 
         {/* ── Logo ───────────────────────────────────────────────── */}
         <Link
@@ -136,21 +136,21 @@ export default async function Header() {
           <div className="flex items-center justify-end gap-3 pl-4">
             <a 
               href="mailto:support@exampilot.in?subject=[Beta%20Feedback]%20Jishnu"
-              className="hidden sm:flex items-center justify-center gap-1.5 h-12 px-4 bg-amber-100 border-[0.5px] border-amber-200 rounded-full text-sm font-bold text-amber-700 shadow-sm hover:bg-amber-200 transition-colors focus-visible:ring-2 focus-visible:ring-amber-400 outline-none whitespace-nowrap shrink-0"
+              className="hidden sm:flex items-center justify-center gap-1.5 h-10 px-4 bg-amber-100 border-[0.5px] border-amber-200 rounded-full text-sm font-bold text-amber-700 shadow-sm hover:bg-amber-200 transition-colors focus-visible:ring-2 focus-visible:ring-amber-400 outline-none whitespace-nowrap shrink-0"
             >
               <MessageSquare width={16} height={16} strokeWidth={1.75} aria-hidden="true" className="flex-shrink-0" />
               Give Feedback
             </a>
 
             {upcomingExam && (
-              <div className="hidden sm:flex items-center justify-center gap-1.5 h-12 px-4 bg-orange-50 border-[0.5px] border-orange-200 rounded-full text-sm font-bold text-orange-700 shadow-sm transition-colors whitespace-nowrap shrink-0">
+              <div className="hidden sm:flex items-center justify-center gap-1.5 h-10 px-4 bg-orange-50 border-[0.5px] border-orange-200 rounded-full text-sm font-bold text-orange-700 shadow-sm transition-colors whitespace-nowrap shrink-0">
                 <Flame width={16} height={16} strokeWidth={1.75} aria-hidden="true" className="flex-shrink-0" />
                 {upcomingExam.daysLeft === 0 ? `Today is ${upcomingExam.name}!` : `${upcomingExam.daysLeft} Days to ${upcomingExam.name}`}
               </div>
             )}
             
             {userCredits !== null && (
-              <div className={`hidden sm:flex items-center justify-center gap-1.5 h-12 px-4 border-[0.5px] rounded-full text-sm font-bold shadow-sm transition-colors whitespace-nowrap shrink-0 ${
+              <div className={`hidden sm:flex items-center justify-center gap-1.5 h-10 px-4 border-[0.5px] rounded-full text-sm font-bold shadow-sm transition-colors whitespace-nowrap shrink-0 ${
                 userCredits < LOW_CREDIT_THRESHOLD
                   ? "bg-rose-50 border-rose-200 text-rose-700"
                   : "bg-amber-50 border-amber-100 text-brand-accent-500"
@@ -165,7 +165,7 @@ export default async function Header() {
             )}
 
             {streak > 0 && (
-              <div className="hidden sm:flex items-center justify-center gap-1.5 h-12 px-4 bg-amber-50 border-[0.5px] border-amber-100 rounded-full text-sm font-bold text-orange-600 shadow-sm whitespace-nowrap shrink-0">
+              <div className="hidden sm:flex items-center justify-center gap-1.5 h-10 px-4 bg-amber-50 border-[0.5px] border-amber-100 rounded-full text-sm font-bold text-orange-600 shadow-sm whitespace-nowrap shrink-0">
                 <Flame width={16} height={16} strokeWidth={1.75} className="flex-shrink-0 text-orange-500" aria-hidden="true" />
                 <span
                   style={{
@@ -185,7 +185,7 @@ export default async function Header() {
               data-testid="header-settings-link"
               href="/settings"
               aria-label={`Account settings for ${userEmail}`}
-              className="flex items-center justify-center outline-none focus-visible:ring-2 focus-visible:ring-brand-accent-500 rounded-full shrink-0 min-w-[48px] min-h-[48px] relative"
+              className="flex items-center justify-center outline-none focus-visible:ring-2 focus-visible:ring-brand-accent-500 rounded-full shrink-0 min-w-[40px] min-h-[40px] relative"
             >
               <div
                 className="w-10 h-10 shrink-0 rounded-full flex items-center justify-center text-white text-sm font-bold transition-opacity duration-150 hover:opacity-80 shadow-sm"
