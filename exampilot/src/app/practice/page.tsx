@@ -181,7 +181,7 @@ function SkeletonLayout() {
 export default function PracticeHub() {
   return (
     <div className="flex flex-col gap-6 p-4 pt-6 pb-24 max-w-5xl mx-auto">
-      <div>
+      <div className="mb-2 sm:mb-4">
         <h1 className="text-2xl font-black text-gray-900 tracking-tight">Practice Hub</h1>
         <p className="text-sm text-gray-500 font-medium mt-1">Sharpen your skills with targeted drills.</p>
       </div>

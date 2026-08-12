@@ -141,7 +141,7 @@ export default function OnboardingFunnel({
     <div className="min-h-screen bg-brand-bg-canvas text-brand-ink-inverse font-sans antialiased pb-24 selection:bg-brand-accent-500 selection:text-brand-ink-primary overflow-x-hidden">
       {/* ── Top Navigation & Branding ── */}
       <header className="sticky top-0 z-40 bg-brand-bg-canvas/90 backdrop-blur-md border-b border-brand-border-subtle/20 px-4 py-3 sm:px-6">
-        <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
+        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-brand-bg-elevated flex items-center justify-center border border-brand-accent-500/30 text-brand-accent-500 shadow-sm">
               <Rocket size={20} className="stroke-[2.2]" />
@@ -210,7 +210,7 @@ export default function OnboardingFunnel({
               STEP 1: WELCOME & MISSION OBJECTIVE
              ───────────────────────────────────────────────────────────────── */}
           {currentStep === 1 && (
-            <div id="step-1" className="space-y-8 animate-fade-in">
+            <div id="step-1" className="space-y-8 animate-fade-in flex-1 flex flex-col justify-center min-h-[40vh] sm:min-h-0">
               <div className="space-y-3">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-500/15 text-brand-accent-500 border border-amber-500/25">
                   <Compass size={14} /> Getting Started
@@ -672,13 +672,13 @@ export default function OnboardingFunnel({
           {/* ─────────────────────────────────────────────────────────────────
               BOTTOM STEP CONTROLS (NEXT / PREV BUTTONS)
              ───────────────────────────────────────────────────────────────── */}
-          <div className="mt-10 pt-6 border-t border-slate-800/80 flex items-center justify-between gap-4">
+          <div className="mt-10 pt-6 border-t border-slate-800/80 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-4">
             {currentStep > 1 ? (
               <button
                 id="btn-prev-step"
                 type="button"
                 onClick={handlePrev}
-                className="px-5 py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-200 font-bold text-xs sm:text-sm transition-colors border border-slate-700 flex items-center gap-2"
+                className="px-5 py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-200 font-bold text-xs sm:text-sm transition-colors border border-slate-700 flex items-center justify-center sm:justify-start gap-2"
               >
                 <ArrowLeft size={16} />
                 <span>Previous Step</span>
@@ -692,7 +692,7 @@ export default function OnboardingFunnel({
                 id="btn-next-step"
                 type="button"
                 onClick={handleNext}
-                className="px-6 py-3 rounded-xl bg-brand-accent-500 hover:bg-brand-accent-600 text-brand-ink-primary font-bold text-xs sm:text-sm transition-all shadow-md shadow-brand-accent-500/20 flex items-center gap-2 active:scale-[0.98]"
+                className="px-6 py-3 rounded-xl bg-brand-accent-500 hover:bg-brand-accent-600 text-brand-ink-primary font-bold text-xs sm:text-sm transition-all shadow-md shadow-brand-accent-500/20 flex items-center justify-center sm:justify-start gap-2 active:scale-[0.98]"
               >
                 <span>Proceed to {STEP_TITLES[currentStep]}</span>
                 <ArrowRight size={16} />

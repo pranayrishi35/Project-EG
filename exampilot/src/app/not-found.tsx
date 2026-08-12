@@ -5,7 +5,7 @@ export default function NotFound() {
   return (
     <div className="min-h-[80vh] flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md bg-white border border-slate-200 rounded-3xl shadow-xl overflow-hidden text-center animate-fade-in relative">
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-slate-300 to-slate-400" aria-hidden="true" />
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-slate-300 to-slate-400 rounded-t-3xl" aria-hidden="true" />
         
         <div className="p-8 pb-6">
           <div className="w-16 h-16 bg-slate-50 text-slate-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm border border-slate-100">
@@ -30,7 +30,7 @@ export default function NotFound() {
             href="/"
             className="flex items-center justify-center w-full bg-brand-accent-500 hover:bg-amber-700 text-white font-bold py-3.5 rounded-xl shadow-[0_4px_14px_rgba(245,166,35,0.3)] transition-all active:scale-[0.98]"
           >
-            Return to Dashboard
+            Return Home
           </Link>
         </div>
       </div>

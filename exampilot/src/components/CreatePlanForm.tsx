@@ -294,7 +294,10 @@ export default function CreatePlanForm({ streak, compact = false }: { streak: nu
               onChange={(e) => setExamDate(e.target.value)}
               className="ep-input ep-date-input peer disabled:opacity-60 disabled:cursor-not-allowed" 
               aria-required="true" 
-              min={new Date().toISOString().split("T")[0]} 
+              min={new Date().toISOString().split("T")[0]}
+              inputMode="none"
+              readOnly
+              onClick={(e) => e.currentTarget.showPicker && e.currentTarget.showPicker()}
             />
             <div className="pointer-events-none absolute inset-0 rounded-xl ring-0 peer-focus:ring-2 ring-brand-accent-400 transition-all duration-200" aria-hidden="true" />
           </div>

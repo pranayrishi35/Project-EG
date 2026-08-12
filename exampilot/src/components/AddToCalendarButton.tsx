@@ -123,6 +123,7 @@ export default function AddToCalendarButton() {
                   <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 p-2">
                     <input
                       readOnly
+                      inputMode="url"
                       value={url}
                       aria-label="Calendar feed URL"
                       onFocus={(e) => e.currentTarget.select()}

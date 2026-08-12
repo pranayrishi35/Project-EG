@@ -568,6 +568,7 @@ export default function AdminDashboard() {
                         <div className="flex w-full lg:w-96 items-center shrink-0">
                           <input 
                             type="text" 
+                            inputMode="text"
                             defaultValue={item.value} 
                             onBlur={(e) => {
                               if (e.target.value !== item.value) {
@@ -1193,6 +1194,7 @@ export default function AdminDashboard() {
                     type="number"
                     min={5}
                     max={200}
+                    inputMode="numeric"
                     value={exportCount}
                     onChange={(e) => setExportCount(Math.max(5, Math.min(200, parseInt(e.target.value) || 0)))}
                     className="w-full bg-slate-950 border border-slate-800 text-slate-200 text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-brand-accent-500"
@@ -1412,6 +1414,7 @@ export default function AdminDashboard() {
                       </div>
                       <input 
                         type="text" 
+                        inputMode="text"
                         value={(newQuestion as any)[`option${idx}`]}
                         onChange={e => setNewQuestion({...newQuestion, [`option${idx}`]: e.target.value})}
                         className="w-full bg-slate-950 border border-slate-700 text-slate-200 text-sm px-4 py-3 rounded-xl focus:border-brand-accent-500 outline-none"
@@ -1439,6 +1442,7 @@ export default function AdminDashboard() {
                 {newQuestion.is_pyq && (
                   <input 
                     type="text" 
+                    inputMode="numeric"
                     value={newQuestion.pyq_year}
                     onChange={e => setNewQuestion({...newQuestion, pyq_year: e.target.value})}
                     placeholder="e.g. 2023"

@@ -19,7 +19,7 @@ export default async function RecoverAccountPage() {
     .single();
 
   if (!profile?.is_deleted) {
-    redirect("/dashboard");
+    redirect("/");
   }
 
   const deadlineDate = new Date(profile.deletion_deadline);

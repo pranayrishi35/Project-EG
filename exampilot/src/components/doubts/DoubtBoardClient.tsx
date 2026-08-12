@@ -289,6 +289,7 @@ function AskModal({
               onChange={(e) => setUsernameInput(e.target.value)}
               placeholder="e.g. afcat_ace_2026"
               maxLength={20}
+              inputMode="text"
               className="rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:border-brand-accent-500"
             />
             <button
@@ -312,6 +313,7 @@ function AskModal({
                 onChange={(e) => setTopic(e.target.value)}
                 placeholder="e.g. Quant, English, Current Affairs"
                 maxLength={60}
+                inputMode="text"
                 className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-brand-accent-500"
               />
             </div>
@@ -325,6 +327,7 @@ function AskModal({
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Summarise your doubt in one line (min 10 chars)"
                 maxLength={200}
+                inputMode="text"
                 className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:border-brand-accent-500"
               />
             </div>

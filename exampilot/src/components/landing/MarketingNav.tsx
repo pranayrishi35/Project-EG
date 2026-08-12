@@ -26,7 +26,7 @@ export default function MarketingNav() {
           : "bg-transparent border-b border-transparent shadow-none",
       ].join(" ")}
     >
-      <div className="max-w-6xl mx-auto h-full px-4 sm:px-6 flex items-center justify-between gap-4">
+      <div className="max-w-6xl mx-auto h-full px-4 sm:px-6 flex items-center justify-between gap-2 sm:gap-4">
         {/* Logo */}
         <Link
           href="/"
@@ -57,7 +57,7 @@ export default function MarketingNav() {
           <Link
             href="/login"
             className={[
-              "inline-flex items-center justify-center min-h-10 px-4 rounded-xl text-sm font-semibold border transition-all duration-smooth ease-standard focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent-400",
+              "inline-flex items-center justify-center min-h-10 px-3 sm:px-4 rounded-xl text-sm font-semibold border transition-all duration-smooth ease-standard focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent-400",
               scrolled
                 ? "border-brand-ink-primary/20 text-brand-ink-primary hover:border-brand-ink-primary/40"
                 : "border-brand-ink-inverse/30 text-brand-ink-inverse hover:border-brand-ink-inverse/60",
@@ -67,7 +67,7 @@ export default function MarketingNav() {
           </Link>
           <Link
             href="/welcome"
-            className="inline-flex items-center justify-center min-h-10 px-4 rounded-xl text-sm font-semibold bg-brand-accent-500 text-brand-accent-ink hover:bg-brand-accent-400 transition-colors duration-base ease-standard focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent-400 focus-visible:ring-offset-2"
+            className="inline-flex items-center justify-center min-h-10 px-3 sm:px-4 rounded-xl text-sm font-semibold bg-brand-accent-500 text-brand-accent-ink hover:bg-brand-accent-400 transition-colors duration-base ease-standard focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent-400 focus-visible:ring-offset-2"
           >
             See how it works
           </Link>

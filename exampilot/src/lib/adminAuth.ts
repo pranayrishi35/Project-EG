@@ -1,9 +1,14 @@
 import { createClient } from "@supabase/supabase-js";
 import { cache } from "react";
+import { isMockAuthAllowed } from "@/lib/testAuthGuard";
 
 export const checkIsAdmin = cache(async (email: string | null | undefined): Promise<boolean> => {
 
   if (!email) return false;
+  
+  if (isMockAuthAllowed() && email === "test@example.com") {
+    return true;
+  }
   
   try {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;

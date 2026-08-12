@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Brain, Target, Map, Shield, Plane } from "lucide-react";
+import { useReducedMotion } from "framer-motion";
 
 // A scripted, no-cost taste of Tejas for the guest landing page. It plays a
 // short canned conversation on a loop so visitors see the wingman in action
@@ -31,14 +32,16 @@ const FEATURES = [
 ];
 
 export default function TejasSpotlight() {
-  const [visibleTurns, setVisibleTurns] = useState(0);
+  const reduceMotion = useReducedMotion();
+  const [visibleTurns, setVisibleTurns] = useState(reduceMotion ? SCRIPT.length : 0);
   const [typing, setTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [started, setStarted] = useState(false);
+  const [started, setStarted] = useState(reduceMotion ? true : false);
 
   // Only start the scripted playback once the section scrolls into view.
   useEffect(() => {
+    if (reduceMotion) return;
     const el = containerRef.current;
     if (!el) return;
     const io = new IntersectionObserver(
@@ -56,7 +59,7 @@ export default function TejasSpotlight() {
 
   // Drive the scripted conversation forward with typing pauses, then loop.
   useEffect(() => {
-    if (!started) return;
+    if (!started || reduceMotion) return;
     let cancelled = false;
     const timers: ReturnType<typeof setTimeout>[] = [];
 

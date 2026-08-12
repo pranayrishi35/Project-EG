@@ -95,13 +95,13 @@ export default function FloatingAssistant() {
   };
 
   return (
-    <div className="print:hidden fixed right-4 md:right-6 z-50 flex flex-col items-end bottom-[calc(var(--nav-height)+env(safe-area-inset-bottom)+1rem)] md:bottom-6">
+    <div className="print:hidden fixed right-4 md:right-6 z-40 flex flex-col items-end bottom-[calc(var(--nav-height)+env(safe-area-inset-bottom)+1rem)] md:bottom-6 pointer-events-none">
       {/* Chat Window */}
       <div
         role="dialog"
         aria-label="Tejas AI study assistant"
         aria-hidden={!isOpen}
-        className={`bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col transition-all duration-300 transform origin-bottom-right mb-4 ${
+        className={`pointer-events-auto bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col transition-all duration-300 transform origin-bottom-right mb-4 ${
           isOpen ? "scale-100 opacity-100" : "scale-0 opacity-0 pointer-events-none absolute bottom-0"
         }`}
         style={{ width: "min(calc(100vw - 2rem), 390px)", height: "min(calc(100vh - 8rem), 560px)" }}
@@ -204,6 +204,7 @@ export default function FloatingAssistant() {
           <input
             ref={inputRef}
             type="text"
+            inputMode="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask Tejas about your syllabus..."
@@ -238,7 +239,7 @@ export default function FloatingAssistant() {
         onClick={() => setIsOpen(!isOpen)}
         aria-label={isOpen ? "Close Tejas" : "Open Tejas, your AI study wingman"}
         aria-expanded={isOpen}
-        className={`relative w-14 h-14 rounded-full flex items-center justify-center text-2xl shadow-lg transition-transform duration-300 hover:scale-110 active:scale-95 ${
+        className={`pointer-events-auto relative w-14 h-14 rounded-full flex items-center justify-center text-2xl shadow-lg transition-transform duration-300 hover:scale-110 active:scale-95 ${
           isOpen ? "bg-slate-800 text-white shadow-slate-800/30" : "bg-gradient-to-br from-brand-accent-500 to-brand-accent-600 text-brand-accent-ink shadow-brand-accent-500/40"
         }`}
       >

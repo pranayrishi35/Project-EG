@@ -164,7 +164,9 @@ function LoginForm() {
             onClick={(e) => {
               if (!ageConsent) e.preventDefault();
             }}
-            className={`w-full flex items-center justify-center gap-3 rounded-xl border px-4 py-3.5 text-sm font-semibold shadow-sm transition-all duration-150 relative
+            role="button"
+            tabIndex={0}
+            className={`w-full flex items-center justify-center gap-3 rounded-xl border px-4 py-3.5 text-sm font-semibold shadow-sm transition-all duration-150 relative cursor-pointer
               ${ageConsent 
                 ? 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50 hover:shadow-md active:scale-[0.98] z-20' 
                 : 'border-gray-100 bg-gray-50 text-gray-400 opacity-60 z-10'}`}
@@ -242,6 +244,7 @@ function LoginForm() {
                   required
                   autoFocus
                   autoComplete="current-password"
+                  inputMode="text"
                   value={passwordInput}
                   onChange={(e) => setPasswordInput(e.target.value)}
                   disabled={isAnyLoading}
@@ -322,7 +325,7 @@ export default function LoginPage() {
   }, []);
 
   return (
-    <div className="flex flex-col gap-5 p-4 pt-6 pb-8">
+    <div className="flex flex-col gap-5 p-4 pt-10 sm:pt-12 pb-8">
 
       {/* Hero banner */}
       <div

@@ -145,7 +145,7 @@ export default async function PlannerPage() {
     <div className="flex flex-col gap-6 p-4 pt-6 pb-24 max-w-5xl mx-auto">
 
       {/* Header row */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-end justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-brand-accent-600 mb-0.5">
             My Plans

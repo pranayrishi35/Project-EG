@@ -439,7 +439,7 @@ const ActiveQuestionView = memo(function ActiveQuestionView({ questions, isRevie
       </div>
       
       {/* Action Bar outside the scrollable container */}
-      <div className="bg-white border-t border-slate-300 p-4 safe-bottom flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-[0_-4px_15px_rgba(0,0,0,0.05)] relative z-50 pointer-events-auto">
+      <div className="bg-white border-t border-slate-300 p-4 pb-[calc(16px+env(safe-area-inset-bottom))] flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-[0_-4px_15px_rgba(0,0,0,0.05)] relative z-50 pointer-events-auto">
          <div className="flex justify-start">
             <button 
               onClick={() => { if(!isReviewMode) clearResponse(currentQ.id) }}
@@ -1290,7 +1290,7 @@ export default function TestRunner({ type, questions, scoringMap, onExit, attemp
         {/* Right Column - Question Palette */}
         <div className={`fixed inset-0 z-[150] bg-black/50 backdrop-blur-sm transition-opacity duration-300 md:hidden ${isPaletteOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`} onClick={() => setIsPaletteOpen(false)}></div>
         
-        <div className={`fixed md:relative right-0 top-0 bottom-0 z-[160] w-full max-w-[320px] md:max-w-none md:w-[320px] lg:w-[380px] bg-slate-50 flex flex-col border-l border-slate-300 flex-shrink-0 pointer-events-auto transform transition-transform duration-300 md:transform-none ${isPaletteOpen ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}`}>
+        <div className={`fixed md:relative right-0 top-0 bottom-0 z-[160] w-full max-w-[320px] md:max-w-none md:w-[320px] lg:w-[380px] bg-slate-50 flex flex-col pb-[env(safe-area-inset-bottom)] border-l border-slate-300 flex-shrink-0 pointer-events-auto transform transition-transform duration-300 md:transform-none ${isPaletteOpen ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}`}>
           {/* Close button for mobile */}
           <div className="md:hidden absolute top-4 right-4 z-[170]">
             <button onClick={() => setIsPaletteOpen(false)} className="p-2 bg-slate-200 hover:bg-slate-300 rounded-full text-slate-800 transition-colors">
